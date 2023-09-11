@@ -1,32 +1,38 @@
 package com.bipa4.back_bipatv.entity;
 
 
-
-import com.bipa4.back_bipatv.dataType.LoginType;
-import lombok.AllArgsConstructor;
+import com.bipa4.back_bipatv.dataType.ELogin_Type;
+import java.sql.Timestamp;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
-import java.sql.Timestamp;
-
 @Entity
 @Data
-@Table(name="Accounts")
+@Table(name = "Accounts")
 @NoArgsConstructor
 public class Accounts {
-    @Id
-    @GeneratedValue(strategy= GenerationType.IDENTITY)
-    @Column(name="account_id")
-    private Long accountId;
-    @Column(name="join_date", nullable=true)
-    private Timestamp joinDate;
-    @Column(name="login_type", nullable=true, length=20)
-    private LoginType loginType;
-    @Column(name="id", nullable=true, length=20)
-    private String id;
-    @Column(name="name", nullable=true, length=20)
-    private String name;
-    @Column(name="profile_url", nullable=true, length=200)
-    private String profileUrl;
+
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "account_id")
+  private Long accountId;
+  @Column(name = "join_date", nullable = false)
+  private Timestamp joinDate;
+  @Column(name = "login_type", nullable = false, length = 20)
+  private ELogin_Type loginType;
+  @Column(name = "login_Id", nullable = false, length = 20)
+  private String loginId;
+  @Column(name = "name", nullable = false, length = 20)
+  private String name;
+  @Column(name = "profile_url", nullable = true, length = 200)
+  private String profileUrl;
+  @Column(name = "email", nullable = true, length = 40)
+  private String eMail;
+
 }
