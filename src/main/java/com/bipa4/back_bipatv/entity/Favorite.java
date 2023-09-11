@@ -1,14 +1,15 @@
 package com.bipa4.back_bipatv.entity;
 
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import lombok.Data;
-
-import javax.persistence.*;
-import java.io.Serializable;
 
 @Entity
 @Table(name = "Favorite")
 @Data
-public class Favorite{
-    @EmbeddedId
-    private FavoritePK favoritePK;
+public class Favorite {
+
+  @EmbeddedId
+  private FavoritePK favoritePK;
 }
