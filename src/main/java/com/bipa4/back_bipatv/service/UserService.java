@@ -8,6 +8,7 @@ import com.bipa4.back_bipatv.model.OAuthToken;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.sql.Timestamp;
+import javax.servlet.http.Cookie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -104,6 +105,22 @@ public class UserService {
     return kakaoProfile;
   }
 
+  public void kakao_createUser(KakaoProfile kakaoProfile, String refreshToken) {
+
+    Timestamp now = new Timestamp(System.currentTimeMillis());
+    System.out.println(now);
+    Accounts accounts = new Accounts();
+    accounts.setName(kakaoProfile.getKakao_account().getProfile()
+        .getNickname());//이름 권한을 카카오 문서 동의가 안됨-> 닉네임으로 대체
+    accounts.setLoginId("kakao_" + kakaoProfile.getId());//Id 형식은 kakao
+    accounts.setJoinDate(now);//날짜 형식이 이게 맞는지 확인
+    accounts.setLoginType(ELogin_Type.KAKAO);
+    accounts.setRefreshToken(refreshToken);
+//        accounts.setProfileUrl();
+    accountDAO.createAccount(accounts);
+
+  }
+
   public void kakao_createUser(KakaoProfile kakaoProfile) {
 
     Timestamp now = new Timestamp(System.currentTimeMillis());
@@ -114,13 +131,23 @@ public class UserService {
     accounts.setLoginId("kakao_" + kakaoProfile.getId());//Id 형식은 kakao
     accounts.setJoinDate(now);//날짜 형식이 이게 맞는지 확인
     accounts.setLoginType(ELogin_Type.KAKAO);
+
 //        accounts.setProfileUrl();
     accountDAO.createAccount(accounts);
-    
+
   }
 
   public boolean findAccount(KakaoProfile kakaoProfile) {
     return accountDAO.findAccount(kakaoProfile);
   }
 
+  public Accounts selectAccount(KakaoProfile kakaoProfile) {
+    return accountDAO.selectAccount(kakaoProfile);
+  }
+
+  public Cookie createCookie(String name, String token) {
+    Cookie cookie = new Cookie(name, token);
+
+    return cookie;
+  }
 }
