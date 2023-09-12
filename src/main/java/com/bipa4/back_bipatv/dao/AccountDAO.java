@@ -33,6 +33,13 @@ public class AccountDAO {
     return optAccount.isPresent();
   }
 
+  public Accounts selectAccount(KakaoProfile kakaoProfile) {
+    Optional<Accounts> optAccount = accountRepository.findByLoginId(
+        "kakao_" + kakaoProfile.getId());
+
+    return optAccount.get();
+  }
+
   //  @Transactional
 //  연산이 고립되어, 다른 연산과의 혼선으로 인해 잘못된 값을 가져오는 경우가 방지된다.
 //  연산의 원자성이 보장되어, 연산이 도중에 실패할 경우 변경사항이 Commit되지 않는다.
