@@ -7,4 +7,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface AccountRepository extends JpaRepository<Accounts, Long> { //<entity명,pk자료형>
 
   Optional<Accounts> findByLoginId(String loginId);
+
 }
