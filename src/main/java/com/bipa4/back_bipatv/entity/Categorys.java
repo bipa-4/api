@@ -1,11 +1,7 @@
 package com.bipa4.back_bipatv.entity;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+
 import lombok.Data;
 
 @Entity
@@ -19,6 +15,7 @@ public class Categorys {
   private int categoryId;
   @Column(name = "name", nullable = false, length = 30)
   private String name;
-  @Column(name = "video_id")
-  private int videoId;
+  @ManyToOne
+  @JoinColumn(name = "video_id")
+  private Videos videos;
 }

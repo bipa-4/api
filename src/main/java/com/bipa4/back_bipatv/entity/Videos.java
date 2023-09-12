@@ -1,12 +1,8 @@
 package com.bipa4.back_bipatv.entity;
 
 import java.sql.Timestamp;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
+
 import lombok.Data;
 
 @Entity
@@ -34,8 +30,9 @@ public class Videos {
   private boolean commentPermission;
   @Column(name = "thumbnail", nullable = true, length = 200)
   private String thumbnail;
-  @Column(name = "channel_id")
-  private int channelId;
+  @ManyToOne
+  @JoinColumn(name = "channel_id")
+  private Channels channels;
 
 
 }

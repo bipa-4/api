@@ -1,11 +1,7 @@
 package com.bipa4.back_bipatv.entity;
 
 import java.sql.Timestamp;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import lombok.Data;
 
 @Entity
@@ -27,9 +23,11 @@ public class Comments {
   private int groupIndex;
   @Column(name = "create_at", nullable = false)
   private Timestamp createAt;
-  @Column(name = "video_id")
-  private int videoId;
-  @Column(name = "account_id")
-  private int accountId;
+  @ManyToOne
+  @JoinColumn(name = "video_id")
+  private Videos videos;
+  @ManyToOne
+  @JoinColumn(name = "account_id")
+  private Accounts accounts;
 
 }
