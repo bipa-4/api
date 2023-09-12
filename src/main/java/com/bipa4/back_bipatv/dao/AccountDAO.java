@@ -1,23 +1,50 @@
 package com.bipa4.back_bipatv.dao;
 
 import com.bipa4.back_bipatv.entity.Accounts;
+import com.bipa4.back_bipatv.model.KakaoProfile;
+import com.bipa4.back_bipatv.repository.AccountRepository;
+import java.util.Optional;
+import javax.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
-
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 
 @Repository
 public class AccountDAO {
-    @PersistenceContext
-    private EntityManager em;
 
-    public Long save(Accounts member){
-        em.persist(member);
-        return member.getAccountId();
-    }
+//  @PersistenceContext
+//  private EntityManager em;
 
-    public Accounts find(Long id){
-        return em.find(Accounts.class, id);
-    }
+  @Autowired
+  private AccountRepository accountRepository;
 
+//  public Long save(Accounts member) {
+//    em.persist(member);
+//    return member.getAccountId();
+//  }
+//
+//  public Accounts find(Long id) {
+//    return em.find(Accounts.class, id);
+//  }
+
+  public boolean findAccount(KakaoProfile kakaoProfile) {
+    Optional<Accounts> optAccount = accountRepository.findByLoginId(
+        "kakao_" + kakaoProfile.getId());
+
+    return optAccount.isPresent();
+  }
+
+  public Accounts selectAccount(KakaoProfile kakaoProfile) {
+    Optional<Accounts> optAccount = accountRepository.findByLoginId(
+        "kakao_" + kakaoProfile.getId());
+
+    return optAccount.get();
+  }
+
+  //  @Transactional
+//  연산이 고립되어, 다른 연산과의 혼선으로 인해 잘못된 값을 가져오는 경우가 방지된다.
+//  연산의 원자성이 보장되어, 연산이 도중에 실패할 경우 변경사항이 Commit되지 않는다.
+  @Transactional
+  public void createAccount(Accounts accounts) {
+    accountRepository.save(accounts);
+  }
 }
