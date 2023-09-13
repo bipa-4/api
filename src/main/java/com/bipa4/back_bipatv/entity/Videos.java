@@ -1,6 +1,7 @@
 package com.bipa4.back_bipatv.entity;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -9,7 +10,9 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import lombok.Builder;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Data
@@ -19,7 +22,8 @@ public class Videos {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "video_id")
-  private int videoId;
+  private Long videoId;
+
   @Column(name = "video_url", nullable = true, length = 200)
   private String videoUrl;
   @Column(name = "title", nullable = true, length = 100)
@@ -28,8 +32,11 @@ public class Videos {
   private String content;
   @Column(name = "read_cnt", nullable = true)
   private int readCnt;
-  @Column(name = "create_at", nullable = true)
-  private Timestamp createAt;
+
+  @CreationTimestamp
+  @Column(name = "create_at")
+  private LocalDateTime createAt = LocalDateTime.now();
+
   @Column(name = "private_type")
   private boolean privateType;
   @Column(name = "comment_permission")
@@ -40,5 +47,15 @@ public class Videos {
   @JoinColumn(name = "channel_id")
   private Channels channels;
 
-
+  @Builder
+  public Videos(String videoUrl, String title, String content, boolean privateType,
+      boolean commentPermission, String thumbnail, int channelId) {
+    this.videoUrl = videoUrl;
+    this.title = title;
+    this.content = content;
+    this.privateType = privateType;
+    this.commentPermission = commentPermission;
+    this.thumbnail = thumbnail;
+    this.channelId = channelId;
+  }
 }
