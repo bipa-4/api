@@ -1,20 +1,23 @@
 package com.bipa4.back_bipatv.entity;
 
 import java.time.LocalDateTime;
-import java.sql.Timestamp;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Data
 @Table(name = "Videos")
+@NoArgsConstructor
 public class Videos {
 
   @Id
@@ -24,13 +27,10 @@ public class Videos {
 
   @Column(name = "video_url", nullable = true, length = 200)
   private String videoUrl;
-
   @Column(name = "title", nullable = true, length = 100)
   private String title;
-
   @Column(name = "content", nullable = true, length = 400)
   private String content;
-
   @Column(name = "read_cnt", nullable = true)
   private int readCnt;
 
@@ -40,19 +40,17 @@ public class Videos {
 
   @Column(name = "private_type")
   private boolean privateType;
-
   @Column(name = "comment_permission")
   private boolean commentPermission;
-
   @Column(name = "thumbnail", nullable = true, length = 200)
   private String thumbnail;
-
-  @Column(name = "channel_id")
-  private int channelId;
+  @ManyToOne
+  @JoinColumn(name = "channel_id")
+  private Channels channelId;
 
   @Builder
   public Videos(String videoUrl, String title, String content, boolean privateType,
-      boolean commentPermission, String thumbnail, int channelId) {
+      boolean commentPermission, String thumbnail, Channels channelId) {
     this.videoUrl = videoUrl;
     this.title = title;
     this.content = content;

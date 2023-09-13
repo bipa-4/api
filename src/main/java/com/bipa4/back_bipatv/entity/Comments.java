@@ -5,6 +5,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import lombok.Data;
 
@@ -27,9 +29,11 @@ public class Comments {
   private int groupIndex;
   @Column(name = "create_at", nullable = false)
   private Timestamp createAt;
-  @Column(name = "video_id")
-  private int videoId;
-  @Column(name = "account_id")
-  private int accountId;
+  @ManyToOne
+  @JoinColumn(name = "video_id")
+  private Videos videos;
+  @ManyToOne
+  @JoinColumn(name = "account_id")
+  private Accounts accounts;
 
 }
