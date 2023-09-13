@@ -54,7 +54,7 @@ public class VideoService {
   // Upload to db.
   @Transactional
   public void upload(PostSaveRequestDto requestDto) {
-    videoRepository.save(requestDto.toEntity());
+//    videoRepository.save(requestDto.toEntity());
   }
 
   // Upload to storage.
