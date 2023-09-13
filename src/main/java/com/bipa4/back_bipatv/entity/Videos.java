@@ -1,5 +1,9 @@
 package com.bipa4.back_bipatv.entity;
 
+import java.sql.Timestamp;
+import javax.persistence.*;
+
+import lombok.Data;
 import java.time.LocalDateTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -23,8 +27,7 @@ public class Videos {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "video_id")
-  private Long videoId;
-
+  private int videoId;
   @Column(name = "video_url", nullable = true, length = 200)
   private String videoUrl;
   @Column(name = "title", nullable = true, length = 100)
@@ -33,11 +36,8 @@ public class Videos {
   private String content;
   @Column(name = "read_cnt", nullable = true)
   private int readCnt;
-
-  @CreationTimestamp
-  @Column(name = "create_at")
-  private LocalDateTime createAt = LocalDateTime.now();
-
+  @Column(name = "create_at", nullable = true)
+  private Timestamp createAt;
   @Column(name = "private_type")
   private boolean privateType;
   @Column(name = "comment_permission")

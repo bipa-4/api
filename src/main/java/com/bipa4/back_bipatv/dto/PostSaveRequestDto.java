@@ -29,9 +29,9 @@ public class PostSaveRequestDto {
     this.channelId = channelId;
   }
 
-  public Videos toEntity() {
-    return Videos.builder().title(title).content(content).videoUrl(videoUrl)
-        .privateType(privateType).commentPermission(commentPermission).thumbnail(thumbnail)
-        .channelId(channelId).build();
-  }
+//  public Videos toEntity() {
+//    return Videos.builder().title(title).content(content).videoUrl(videoUrl)
+//        .privateType(privateType).commentPermission(commentPermission).thumbnail(thumbnail)
+//        .channelId(channelId).build();
+//  }
 }
