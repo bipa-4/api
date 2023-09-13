@@ -1,7 +1,6 @@
 package com.bipa4.back_bipatv.entity;
 
 import java.time.LocalDateTime;
-
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -12,11 +11,13 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Data
 @Table(name = "Videos")
+@NoArgsConstructor
 public class Videos {
 
   @Id
@@ -45,11 +46,11 @@ public class Videos {
   private String thumbnail;
   @ManyToOne
   @JoinColumn(name = "channel_id")
-  private Channels channels;
+  private Channels channelId;
 
   @Builder
   public Videos(String videoUrl, String title, String content, boolean privateType,
-      boolean commentPermission, String thumbnail, int channelId) {
+      boolean commentPermission, String thumbnail, Channels channelId) {
     this.videoUrl = videoUrl;
     this.title = title;
     this.content = content;
