@@ -22,6 +22,6 @@ public class Channels {
   @Column(name = "profile_url", nullable = true)
   private String profileUrl;
   @OneToOne
-  @JoinColumn(name = "account_id", nullable = false)
+  @JoinColumn(name = "account_id")
   private Accounts accounts;
 }

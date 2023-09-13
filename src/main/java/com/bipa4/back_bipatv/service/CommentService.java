@@ -1,27 +1,22 @@
 package com.bipa4.back_bipatv.service;
 
-import com.bipa4.back_bipatv.entity.Comments;
-import com.bipa4.back_bipatv.entity.Videos;
-import com.bipa4.back_bipatv.repository.CommentRepository;
+import com.bipa4.back_bipatv.dao.CommentDAO;
+import com.bipa4.back_bipatv.dto.CommentDTO;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor
 public class CommentService {
 
-    private CommentRepository commentRepository;
+    private final CommentDAO commentDAO;
 
-    public CommentService(CommentRepository commentRepository){
-        this.commentRepository = commentRepository;
-    }
 
-    public void createComment(Comments comments){
-        commentRepository.save(comments);
-    }
+    public List<CommentDTO> findAllComments(int videoId){
+        List<CommentDTO> list = commentDAO.findAllComments(videoId);
 
-    public List<Comments> findAllComments(int videoId){
-        List<Comments> list = commentRepository.findAllByVideoId(videoId).get();
         return list;
 
     }

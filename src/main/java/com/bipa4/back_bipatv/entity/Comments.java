@@ -12,7 +12,7 @@ public class Comments {
   @Id
   @GeneratedValue
   @Column(name = "comment_id")
-  private int comment_id;
+  private int commentId;
   @Column(name = "content", length = 200, nullable = true)
   private String content;
   @Column(name = "parent_child", nullable = false)
@@ -23,6 +23,7 @@ public class Comments {
   private int groupIndex;
   @Column(name = "create_at", nullable = false)
   private Timestamp createAt;
+
   @ManyToOne
   @JoinColumn(name = "video_id")
   private Videos videos;
