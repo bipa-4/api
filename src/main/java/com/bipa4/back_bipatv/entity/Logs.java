@@ -5,6 +5,8 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import lombok.Data;
 
@@ -23,7 +25,8 @@ public class Logs {
   private String content;
   @Column(name = "log_function", nullable = false, length = 200)
   private String logFunction;
-  @Column(name = "account_id")
-  private String accountId;
+  @ManyToOne
+  @JoinColumn(name = "account_id")
+  private Accounts accounts;
 
 }

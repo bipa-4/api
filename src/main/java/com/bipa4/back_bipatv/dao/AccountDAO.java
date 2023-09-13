@@ -26,16 +26,14 @@ public class AccountDAO {
 //    return em.find(Accounts.class, id);
 //  }
 
-  public boolean findAccount(KakaoProfile kakaoProfile) {
-    Optional<Accounts> optAccount = accountRepository.findByLoginId(
-        "kakao_" + kakaoProfile.getId());
+  public boolean findAccount(Accounts accounts) {
+    Optional<Accounts> optAccount = accountRepository.findByLoginId(accounts.getLoginId());
 
     return optAccount.isPresent();
   }
 
-  public Accounts selectAccount(KakaoProfile kakaoProfile) {
-    Optional<Accounts> optAccount = accountRepository.findByLoginId(
-        "kakao_" + kakaoProfile.getId());
+  public Accounts selectAccount(Accounts accounts) {
+    Optional<Accounts> optAccount = accountRepository.findByLoginId(accounts.getLoginId());
 
     return optAccount.get();
   }

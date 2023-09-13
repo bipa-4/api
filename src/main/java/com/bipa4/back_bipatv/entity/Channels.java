@@ -5,6 +5,8 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import lombok.Data;
 
@@ -25,7 +27,7 @@ public class Channels {
   private boolean privateType;
   @Column(name = "profile_url", nullable = true)
   private String profileUrl;
-
-  @Column(name = "account_id", nullable = false)
-  private int accountId;
+  @OneToOne
+  @JoinColumn(name = "account_id", nullable = false)
+  private Accounts accounts;
 }

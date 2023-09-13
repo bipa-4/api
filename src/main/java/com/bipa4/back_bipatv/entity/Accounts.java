@@ -5,6 +5,8 @@ import com.bipa4.back_bipatv.dataType.ELogin_Type;
 import java.sql.Timestamp;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -25,8 +27,9 @@ public class Accounts {
   @Column(name = "join_date", nullable = false)
   private Timestamp joinDate;
   @Column(name = "login_type", nullable = false, length = 20)
+  @Enumerated(value = EnumType.STRING)
   private ELogin_Type loginType;
-  @Column(name = "login_Id", nullable = false, length = 20)
+  @Column(name = "login_Id", nullable = false, length = 100)
   private String loginId;
   @Column(name = "name", nullable = false, length = 20)
   private String name;
