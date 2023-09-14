@@ -34,12 +34,12 @@ public interface VideoChannelRepository extends JpaRepository<Videos, Long> {
 
   @Modifying
   @Query(value =
-      "select c.name, profile_url, create_at, read_cnt, thumbnail, title, read_cnt - view_cnt as soaringViews from videos as v\n"
+      "select c.name, profile_url, create_at, read_cnt, thumbnail, title from videos as v\n"
           + "    left join channels as c on c.channel_id = v.channel_id\n"
           + "    left join view_log vl on v.video_id = vl.video_id\n"
           + "where v.private_type = false\n"
           + "and c.private_type = false\n"
-          + "order by read_cnt - view_cnt desc\n"
+          + "order by (read_cnt - view_cnt) desc\n"
           + "limit 10", nativeQuery = true)
   List<GetAllResponseDto> findByViews();
 
