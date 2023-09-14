@@ -1,6 +1,6 @@
 package com.bipa4.back_bipatv.dto;
 
-import com.bipa4.back_bipatv.entity.Videos;
+import com.bipa4.back_bipatv.entity.Channels;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,11 +15,11 @@ public class PostSaveRequestDto {
   private boolean privateType;
   private boolean commentPermission;
   private String thumbnail;
-  private int channelId;
+  private Channels channelId;
 
   @Builder
   public PostSaveRequestDto(String videoUrl, String title, String content, boolean privateType,
-      boolean commentPermission, String thumbnail, int channelId) {
+      boolean commentPermission, String thumbnail, Channels channelId) {
     this.videoUrl = videoUrl;
     this.title = title;
     this.content = content;
@@ -29,9 +29,9 @@ public class PostSaveRequestDto {
     this.channelId = channelId;
   }
 
-  public Videos toEntity() {
-    return Videos.builder().title(title).content(content).videoUrl(videoUrl)
-        .privateType(privateType).commentPermission(commentPermission).thumbnail(thumbnail)
-        .channelId(channelId).build();
-  }
+//  public Videos toEntity() {
+//    return Videos.builder().title(title).content(content).videoUrl(videoUrl)
+//        .privateType(privateType).commentPermission(commentPermission).thumbnail(thumbnail)
+//        .channelId(channelId).build();
+//  }
 }

@@ -9,7 +9,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
@@ -48,15 +47,15 @@ public class Videos {
   @JoinColumn(name = "channel_id")
   private Channels channelId;
 
-  @Builder
-  public Videos(String videoUrl, String title, String content, boolean privateType,
-      boolean commentPermission, String thumbnail, Channels channelId) {
-    this.videoUrl = videoUrl;
-    this.title = title;
-    this.content = content;
-    this.privateType = privateType;
-    this.commentPermission = commentPermission;
-    this.thumbnail = thumbnail;
-    this.channelId = channelId;
-  }
+//  @Builder
+//  public Videos(String videoUrl, String title, String content, boolean privateType,
+//      boolean commentPermission, String thumbnail, Channels channelId) {
+//    this.videoUrl = videoUrl;
+//    this.title = title;
+//    this.content = content;
+//    this.privateType = privateType;
+//    this.commentPermission = commentPermission;
+//    this.thumbnail = thumbnail;
+//    this.channelId = channelId;
+//  }
 }

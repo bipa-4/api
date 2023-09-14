@@ -18,7 +18,7 @@ public class Channels {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "channel_id")
-  private int channelId;
+  private Long channelId;
   @Column(name = "name", nullable = false)
   private String name;
   @Column(name = "content", nullable = true)
