@@ -36,12 +36,11 @@ public class UserController {
   @GetMapping("/auth/{registrationId}/callback")
   public String doLogin(@RequestParam String code, @PathVariable String registrationId,
       HttpServletResponse httpresponse) {
-    System.out.println("login 시작");
-    System.out.println("code: " + code);
+
     Map<String, Cookie> cookie = userService.socialLogin(code, registrationId);
     httpresponse.addCookie(cookie.get("refreshToken"));
     httpresponse.addCookie(cookie.get("accessToken"));
-    System.out.println("login 끝");
+
     return cookie.get("refreshToken").getName();
   }
 

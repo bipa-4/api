@@ -1,8 +1,10 @@
 package com.bipa4.back_bipatv.service;
 
 import com.bipa4.back_bipatv.dao.AccountDAO;
+import com.bipa4.back_bipatv.dao.ChannelDAO;
 import com.bipa4.back_bipatv.dataType.ELogin_Type;
 import com.bipa4.back_bipatv.entity.Accounts;
+import com.bipa4.back_bipatv.entity.Channels;
 import com.bipa4.back_bipatv.entity.RefreshToken;
 import com.bipa4.back_bipatv.repository.RefreshTokenRepository;
 import com.bipa4.back_bipatv.security.SecurityService;
@@ -37,21 +39,32 @@ public class UserService {
   @Autowired
   private AccountDAO accountDAO;
   @Autowired
+  private ChannelDAO channelDAO;
+  @Autowired
   private SecurityService securityService;
   @Autowired
   private RefreshTokenRepository refreshTokenRepository;
+  @Autowired
+  private ChannelService channelService;
 
   private void insertUser(Accounts accounts, String refreshToken) {
 
     Timestamp now = new Timestamp(System.currentTimeMillis());
-    accounts.setName(accounts.getName());//이름 권한을 카카오 문서 동의가 안됨-> 닉네임으로 대체
-    accounts.setLoginId(accounts.getLoginId());//Id 형식은 kakao
-    accounts.setLoginType(accounts.getLoginType());
+//    accounts.setName(accounts.getName());//이름 권한을 카카오 문서 동의가 안됨-> 닉네임으로 대체
+//    accounts.setLoginId(accounts.getLoginId());//Id 형식은 kakao
+//    accounts.setLoginType(accounts.getLoginType());
     accounts.setJoinDate(now);
     accounts.setRefreshToken(refreshToken);
     System.out.println(accounts);
     accountDAO.createAccount(accounts);
 
+  }
+
+  private void insertChannels(Accounts accounts) {
+    Channels channels = new Channels();
+    channels.setName(accounts.getLoginId() + "_Channel");
+    channels.setAccounts(accounts);
+    channelDAO.createChannel(channels);
   }
 
   private boolean findAccount(Accounts accounts) {
@@ -141,6 +154,7 @@ public class UserService {
       refreshToken = securityService.createRefreshToken();
 
       insertUser(accounts, refreshToken); //db에 그냥 refreshToken저장하려면 사용할 메소드
+      insertChannels(accounts);
       RefreshToken Rtoken = new RefreshToken(refreshToken, accounts.getAccountId());
       refreshTokenRepository.save(Rtoken);
       System.out.println("유저 없음 refreshToken: " + refreshToken);
