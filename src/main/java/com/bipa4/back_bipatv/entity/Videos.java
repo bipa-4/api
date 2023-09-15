@@ -1,10 +1,6 @@
 package com.bipa4.back_bipatv.entity;
 
 import java.sql.Timestamp;
-import javax.persistence.*;
-
-import lombok.Data;
-import java.time.LocalDateTime;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -15,7 +11,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Data
@@ -26,7 +21,7 @@ public class Videos {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "video_id")
-  private int videoId;
+  private Long videoId;
   @Column(name = "video_url", nullable = true, length = 200)
   private String videoUrl;
   @Column(name = "title", nullable = true, length = 100)

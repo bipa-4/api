@@ -37,7 +37,7 @@ public class Accounts {
   private String profileUrl;
   @Column(name = "email", nullable = true, length = 40)
   private String eMail;
-  @Column(name = "refresh_token", nullable = true, length = 300)//redis사용할 때 nullable=false로 바꾸기
-  private String refreshToken;
+//  @Column(name = "refresh_token", nullable = true, length = 300)//redis사용할 때 nullable=false로 바꾸기
+//  private String refreshToken;
 
 }

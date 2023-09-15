@@ -1,7 +1,6 @@
 package com.bipa4.back_bipatv.entity;
 
 
-import javax.persistence.*;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -20,7 +19,7 @@ public class Categorys {
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "category_id")
-  private int categoryId;
+  private Long categoryId;
   @Column(name = "name", nullable = false, length = 30)
   private String name;
   @ManyToOne
