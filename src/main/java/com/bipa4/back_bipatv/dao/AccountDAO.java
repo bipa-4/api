@@ -1,7 +1,6 @@
 package com.bipa4.back_bipatv.dao;
 
 import com.bipa4.back_bipatv.entity.Accounts;
-import com.bipa4.back_bipatv.model.KakaoProfile;
 import com.bipa4.back_bipatv.repository.AccountRepository;
 import java.util.Optional;
 import javax.transaction.Transactional;

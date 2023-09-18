@@ -1,8 +1,6 @@
 package com.bipa4.back_bipatv.entity;
 
 import java.sql.Timestamp;
-
-import javax.persistence.*;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
@@ -20,7 +18,7 @@ public class Comments {
   @Id
   @GeneratedValue
   @Column(name = "comment_id")
-  private int commentId;
+  private Long commentId;
   @Column(name = "content", length = 200, nullable = true)
   private String content;
   @Column(name = "parent_child", nullable = false)

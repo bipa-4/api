@@ -1,15 +1,18 @@
 package com.bipa4.back_bipatv.service;
 
 import com.bipa4.back_bipatv.dao.AccountDAO;
+import com.bipa4.back_bipatv.dao.ChannelDAO;
 import com.bipa4.back_bipatv.dataType.ELogin_Type;
 import com.bipa4.back_bipatv.entity.Accounts;
+import com.bipa4.back_bipatv.entity.Channels;
 import com.bipa4.back_bipatv.entity.RefreshToken;
-import com.bipa4.back_bipatv.repository.RefreshTokenRepository;
+import com.bipa4.back_bipatv.repository.RedisRepository;
 import com.bipa4.back_bipatv.security.SecurityService;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import javax.servlet.http.Cookie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -37,21 +40,32 @@ public class UserService {
   @Autowired
   private AccountDAO accountDAO;
   @Autowired
+  private ChannelDAO channelDAO;
+  @Autowired
   private SecurityService securityService;
   @Autowired
-  private RefreshTokenRepository refreshTokenRepository;
+  private RedisRepository redisRepository;
+  @Autowired
+  private ChannelService channelService;
 
   private void insertUser(Accounts accounts, String refreshToken) {
 
     Timestamp now = new Timestamp(System.currentTimeMillis());
-    accounts.setName(accounts.getName());//이름 권한을 카카오 문서 동의가 안됨-> 닉네임으로 대체
-    accounts.setLoginId(accounts.getLoginId());//Id 형식은 kakao
-    accounts.setLoginType(accounts.getLoginType());
+//    accounts.setName(accounts.getName());//이름 권한을 카카오 문서 동의가 안됨-> 닉네임으로 대체
+//    accounts.setLoginId(accounts.getLoginId());//Id 형식은 kakao
+//    accounts.setLoginType(accounts.getLoginType());
     accounts.setJoinDate(now);
-    accounts.setRefreshToken(refreshToken);
+//    accounts.setRefreshToken(refreshToken);
     System.out.println(accounts);
     accountDAO.createAccount(accounts);
 
+  }
+
+  private void insertChannels(Accounts accounts) {
+    Channels channels = new Channels();
+    channels.setName(accounts.getLoginId() + "_Channel");
+    channels.setAccounts(accounts);
+    channelDAO.createChannel(channels);
   }
 
   private boolean findAccount(Accounts accounts) {
@@ -67,6 +81,7 @@ public class UserService {
 
     return cookie;
   }
+
 
   private String getAccessToken(String authorizationCode, String registrationId) {
     String clientId = env.getProperty("oauth2." + registrationId + ".client-id");
@@ -105,8 +120,10 @@ public class UserService {
     return restTemplate.exchange(resourceUri, HttpMethod.GET, entity, JsonNode.class).getBody();
   }
 
-  public Map<String, Cookie> socialLogin(String code, String registrationId) {
+  public Map<String, Cookie> socialLogin(String code,
+      String registrationId) {//구글, 카카오에게 로그인 정보를 받은 후 실행되는거임 인증은 카카오랑 구글이 함
     String accessToken = getAccessToken(code, registrationId);
+    String refreshToken = securityService.createRefreshToken();
     JsonNode userResourceNode = getUserResource(accessToken, registrationId);
 
     Accounts accounts = new Accounts();
@@ -133,33 +150,48 @@ public class UserService {
         throw new RuntimeException("UNSUPPORTED SOCIAL TYPE");
       }
     }
-    String refreshToken = null;
-    if (findAccount(accounts)) {
-      refreshToken = selectAccount(accounts).getRefreshToken();
-      System.out.println("유저 있음 refreshToken: " + refreshToken);
-    } else {
-      refreshToken = securityService.createRefreshToken();
-
+    //유저 아이디에 대한 리프레쉬 토큰 검샘
+    if (!findAccount(accounts)) {//
       insertUser(accounts, refreshToken); //db에 그냥 refreshToken저장하려면 사용할 메소드
-      RefreshToken Rtoken = new RefreshToken(refreshToken, accounts.getAccountId());
-      refreshTokenRepository.save(Rtoken);
-      System.out.println("유저 없음 refreshToken: " + refreshToken);
-      RefreshToken findRToken = refreshTokenRepository.findById(refreshToken).get();
-      System.out.println("redis에서 꺼낸 애: " + findRToken.getRefreshToken());
-      System.out.println("redis에서 꺼낸 애: " + findRToken.getMemberId());
+      insertChannels(accounts);
     }
+    if (redisRepository.findById(refreshToken).isEmpty()) {
+      RefreshToken Rtoken = new RefreshToken(refreshToken, accounts.getLoginId());
+      redisRepository.save(Rtoken);
+    }
+//    System.out.println(
+//        "redis에서 꺼낸 애: " + redisRepository.findById(refreshToken).get().getRefreshToken());
+//    System.out.println(
+//        "redis에서 꺼낸 애: " + redisRepository.findById(refreshToken).get().getMemberId());
     System.out.println("refreshToken: " + refreshToken);
     String loginAccountToken = securityService.createToken(accounts, EXP_TIME);
     System.out.println("accessToken: " + loginAccountToken);
-    Cookie refreshCookie = createCookie("RefreshToken", selectAccount(accounts).getRefreshToken());
+    Cookie refreshCookie = createCookie("RefreshToken", refreshToken);
     Cookie accessCookie = createCookie("AccessToken", loginAccountToken);
 
     System.out.println(refreshCookie.getName());
-
+    System.out.println(loginAccountToken);
+//    System.out.println(securityService.getSubject(loginAccountToken)); accessToken검증
+    // 재로그인 요청
+    
+    System.out.println("AccessToken 재요청 값:" + createAccessTokenToRefreshToken(refreshToken));
     Map<String, Cookie> map = new HashMap<>();
     map.put("refreshToken", refreshCookie);
     map.put("accessToken", accessCookie);
 
     return map;
   }
+
+  public String createAccessTokenToRefreshToken(
+      String refreshToken) {//리플레시 토큰으로 엑세스 토큰을 다시 만들어달라는 것을 요청할 때 사용할 메소드
+    Optional<RefreshToken> optRefreshToken = redisRepository.findById(refreshToken);
+    if (optRefreshToken.isPresent()) {
+      Accounts dummyAccount = new Accounts();
+      dummyAccount.setLoginId(optRefreshToken.get().getMemberId());
+      return securityService.createToken(accountDAO.selectAccount(dummyAccount), EXP_TIME);
+    } else {//재 로그인 요청
+      return "재로그인해주세요";
+    }
+  }
+
 }
