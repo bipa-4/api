@@ -15,4 +15,6 @@ public interface GetAllResponseDto {
   LocalDateTime getCreate_at();
 
   Integer getRead_cnt();
+
+  Long getVideo_id();
 }
