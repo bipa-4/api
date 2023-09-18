@@ -51,4 +51,5 @@ public interface VideoChannelRepository extends JpaRepository<Videos, Long> {
           + "set view_cnt = read_cnt\n"
           + "where v.video_id = vl.video_id;", nativeQuery = true)
   int updateViews();
+
 }

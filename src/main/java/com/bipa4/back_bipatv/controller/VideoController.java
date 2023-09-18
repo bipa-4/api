@@ -1,11 +1,14 @@
 package com.bipa4.back_bipatv.controller;
 
 import com.bipa4.back_bipatv.dto.video.GetAllResponseDto;
+import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.dto.video.PostSaveRequestDto;
+import com.bipa4.back_bipatv.repository.VideoRepository;
 import com.bipa4.back_bipatv.service.VideoService;
 import java.io.IOException;
 import java.time.LocalTime;
 import java.util.List;
+import javax.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,17 +28,20 @@ import org.springframework.web.multipart.MultipartFile;
 public class VideoController {
 
   private final VideoService videoService;
+  private final VideoRepository videoRepository;
 
   // 전체 조회 (최신 순으로)
   // TODO : 페이지네이션
-  @GetMapping("/")
-  public ResponseEntity<List<GetAllResponseDto>> getAllVideos() {
-    List<GetAllResponseDto> videos = videoService.findAll();
-    return new ResponseEntity<List<GetAllResponseDto>>(videos, HttpStatus.OK);
+  @GetMapping("/main")
+  public ResponseEntity<List<GetVideoResponseDto>> getAllVideos(@PathParam("page") int page,
+      @PathParam("pageSize") int pageSize) {
+    System.out.println(page);
+    List<GetVideoResponseDto> videos = videoRepository.getAllVideos(page, pageSize);
+    return new ResponseEntity<List<GetVideoResponseDto>>(videos, HttpStatus.OK);
   }
 
   // 카테고리별 조회
-  @GetMapping("/{category}")
+  @GetMapping("/category/{category}")
   public ResponseEntity<List<GetAllResponseDto>> getCategoryVideos(
       @PathVariable("category") String category) {
     List<GetAllResponseDto> videos = videoService.findByCategory(category);
@@ -51,6 +57,15 @@ public class VideoController {
     int result = videoService.updateViews();
     return new ResponseEntity<List<GetAllResponseDto>>(videos, HttpStatus.OK);
   }
+
+  // TODO
+  // 커서 기반 페이지네이션
+//  @GetMapping
+//  public ResponseEntity<List<GetAllResponseDto>> getCursorVideos(
+//      @RequestParam(value = "page") int page, @RequestParam(value = "size") int size) {
+//    List<GetAllResponseDto> videos = videoService.pageViews(page, size);
+//    return new ResponseEntity<List<GetAllResponseDto>>(videos, HttpStatus.OK);
+//  }
 
   // 영상 업로드(S3) + 영상 정보 업로드(DB)
   @PostMapping("/upload")

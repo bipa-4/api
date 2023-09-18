@@ -6,7 +6,6 @@ import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.bipa4.back_bipatv.dto.video.GetAllResponseDto;
 import com.bipa4.back_bipatv.dto.video.PostSaveRequestDto;
 import com.bipa4.back_bipatv.repository.VideoChannelRepository;
-import com.bipa4.back_bipatv.repository.VideoRepository;
 import java.io.IOException;
 import java.util.List;
 import javax.transaction.Transactional;
@@ -19,7 +18,6 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class VideoService {
 
-  private final VideoRepository videoRepository;
   private final VideoChannelRepository videoChannelRepository;
   private final AmazonS3Client amazonS3Client;
 
@@ -66,4 +64,8 @@ public class VideoService {
             CannedAccessControlList.PublicRead));
     return amazonS3Client.getUrl(bucket, filePath).toString();
   }
+
+//  public List<GetAllResponseDto> pageViews(int page, int size) {
+//    return videoChannelRepository.findAllWithChannelUsingJoin();
+//  }
 }
