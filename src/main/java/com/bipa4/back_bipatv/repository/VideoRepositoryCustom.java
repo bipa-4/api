@@ -1,9 +1,16 @@
 package com.bipa4.back_bipatv.repository;
 
+import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
+import com.bipa4.back_bipatv.entity.Channels;
 import java.util.List;
 
 public interface VideoRepositoryCustom {
 
   List<GetVideoResponseDto> getAllVideos(int page, int pageSize);
+
+  List<GetDetailResponseDto> getDetail(Long id);
+
+  Long remove(Long id, Channels channelId);
+
 }
