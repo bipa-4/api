@@ -171,9 +171,9 @@ public class UserService {
 
     System.out.println(refreshCookie.getName());
     System.out.println(loginAccountToken);
-//    System.out.println(securityService.getSubject(loginAccountToken)); accessToken검증
+  
     // 재로그인 요청
-    
+
     System.out.println("AccessToken 재요청 값:" + createAccessTokenToRefreshToken(refreshToken));
     Map<String, Cookie> map = new HashMap<>();
     map.put("refreshToken", refreshCookie);
