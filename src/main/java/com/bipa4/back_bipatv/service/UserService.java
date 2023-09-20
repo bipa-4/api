@@ -159,10 +159,11 @@ public class UserService {
       RefreshToken Rtoken = new RefreshToken(refreshToken, accounts.getLoginId());
       redisRepository.save(Rtoken);
     }
-//    System.out.println(
-//        "redis에서 꺼낸 애: " + redisRepository.findById(refreshToken).get().getRefreshToken());
-//    System.out.println(
-//        "redis에서 꺼낸 애: " + redisRepository.findById(refreshToken).get().getMemberId());
+    System.out.println(
+        "redis에서 꺼낸 애: " + redisRepository.findById(refreshToken).get().getRefreshToken());
+    System.out.println(
+        "redis에서 꺼낸 애: " + redisRepository.findById(refreshToken).get().getMemberId());
+    System.out.println(selectAccount(accounts));
     System.out.println("refreshToken: " + refreshToken);
     String loginAccountToken = securityService.createToken(accounts, EXP_TIME);
     System.out.println("accessToken: " + loginAccountToken);
@@ -171,7 +172,7 @@ public class UserService {
 
     System.out.println(refreshCookie.getName());
     System.out.println(loginAccountToken);
-  
+
     // 재로그인 요청
 
     System.out.println("AccessToken 재요청 값:" + createAccessTokenToRefreshToken(refreshToken));
