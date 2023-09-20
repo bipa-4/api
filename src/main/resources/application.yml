@@ -11,8 +11,8 @@ spring:
       maxRequestSize: 50MB
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    #password: ${MYSQL_PASSWORD}
-    #url: jdbc:mysql://${MY_SQL_HOST}:${MY_SQL_PORT}/${DATA_BASE_NAME}?useSSL=false&characterEncoding=UTF-8&serverTimezone=UTC
+    password: ${MYSQL_PASSWORD}
+    url: jdbc:mysql://${MY_SQL_HOST}:${MY_SQL_PORT}/${DATA_BASE_NAME}?useSSL=false&characterEncoding=UTF-8&serverTimezone=UTC
     username: ${MYSQL_USER_NAME}
   jpa: # https://victorydntmd.tistory.com/323
     database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
