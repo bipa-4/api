@@ -67,4 +67,26 @@ public class SecurityService {
     dummyAccount.setLoginId(claims.getSubject());
     return accountDAO.findAccount(dummyAccount);
   }
+
+  public Accounts getSubjectAccount(String token) {
+    Claims claims = Jwts.parserBuilder()
+        .setSigningKey(DatatypeConverter.parseBase64Binary(SECRET_KEY))
+        .build()
+        .parseClaimsJws(token)
+        .getBody();
+
+    // JWT의 만료 시간 (exp) 확인
+    Date expirationDate = claims.getExpiration();
+    Date now = new Date();
+
+    if (expirationDate != null && expirationDate.after(now)) {
+      // JWT가 유효하면 사용자 정보를 가져옴
+      Accounts dummyAccount = new Accounts();
+      dummyAccount.setLoginId(claims.getSubject());
+      return accountDAO.selectAccount(dummyAccount);
+    } else {
+      return null;
+    }
+  }
+
 }

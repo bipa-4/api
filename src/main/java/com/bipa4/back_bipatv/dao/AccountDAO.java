@@ -36,11 +36,6 @@ public class AccountDAO {
 
     return optAccount.orElse(null);
   }
-  public Accounts selectAccount1(Accounts accounts) {
-    Optional<Accounts> optAccount = accountRepository.findById(accounts.getAccountId());
-
-    return optAccount.orElse(null);
-  }
 
   //  @Transactional
 //  연산이 고립되어, 다른 연산과의 혼선으로 인해 잘못된 값을 가져오는 경우가 방지된다.
@@ -49,4 +44,5 @@ public class AccountDAO {
   public void createAccount(Accounts accounts) {
     accountRepository.save(accounts);
   }
+
 }
