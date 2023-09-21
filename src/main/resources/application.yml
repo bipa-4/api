@@ -24,9 +24,12 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  h2:
+    console:
+      enabled: true
 
 
-  # developers.kakao?? Application ?? ?? REST API ??, RedirectURL? ?????. ??? ?????.
+
 oauth2:
   kakao:
     token-uri: ${KTOKEN_URI}
