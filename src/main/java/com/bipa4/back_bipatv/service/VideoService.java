@@ -1,25 +1,23 @@
 package com.bipa4.back_bipatv.service;
 
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.CannedAccessControlList;
-import com.amazonaws.services.s3.model.PutObjectRequest;
+//import com.amazonaws.services.s3.AmazonS3Client;
+
 import com.bipa4.back_bipatv.dto.video.GetAllResponseDto;
-import com.bipa4.back_bipatv.dto.video.PostSaveRequestDto;
+import com.bipa4.back_bipatv.dto.video.PostUploadRequestDto;
 import com.bipa4.back_bipatv.repository.VideoChannelRepository;
-import java.io.IOException;
+import com.bipa4.back_bipatv.repository.VideoRepository;
 import java.util.List;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 @RequiredArgsConstructor
 @Service
 public class VideoService {
 
+  private static VideoRepository videoRepository;
   private final VideoChannelRepository videoChannelRepository;
-  private final AmazonS3Client amazonS3Client;
 
   @Value("${cloud.aws.s3.bucket}")
   private String bucket;
@@ -51,19 +49,19 @@ public class VideoService {
 
   // Upload to db.
   @Transactional
-  public void upload(PostSaveRequestDto requestDto) {
-//    videoRepository.save(requestDto.toEntity());
+  public int upload(PostUploadRequestDto requestDto) {
+    return videoRepository.insert(requestDto);
   }
 
   // Upload to storage.
-  public String uploadFile(MultipartFile file, String dirName, String fileName) throws IOException {
-    String filePath = dirName + "/" + fileName;
-
-    amazonS3Client.putObject(
-        new PutObjectRequest(bucket, filePath, file.getInputStream(), null).withCannedAcl(
-            CannedAccessControlList.PublicRead));
-    return amazonS3Client.getUrl(bucket, filePath).toString();
-  }
+//  public String uploadFile(MultipartFile file, String dirName, String fileName) throws IOException {
+//    String filePath = dirName + "/" + fileName;
+//
+//    amazonS3Client.putObject(
+//        new PutObjectRequest(bucket, filePath, file.getInputStream(), null).withCannedAcl(
+//            CannedAccessControlList.PublicRead));
+//    return amazonS3Client.getUrl(bucket, filePath).toString();
+//  }
 
 //  public List<GetAllResponseDto> pageViews(int page, int size) {
 //    return videoChannelRepository.findAllWithChannelUsingJoin();
