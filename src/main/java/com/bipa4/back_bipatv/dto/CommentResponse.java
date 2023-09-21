@@ -1,6 +1,6 @@
 package com.bipa4.back_bipatv.dto;
 
-public interface CommentDTO {
+public interface CommentResponse {
 
     String getProfile_url();
     String getName();
