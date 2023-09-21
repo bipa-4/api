@@ -27,23 +27,31 @@ public class CommentController {
         return list;
     }
 
-    @PostMapping("/comment")
+    @PostMapping("/comment")//insert
     public String insertComment(@RequestBody CommentRequest commentRequest, @RequestParam("code") String code){
-        return String.valueOf(commentService.saveComment(commentRequest));
         /**
          * 서비스의 return 값이 boolean이고 Controller의 리턴값이 String이어서
          * String.valueOf()를 써서 boolean => String 바꿔줌
          */
-        if(securityService.getSubject(code)){
 
-        }else{}
+        if(securityService.getSubject(code)) {
+            return String.valueOf(commentService.saveComment(commentRequest));
 
+        }else{
+            return "권한없음";
+        }
+        
     }
 
     @PutMapping("/comment")
-    public String updateComment(@RequestBody CommentRequest commentRequest){
+    public String updateComment(@RequestBody CommentRequest commentRequest, @RequestParam("code") String code){
 
-        return String.valueOf(commentService.saveComment(commentRequest));
+        if(securityService.getSubject(code)) {
+            return String.valueOf(commentService.saveComment(commentRequest));
+
+        }else{
+            return "권한없음";
+        }
     }
 
 

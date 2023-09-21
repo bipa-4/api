@@ -159,10 +159,10 @@ public class UserService {
       RefreshToken Rtoken = new RefreshToken(refreshToken, accounts.getLoginId());
       redisRepository.save(Rtoken);
     }
-//    System.out.println(
-//        "redis에서 꺼낸 애: " + redisRepository.findById(refreshToken).get().getRefreshToken());
-//    System.out.println(
-//        "redis에서 꺼낸 애: " + redisRepository.findById(refreshToken).get().getMemberId());
+    System.out.println(
+        "redis에서 꺼낸 애: " + redisRepository.findById(refreshToken).get().getRefreshToken());
+    System.out.println(
+        "redis에서 꺼낸 애: " + redisRepository.findById(refreshToken).get().getMemberId());
     System.out.println("refreshToken: " + refreshToken);
     String loginAccountToken = securityService.createToken(accounts, EXP_TIME);
     System.out.println("accessToken: " + loginAccountToken);

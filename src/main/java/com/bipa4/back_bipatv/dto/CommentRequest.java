@@ -18,12 +18,25 @@ import java.sql.Timestamp;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CommentRequest {
+
     private int commentId;
     private String content;
     private int parentChild;
-    private int sort;
     private int groupIndex;
     private Timestamp createAt;
     private int videoId;
     private int accountId;
+    @Override
+    public String toString() {
+        return "CommentRequest{" +
+                "commentId=" + commentId +
+                ", content='" + content + '\'' +
+                ", parentChild=" + parentChild +
+                ", groupIndex=" + groupIndex +
+                ", createAt=" + createAt +
+                ", videoId=" + videoId +
+                ", accountId=" + accountId +
+                '}';
+    }
+
 }
