@@ -1,6 +1,7 @@
 package com.bipa4.back_bipatv.repository;
 
 import com.bipa4.back_bipatv.dto.video.GetAllResponseDto;
+import com.bipa4.back_bipatv.dto.video.GetSearchResponseDto;
 import com.bipa4.back_bipatv.entity.Videos;
 import java.util.List;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -51,5 +52,14 @@ public interface VideoChannelRepository extends JpaRepository<Videos, Long> {
           + "set view_cnt = read_cnt\n"
           + "where v.video_id = vl.video_id;", nativeQuery = true)
   int updateViews();
+
+
+  @Modifying
+  @Query(value =
+      "SELECT video_id, v.content, create_at, v.private_type, read_cnt, thumbnail, title, profile_url, name FROM videos v\n"
+          + "    left outer join channels c on v.channel_id = c.channel_id\n"
+          + "    WHERE MATCH (v.title, v.content)\n"
+          + "    AGAINST (:searchQuery WITH QUERY EXPANSION)", nativeQuery = true)
+  List<GetSearchResponseDto> findBySearchQuery(@Param("searchQuery") String searchQuery);
 
 }

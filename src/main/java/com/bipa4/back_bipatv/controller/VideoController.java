@@ -2,6 +2,7 @@ package com.bipa4.back_bipatv.controller;
 
 import com.bipa4.back_bipatv.dto.video.GetAllResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
+import com.bipa4.back_bipatv.dto.video.GetSearchResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetUrlResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.dto.video.PostUploadRequestDto;
@@ -115,10 +116,10 @@ public class VideoController {
 
   // 영상 검색
   @GetMapping("/search")
-  public ResponseEntity<List<GetVideoResponseDto>> search(
+  public ResponseEntity<List<GetSearchResponseDto>> search(
       @RequestParam("search_query") String searchQuery) {
-    return new ResponseEntity<List<GetVideoResponseDto>>(
-        videoRepository.findBysearchQuery(searchQuery), HttpStatus.OK);
+    return new ResponseEntity<List<GetSearchResponseDto>>(
+        videoService.search(searchQuery), HttpStatus.OK);
   }
 
   // 영상 업로드(S3) + 영상 정보 업로드(DB) [기존 방식 - 백엔드에서 영상 올리기] 삭제 금지 !!!!!!
