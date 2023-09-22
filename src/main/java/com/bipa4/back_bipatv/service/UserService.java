@@ -6,6 +6,8 @@ import com.bipa4.back_bipatv.dataType.ELogin_Type;
 import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.entity.Channels;
 import com.bipa4.back_bipatv.entity.RefreshToken;
+import com.bipa4.back_bipatv.exception.ResourceNotFoundException;
+import com.bipa4.back_bipatv.repository.AccountRepository;
 import com.bipa4.back_bipatv.repository.RedisRepository;
 import com.bipa4.back_bipatv.security.SecurityService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -14,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import javax.servlet.http.Cookie;
+import javax.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
@@ -47,15 +50,13 @@ public class UserService {
   private RedisRepository redisRepository;
   @Autowired
   private ChannelService channelService;
+  @Autowired
+  private AccountRepository accountRepository;
 
   private void insertUser(Accounts accounts, String refreshToken) {
 
     Timestamp now = new Timestamp(System.currentTimeMillis());
-//    accounts.setName(accounts.getName());//이름 권한을 카카오 문서 동의가 안됨-> 닉네임으로 대체
-//    accounts.setLoginId(accounts.getLoginId());//Id 형식은 kakao
-//    accounts.setLoginType(accounts.getLoginType());
     accounts.setJoinDate(now);
-//    accounts.setRefreshToken(refreshToken);
     System.out.println(accounts);
     accountDAO.createAccount(accounts);
 
@@ -65,6 +66,8 @@ public class UserService {
     Channels channels = new Channels();
     channels.setName(accounts.getLoginId() + "_Channel");
     channels.setAccounts(accounts);
+    channels.setProfileUrl(accounts.getProfileUrl());
+    channels.setContent(accounts.getName() + "의 채널");
     channelDAO.createChannel(channels);
   }
 
@@ -125,7 +128,7 @@ public class UserService {
     String accessToken = getAccessToken(code, registrationId);
     String refreshToken = securityService.createRefreshToken();
     JsonNode userResourceNode = getUserResource(accessToken, registrationId);
-
+    System.out.println(userResourceNode);
     Accounts accounts = new Accounts();
 
     switch (registrationId) {
@@ -133,6 +136,7 @@ public class UserService {
         accounts.setLoginId("google_" + userResourceNode.get("id").asText());
         accounts.setEMail(userResourceNode.get("email").asText());
         accounts.setName(userResourceNode.get("name").asText());
+        accounts.setProfileUrl(userResourceNode.get("picture").asText());
         accounts.setLoginType(ELogin_Type.GOOGLE);
         System.out.println(accounts);
         break;
@@ -143,6 +147,7 @@ public class UserService {
         accounts.setName(
             userResourceNode.get("kakao_account").get("profile").get("nickname").asText());
         accounts.setLoginType(ELogin_Type.KAKAO);
+        accounts.setProfileUrl(userResourceNode.get("properties").get("thumbnail_image").asText());
         System.out.println(accounts);
         break;
       }
@@ -159,11 +164,10 @@ public class UserService {
       RefreshToken Rtoken = new RefreshToken(refreshToken, accounts.getLoginId());
       redisRepository.save(Rtoken);
     }
-    System.out.println(
-        "redis에서 꺼낸 애: " + redisRepository.findById(refreshToken).get().getRefreshToken());
-    System.out.println(
-        "redis에서 꺼낸 애: " + redisRepository.findById(refreshToken).get().getMemberId());
-    System.out.println(selectAccount(accounts));
+//    System.out.println(
+//        "redis에서 꺼낸 애: " + redisRepository.findById(refreshToken).get().getRefreshToken());
+//    System.out.println(
+//        "redis에서 꺼낸 애: " + redisRepository.findById(refreshToken).get().getMemberId());
     System.out.println("refreshToken: " + refreshToken);
     String loginAccountToken = securityService.createToken(accounts, EXP_TIME);
     System.out.println("accessToken: " + loginAccountToken);
@@ -172,9 +176,9 @@ public class UserService {
 
     System.out.println(refreshCookie.getName());
     System.out.println(loginAccountToken);
-
+//    System.out.println(securityService.getSubject(loginAccountToken)); accessToken검증
     // 재로그인 요청
-
+    
     System.out.println("AccessToken 재요청 값:" + createAccessTokenToRefreshToken(refreshToken));
     Map<String, Cookie> map = new HashMap<>();
     map.put("refreshToken", refreshCookie);
@@ -193,6 +197,27 @@ public class UserService {
     } else {//재 로그인 요청
       return "재로그인해주세요";
     }
+  }
+
+  @Transactional
+  public Accounts updateAccount(Long accountId, Accounts accounts) {
+    Accounts user = accountRepository.findById(accountId).orElse(null);
+
+    if (user != null) {
+      if (user.getProfileUrl() == null) {
+        user.setProfileUrl("");
+      }
+      System.out.println(user);
+      if (!user.getProfileUrl().equals(accounts.getProfileUrl())) {
+        user.setProfileUrl(accounts.getProfileUrl());
+      }
+      if (!(user.getName().equals(accounts.getName()))) {
+        user.setName(accounts.getName());
+      }
+      return accountRepository.save(user);
+    }
+    throw new ResourceNotFoundException(
+        "User with ID " + accountId + " not found"); // 리소스를 찾지 못한 경우 예외 던지기
   }
 
 }

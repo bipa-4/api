@@ -1,6 +1,6 @@
 package com.bipa4.back_bipatv.repository;
 
-import com.bipa4.back_bipatv.dto.CommentDTO;
+import com.bipa4.back_bipatv.dto.CommentResponse;
 import com.bipa4.back_bipatv.entity.Comments;
 import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,7 +17,17 @@ public interface CommentRepository extends JpaRepository<Comments, Integer> {
             "ON comments.account_id = accounts.account_id " +
             "WHERE video_id = :videoId " +
             "ORDER BY comments.create_at", nativeQuery = true)
-    List<CommentDTO> findAllComments(@Param("videoId") int videoId);
+    List<CommentResponse> findAllComments(@Param("videoId") int videoId);
+
+
+
+
+
+
+
+
+
+
 
     //QueryDsl ->
 }

@@ -34,7 +34,7 @@ public class AccountDAO {
   public Accounts selectAccount(Accounts accounts) {
     Optional<Accounts> optAccount = accountRepository.findByLoginId(accounts.getLoginId());
 
-    return optAccount.get();
+    return optAccount.orElse(null);
   }
 
   //  @Transactional
@@ -44,4 +44,5 @@ public class AccountDAO {
   public void createAccount(Accounts accounts) {
     accountRepository.save(accounts);
   }
+
 }
