@@ -182,11 +182,7 @@ public class UserService {
     String loginAccountToken = securityService.createToken(accounts, EXP_TIME);
     System.out.println("accessToken: " + loginAccountToken);
     Cookie refreshCookie = createCookie("RefreshToken", refreshToken);
-    refreshCookie.setHttpOnly(true);
-    refreshCookie.setPath("/");
     Cookie accessCookie = createCookie("AccessToken", loginAccountToken);
-    accessCookie.setHttpOnly(true);
-    accessCookie.setPath("/");
 
     System.out.println(refreshCookie.getName());
     System.out.println(loginAccountToken);

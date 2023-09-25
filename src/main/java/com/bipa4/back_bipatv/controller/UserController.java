@@ -42,10 +42,19 @@ public class UserController {
       HttpServletResponse httpresponse) {
 
     Map<String, Cookie> cookie = userService.socialLogin(code, registrationId);
-    httpresponse.addCookie(cookie.get("refreshToken"));
-    httpresponse.addCookie(cookie.get("accessToken"));
+    Cookie refreshCookie = cookie.get("refreshToken");
+    System.out.println(refreshCookie.getName() + ":" + refreshCookie.getValue());
+    refreshCookie.setPath("/");
+    refreshCookie.setHttpOnly(true);
 
-    return cookie.get("refreshToken").getName();
+    Cookie accessCookie = cookie.get("accessToken");
+    System.out.println(accessCookie.getName() + ":" + accessCookie.getValue());
+    accessCookie.setHttpOnly(true);
+    accessCookie.setPath("/");
+
+    httpresponse.addCookie(refreshCookie);
+
+    return cookie.get("accessToken").getValue();
   }
 
   @ApiOperation(value = "Get_Account", notes = "유저 정보 받기")
