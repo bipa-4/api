@@ -2,7 +2,6 @@ package com.bipa4.back_bipatv.service;
 
 //import com.amazonaws.services.s3.AmazonS3Client;
 
-import com.bipa4.back_bipatv.dto.video.GetAllResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetSearchResponseDto;
 import com.bipa4.back_bipatv.dto.video.PostUploadRequestDto;
 import com.bipa4.back_bipatv.repository.VideoChannelRepository;
@@ -22,31 +21,6 @@ public class VideoService {
 
   @Value("${cloud.aws.s3.bucket}")
   private String bucket;
-
-  // View All
-  @Transactional
-  public List<GetAllResponseDto> findAll() {
-    return videoChannelRepository.findAllVideos();
-  }
-
-
-  // View By Category
-  @Transactional
-  public List<GetAllResponseDto> findByCategory(String category) {
-    return videoChannelRepository.findByCategory(category);
-  }
-
-  // View By Views
-  public List<GetAllResponseDto> findByViews() {
-    return videoChannelRepository.findByViews();
-  }
-
-  // Update Views Information
-  @Transactional
-  public int updateViews() {
-    return videoChannelRepository.updateViews();
-  }
-
 
   // Upload to db.
   @Transactional

@@ -10,7 +10,7 @@ public interface GetSearchResponseDto {
 
   String getThumbnail();
 
-  String getTitle();
+  String getVideo_title();
 
   String getContent();
 
@@ -22,7 +22,7 @@ public interface GetSearchResponseDto {
 
   Boolean getPrivate_type();
 
-  String getProfile_url();
+  String getChannel_profile_url();
 
-  String getName();
+  String getChannel_name();
 }
