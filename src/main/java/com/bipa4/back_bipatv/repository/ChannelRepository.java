@@ -15,7 +15,7 @@ public interface ChannelRepository extends JpaRepository<Channels, Long> {
       + "join accounts b "
       + "on a.account_id = b.account_id "
       + "where b.account_id = :accountId", nativeQuery = true)
-  Optional<Channels> findByChannelName(Long accountId);
+  Optional<Channels> findByChannelToAccountId(Long accountId);
 
   @Modifying
   @Query(value =
@@ -31,4 +31,6 @@ public interface ChannelRepository extends JpaRepository<Channels, Long> {
   List<CustomChannelTop10> findLimitTimeSumCnt();
 
   List<Channels> findAll();
+
+  Channels findByName(String channelName);
 }

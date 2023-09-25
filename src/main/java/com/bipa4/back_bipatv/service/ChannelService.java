@@ -53,4 +53,13 @@ public class ChannelService {
     throw new ResourceNotFoundException(
         "User Channel not found");
   }
+
+  @Transactional
+  public boolean validChannelName(String channelName) {
+    if (channelRepository.findByName(channelName) == null) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 }
