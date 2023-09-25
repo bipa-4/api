@@ -5,13 +5,13 @@ import com.bipa4.back_bipatv.dto.video.GetSearchResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetUrlResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.dto.video.PostUploadRequestDto;
-import com.bipa4.back_bipatv.entity.Channels;
+import com.bipa4.back_bipatv.dto.video.PutUpdateRequestDto;
 import com.bipa4.back_bipatv.repository.VideoRepository;
+import com.bipa4.back_bipatv.security.SecurityService;
 import com.bipa4.back_bipatv.service.PresignedUrlService;
 import com.bipa4.back_bipatv.service.VideoService;
 import io.swagger.annotations.Api;
 import java.util.List;
-import javax.transaction.Transactional;
 import javax.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -33,6 +34,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class VideoController {
 
   private final VideoService videoService;
+  private final SecurityService securityService;
   private final VideoRepository videoRepository;
   private final PresignedUrlService presignedUrlService;
 
@@ -77,22 +79,29 @@ public class VideoController {
 
   // 영상 상세 조회
   @GetMapping("/detail/{id}")
-  public ResponseEntity<List<GetDetailResponseDto>> getVideoDetail(@PathVariable("id") Long id) {
-    List<GetDetailResponseDto> video = videoRepository.getDetail(id);
-    return new ResponseEntity<List<GetDetailResponseDto>>(video, HttpStatus.OK);
+  public ResponseEntity<GetDetailResponseDto> getVideoDetail(@PathVariable("id") Long id) {
+    GetDetailResponseDto video = videoRepository.getDetail(id);
+    return new ResponseEntity<GetDetailResponseDto>(video, HttpStatus.OK);
+  }
+
+
+  // 본인 영상인지 확인
+  @GetMapping("/check")
+  public ResponseEntity<Boolean> checkVideos(@RequestParam("token") String token,
+      @RequestParam("videoId") Long videoId) {
+    Long owner = videoRepository.checkOwner(token, videoId);
+    if (owner > 0) {
+      return new ResponseEntity<>(true, HttpStatus.OK);
+    }
+    return new ResponseEntity<>(false, HttpStatus.BAD_REQUEST);
   }
 
 
   // 영상  삭제
-  @Transactional
   @DeleteMapping("/{id}")
-  public ResponseEntity<String> ResponseEntity(@PathVariable("id") Long id,
-      @RequestParam("channelId") Long channelId) {
+  public ResponseEntity<String> ResponseEntity(@PathVariable("id") Long id) {
 
-    Channels channel = new Channels();
-    channel.setChannelId(channelId);
-
-    return videoRepository.remove(id, channel) == 1 ? new ResponseEntity<>("댓글 삭제 성공",
+    return videoRepository.remove(id) == 1 ? new ResponseEntity<>("댓글 삭제 성공",
         HttpStatus.OK)
         : new ResponseEntity<>("비디오 삭제 실패", HttpStatus.INTERNAL_SERVER_ERROR);
   }
@@ -120,6 +129,17 @@ public class VideoController {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
+    return new ResponseEntity<>(HttpStatus.OK);
+  }
+
+
+  // 영상 수정
+  @PutMapping("/{id}")
+  public ResponseEntity<Long> update(@PathVariable Long id,
+      @RequestBody PutUpdateRequestDto responseDto) {
+    if (videoRepository.update(id, responseDto) == 0) {
+      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+    }
     return new ResponseEntity<>(HttpStatus.OK);
   }
 

@@ -10,6 +10,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import lombok.Data;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Data
@@ -25,5 +27,6 @@ public class Categorys {
   private CategoryName categoryNameId;
   @ManyToOne
   @JoinColumn(name = "video_id")
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private Videos videoId;
 }
