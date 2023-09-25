@@ -1,4 +1,4 @@
-package com.bipa4.back_bipatv.dto;
+package com.bipa4.back_bipatv.dto.comment;
 
 import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.entity.Videos;

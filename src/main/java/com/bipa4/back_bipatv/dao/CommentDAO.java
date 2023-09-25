@@ -1,19 +1,14 @@
 package com.bipa4.back_bipatv.dao;
 
-import com.bipa4.back_bipatv.dto.CommentRequest;
-import com.bipa4.back_bipatv.dto.CommentResponse;
-import com.bipa4.back_bipatv.entity.Accounts;
+import com.bipa4.back_bipatv.dto.comment.CommentResponse;
 import com.bipa4.back_bipatv.entity.Comments;
-import com.bipa4.back_bipatv.entity.Videos;
 import com.bipa4.back_bipatv.repository.CommentRepository;
 import com.bipa4.back_bipatv.repository.VideoRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
-import javax.xml.stream.events.Comment;
 import java.util.List;
-import java.util.Objects;
 
 @Repository
 @RequiredArgsConstructor
@@ -27,8 +22,13 @@ public class CommentDAO {
     AccountDAO accountDAO;
 
 
-    public List<CommentResponse> findAllComments(int videoId){
-        List<CommentResponse> list = commentRepository.findAllComments(videoId);
+    public List<CommentResponse> findParentComments(int videoId){
+        List<CommentResponse> list = commentRepository.findParentComments(videoId);
+        return list;
+    }
+
+    public List<CommentResponse> findChildComments(int videoId, int groupIndex){
+        List<CommentResponse> list = commentRepository.findChildComments(videoId,groupIndex);
         return list;
     }
 
