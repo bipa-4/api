@@ -145,11 +145,12 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
 
-    return jpaQueryFactory.select(
+    GetDetailResponseDto dto = jpaQueryFactory.select(
             Projections.bean(
                 GetDetailResponseDto.class,
                 qChannels.name.as("channelName"),
                 qChannels.profileUrl.as("channelProfileUrl"),
+                qChannels.channelId,
                 qVideos.videoUrl,
                 qVideos.title.as("videoTitle"),
                 qVideos.content,
@@ -160,6 +161,31 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
         .leftJoin(qVideos.channelId, qChannels)
         .where(qVideos.videoId.eq(id))
         .fetchOne();
+
+    Channels channel = new Channels();
+    channel.setChannelId(dto.getChannelId());
+
+    // 추천 영상 리스트 추출
+    List<GetVideoResponseDto> recommendedVideos = jpaQueryFactory.select(
+            Projections.bean(
+                GetVideoResponseDto.class,
+                qChannels.name.as("channelName"),
+                qChannels.profileUrl.as("channelProfileUrl"),
+                qVideos.thumbnail,
+                qVideos.title.as("videoTitle"),
+                qVideos.createAt,
+                qVideos.readCnt,
+                qVideos.videoId
+            )
+        )
+        .from(qVideos).leftJoin(qVideos.channelId, qChannels)
+        .where(qVideos.channelId.eq(channel).and(qVideos.videoId.ne(dto.getVideoId())))
+        .orderBy(qVideos.readCnt.desc())
+        .limit(10).fetch();
+
+    dto.setRecommendedList(recommendedVideos);
+
+    return dto;
   }
 
   // 영상 삭제

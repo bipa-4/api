@@ -78,8 +78,8 @@ public class VideoController {
 
 
   // 영상 상세 조회
-  @GetMapping("/detail/{id}")
-  public ResponseEntity<GetDetailResponseDto> getVideoDetail(@PathVariable("id") Long id) {
+  @GetMapping("/detail/{videoId}")
+  public ResponseEntity<GetDetailResponseDto> getVideoDetail(@PathVariable("videoId") Long id) {
     GetDetailResponseDto video = videoRepository.getDetail(id);
     return new ResponseEntity<GetDetailResponseDto>(video, HttpStatus.OK);
   }
