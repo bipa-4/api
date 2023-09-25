@@ -1,17 +1,20 @@
 package com.bipa4.back_bipatv.repository;
 
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
+import com.bipa4.back_bipatv.dto.video.GetSearchResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.dto.video.PostUploadRequestDto;
 import com.bipa4.back_bipatv.entity.Channels;
 import com.bipa4.back_bipatv.entity.QAccounts;
 import com.bipa4.back_bipatv.entity.QChannels;
 import com.bipa4.back_bipatv.entity.QVideos;
+import com.bipa4.back_bipatv.entity.Videos;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.sql.Timestamp;
 import java.util.List;
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -77,7 +80,8 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
             "INSERT INTO Videos (video_url, thumbnail, title, content, private_type, create_at, channel_id, read_cnt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
         .setParameter(1, videoResponseDto.getVideoUrl())
         .setParameter(2, videoResponseDto.getThumbnailUrl())
-        .setParameter(3, videoResponseDto.getTitle()).setParameter(4, videoResponseDto.getContent())
+        .setParameter(3, videoResponseDto.getTitle())
+        .setParameter(4, videoResponseDto.getContent())
         .setParameter(5, videoResponseDto.getPrivate_type())
         .setParameter(6, new Timestamp(System.currentTimeMillis())).setParameter(7, channel)
         .setParameter(8, 0).executeUpdate();
@@ -93,14 +97,15 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 영상 검색
   @Override
-  public List<GetVideoResponseDto> findBysearchQuery(String searchQuery) {
+  public List<GetSearchResponseDto> findBysearchQuery(String searchQuery) {
+    QVideos qVideos = QVideos.videos;
 
-    return entityManager.createNativeQuery(
-            "SELECT v.*, c.profile_url, c.name FROM videos v\n"
-                + "    left outer join channels c on v.channel_id = c.channel_id\n"
-                + "    WHERE MATCH (v.title, v.content)\n"
-                + "    AGAINST (:searchQuery WITH QUERY EXPANSION)")
-        .setParameter("searchQuery", searchQuery)
-        .getResultList();
+    Query q = entityManager.createNativeQuery(
+        "SELECT video_id, v.content, create_at, v.private_type, read_cnt, thumbnail, title, profile_url, name FROM videos v\n"
+            + "    left outer join channels c on v.channel_id = c.channel_id\n"
+            + "    WHERE MATCH (v.title, v.content)\n"
+            + "    AGAINST (? WITH QUERY EXPANSION)", Videos.class);
+    q.setParameter(1, searchQuery);
+    return q.getResultList();
   }
 }

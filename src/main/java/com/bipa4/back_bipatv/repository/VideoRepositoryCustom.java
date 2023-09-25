@@ -1,6 +1,7 @@
 package com.bipa4.back_bipatv.repository;
 
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
+import com.bipa4.back_bipatv.dto.video.GetSearchResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.dto.video.PostUploadRequestDto;
 import com.bipa4.back_bipatv.entity.Channels;
@@ -20,6 +21,6 @@ public interface VideoRepositoryCustom {
   @Modifying
   int insert(PostUploadRequestDto videoResponseDto);
 
-  @Modifying
-  List<GetVideoResponseDto> findBysearchQuery(String searchQuery);
+  List<GetSearchResponseDto> findBysearchQuery(String searchQuery);
+
 }

@@ -3,6 +3,7 @@ package com.bipa4.back_bipatv.service;
 //import com.amazonaws.services.s3.AmazonS3Client;
 
 import com.bipa4.back_bipatv.dto.video.GetAllResponseDto;
+import com.bipa4.back_bipatv.dto.video.GetSearchResponseDto;
 import com.bipa4.back_bipatv.dto.video.PostUploadRequestDto;
 import com.bipa4.back_bipatv.repository.VideoChannelRepository;
 import com.bipa4.back_bipatv.repository.VideoRepository;
@@ -51,6 +52,11 @@ public class VideoService {
   @Transactional
   public int upload(PostUploadRequestDto requestDto) {
     return videoRepository.insert(requestDto);
+  }
+
+  @Transactional
+  public List<GetSearchResponseDto> search(String searchQuery) {
+    return videoChannelRepository.findBySearchQuery(searchQuery);
   }
 
   // Upload to storage.
