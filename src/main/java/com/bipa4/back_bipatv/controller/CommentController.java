@@ -1,8 +1,7 @@
 package com.bipa4.back_bipatv.controller;
 
-import com.bipa4.back_bipatv.dto.CommentRequest;
-import com.bipa4.back_bipatv.dto.CommentResponse;
-import com.bipa4.back_bipatv.entity.Comments;
+import com.bipa4.back_bipatv.dto.comment.CommentRequest;
+import com.bipa4.back_bipatv.dto.comment.CommentResponse;
 import com.bipa4.back_bipatv.security.SecurityService;
 import com.bipa4.back_bipatv.service.CommentService;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +19,17 @@ public class CommentController {
 
     @Autowired
     private SecurityService securityService;
-    @GetMapping("/{videoId}/comment")
-    public List<CommentResponse> findAllComments(@PathVariable int videoId){
-        List<CommentResponse> list = commentService.findAllComments(videoId);
+
+    @GetMapping("/{videoId}/comment-parent")
+    public List<CommentResponse> findParentComments(@PathVariable int videoId){
+        List<CommentResponse> list = commentService.findParentComments(videoId);
+
+        return list;
+    }
+
+    @GetMapping("/{videoId}/comment-child")
+    public List<CommentResponse> findChildComments(@PathVariable int videoId, @RequestParam int groupIndex){
+        List<CommentResponse> list = commentService.findChildComments(videoId,groupIndex);
 
         return list;
     }
@@ -40,7 +47,7 @@ public class CommentController {
         }else{
             return "권한없음";
         }
-        
+
     }
 
     @PutMapping("/comment")
