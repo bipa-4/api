@@ -143,9 +143,17 @@ public class UserService {
       }
       case "kakao": {
         accounts.setLoginId("kakao_" + userResourceNode.get("id").asText());
-        accounts.setEMail(userResourceNode.get("kakao_account").get("email").asText());
-        accounts.setName(
-            userResourceNode.get("kakao_account").get("profile").get("nickname").asText());
+        if (userResourceNode.get("kakao_account").get("email").asText() == null) {
+          accounts.setEMail("");
+        } else {
+          accounts.setEMail(userResourceNode.get("kakao_account").get("email").asText());
+        }
+        if (userResourceNode.get("profile").get("nickname").asText() == null) {
+          accounts.setName("kakao_" + userResourceNode.get("id").asText());
+        } else {
+          accounts.setName(
+              userResourceNode.get("kakao_account").get("profile").get("nickname").asText());
+        }
         accounts.setLoginType(ELogin_Type.KAKAO);
         accounts.setProfileUrl(userResourceNode.get("properties").get("thumbnail_image").asText());
         System.out.println(accounts);
@@ -178,7 +186,7 @@ public class UserService {
     System.out.println(loginAccountToken);
 //    System.out.println(securityService.getSubject(loginAccountToken)); accessToken검증
     // 재로그인 요청
-    
+
     System.out.println("AccessToken 재요청 값:" + createAccessTokenToRefreshToken(refreshToken));
     Map<String, Cookie> map = new HashMap<>();
     map.put("refreshToken", refreshCookie);
