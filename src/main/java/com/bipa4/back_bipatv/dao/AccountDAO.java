@@ -37,6 +37,13 @@ public class AccountDAO {
     return optAccount.orElse(null);
   }
 
+
+  public Accounts selectAccountId(Accounts accounts){
+    Optional<Accounts> accounts1 = accountRepository.findById(accounts.getAccountId());
+
+    return accounts1.orElse(null);
+  }
+
   //  @Transactional
 //  연산이 고립되어, 다른 연산과의 혼선으로 인해 잘못된 값을 가져오는 경우가 방지된다.
 //  연산의 원자성이 보장되어, 연산이 도중에 실패할 경우 변경사항이 Commit되지 않는다.
