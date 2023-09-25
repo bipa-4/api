@@ -135,7 +135,15 @@ public class UserService {
       case "google": {
         accounts.setLoginId("google_" + userResourceNode.get("id").asText());
         accounts.setEMail(userResourceNode.get("email").asText());
-        accounts.setName(userResourceNode.get("name").asText());
+        JsonNode nameNode = userResourceNode.get("name");
+        if (nameNode != null && !nameNode.isNull()) {
+          accounts.setName(nameNode.asText());
+        } else {
+          // "name" 필드가 제공되지 않은 경우에 대한 처리를 여기에 추가합니다.
+          // 예를 들어, 기본 이름을 설정하거나 빈 문자열("")로 설정할 수 있습니다.
+          accounts.setName("google_" + userResourceNode.get("id").asText());
+        }
+//        accounts.setName(userResourceNode.get("name").asText());
         accounts.setProfileUrl(userResourceNode.get("picture").asText());
         accounts.setLoginType(ELogin_Type.GOOGLE);
         System.out.println(accounts);
@@ -143,9 +151,19 @@ public class UserService {
       }
       case "kakao": {
         accounts.setLoginId("kakao_" + userResourceNode.get("id").asText());
-        accounts.setEMail(userResourceNode.get("kakao_account").get("email").asText());
-        accounts.setName(
-            userResourceNode.get("kakao_account").get("profile").get("nickname").asText());
+        if (userResourceNode.get("kakao_account").get("email_needs_agreement")
+            .asBoolean()) {//사용자가 사용 동의하면 false값이 들어옴
+          accounts.setEMail("");
+        } else {
+          accounts.setEMail(userResourceNode.get("kakao_account").get("email").asText());
+        }
+        if (userResourceNode.get("kakao_account").get("profile_nickname_needs_agreement")
+            .asBoolean()) {
+          accounts.setName("kakao_" + userResourceNode.get("id").asText());
+        } else {
+          accounts.setName(
+              userResourceNode.get("kakao_account").get("profile").get("nickname").asText());
+        }
         accounts.setLoginType(ELogin_Type.KAKAO);
         accounts.setProfileUrl(userResourceNode.get("properties").get("thumbnail_image").asText());
         System.out.println(accounts);
@@ -174,12 +192,12 @@ public class UserService {
     Cookie refreshCookie = createCookie("RefreshToken", refreshToken);
     Cookie accessCookie = createCookie("AccessToken", loginAccountToken);
 
-    System.out.println(refreshCookie.getName());
-    System.out.println(loginAccountToken);
-//    System.out.println(securityService.getSubject(loginAccountToken)); accessToken검증
+//    System.out.println(refreshCookie.getName());
+//    System.out.println(loginAccountToken);
+//    System.out.println(securityService.get  Subject(loginAccountToken)); accessToken검증
     // 재로그인 요청
-    
-    System.out.println("AccessToken 재요청 값:" + createAccessTokenToRefreshToken(refreshToken));
+
+//    System.out.println("AccessToken 재요청 값:" + createAccessTokenToRefreshToken(refreshToken));
     Map<String, Cookie> map = new HashMap<>();
     map.put("refreshToken", refreshCookie);
     map.put("accessToken", accessCookie);

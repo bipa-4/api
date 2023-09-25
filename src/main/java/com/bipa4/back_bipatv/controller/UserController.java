@@ -12,6 +12,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,14 +39,28 @@ public class UserController {
 
   @ApiOperation(value = "Social_Login", notes = "소셜 로그인")
   @GetMapping("/auth/{registrationId}/callback")
-  public String doLogin(@RequestParam String code, @PathVariable String registrationId,
+  public void doLogin(@RequestParam String code, @PathVariable String registrationId,
       HttpServletResponse httpresponse) {
 
-    Map<String, Cookie> cookie = userService.socialLogin(code, registrationId);
-    httpresponse.addCookie(cookie.get("refreshToken"));
-    httpresponse.addCookie(cookie.get("accessToken"));
+    Map<String, Cookie> cookieMap = userService.socialLogin(code, registrationId);
 
-    return cookie.get("refreshToken").getName();
+    ResponseCookie refreshCookie = ResponseCookie.from("refreshToken",
+            cookieMap.get("refreshToken").getValue())
+        .path("/")
+        .httpOnly(true)
+        .secure(true)
+        .sameSite("None")
+        .build();
+    httpresponse.addHeader("Set-Cookie", refreshCookie.toString());
+
+    ResponseCookie accessCookie = ResponseCookie.from("accessToken",
+            cookieMap.get("accessToken").getValue())
+        .path("/")
+        .httpOnly(true)
+        .secure(true)
+        .sameSite("None")
+        .build();
+    httpresponse.addHeader("Set-Cookie", accessCookie.toString());
   }
 
   @ApiOperation(value = "Get_Account", notes = "유저 정보 받기")
