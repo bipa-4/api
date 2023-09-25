@@ -143,12 +143,14 @@ public class UserService {
       }
       case "kakao": {
         accounts.setLoginId("kakao_" + userResourceNode.get("id").asText());
-        if (userResourceNode.get("kakao_account").get("email").asText() == null) {
+        if (userResourceNode.get("kakao_account").get("email_needs_agreement")
+            .asBoolean()) {//사용자가 사용 동의하면 false값이 들어옴
           accounts.setEMail("");
         } else {
           accounts.setEMail(userResourceNode.get("kakao_account").get("email").asText());
         }
-        if (userResourceNode.get("profile").get("nickname").asText() == null) {
+        if (userResourceNode.get("kakao_account").get("profile_nickname_needs_agreement")
+            .asBoolean()) {
           accounts.setName("kakao_" + userResourceNode.get("id").asText());
         } else {
           accounts.setName(
