@@ -46,10 +46,12 @@ public class UserController {
     System.out.println(refreshCookie.getName() + ":" + refreshCookie.getValue());
     refreshCookie.setPath("/");
     refreshCookie.setHttpOnly(true);
-
+    refreshCookie.setSecure(true);
+    
     Cookie accessCookie = cookie.get("accessToken");
     System.out.println(accessCookie.getName() + ":" + accessCookie.getValue());
     accessCookie.setHttpOnly(true);
+    accessCookie.setSecure(true);
     accessCookie.setPath("/");
 
     httpresponse.addCookie(refreshCookie);
