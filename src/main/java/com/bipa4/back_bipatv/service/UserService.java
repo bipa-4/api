@@ -184,9 +184,9 @@ public class UserService {
     Cookie refreshCookie = createCookie("RefreshToken", refreshToken);
     Cookie accessCookie = createCookie("AccessToken", loginAccountToken);
 
-    System.out.println(refreshCookie.getName());
-    System.out.println(loginAccountToken);
-//    System.out.println(securityService.getSubject(loginAccountToken)); accessToken검증
+//    System.out.println(refreshCookie.getName());
+//    System.out.println(loginAccountToken);
+//    System.out.println(securityService.get  Subject(loginAccountToken)); accessToken검증
     // 재로그인 요청
 
 //    System.out.println("AccessToken 재요청 값:" + createAccessTokenToRefreshToken(refreshToken));

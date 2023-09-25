@@ -39,29 +39,28 @@ public class UserController {
 
   @ApiOperation(value = "Social_Login", notes = "소셜 로그인")
   @GetMapping("/auth/{registrationId}/callback")
-  public String doLogin(@RequestParam String code, @PathVariable String registrationId,
+  public void doLogin(@RequestParam String code, @PathVariable String registrationId,
       HttpServletResponse httpresponse) {
 
-    Map<String, Cookie> cookie = userService.socialLogin(code, registrationId);
-    Cookie refreshCookie = cookie.get("refreshToken");
-    refreshCookie.setPath("/");
-    refreshCookie.setHttpOnly(true);
-    refreshCookie.setSecure(true);
+    Map<String, Cookie> cookieMap = userService.socialLogin(code, registrationId);
 
-    Cookie accessCookie = cookie.get("accessToken");
-    accessCookie.setHttpOnly(true);
-    accessCookie.setSecure(true);
-    accessCookie.setPath("/");
-
-    ResponseCookie test_cookie = ResponseCookie.from("refreshToken",
-            cookie.get("refreshToken").getValue())
+    ResponseCookie refreshCookie = ResponseCookie.from("refreshToken",
+            cookieMap.get("refreshToken").getValue())
         .path("/")
         .httpOnly(true)
         .secure(true)
         .sameSite("None")
         .build();
-    httpresponse.addHeader("Set-Cookie", test_cookie.toString());
-    return accessCookie.getValue();
+    httpresponse.addHeader("Set-Cookie", refreshCookie.toString());
+
+    ResponseCookie accessCookie = ResponseCookie.from("accessToken",
+            cookieMap.get("accessToken").getValue())
+        .path("/")
+        .httpOnly(true)
+        .secure(true)
+        .sameSite("None")
+        .build();
+    httpresponse.addHeader("Set-Cookie", accessCookie.toString());
   }
 
   @ApiOperation(value = "Get_Account", notes = "유저 정보 받기")
