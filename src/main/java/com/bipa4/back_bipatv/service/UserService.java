@@ -135,7 +135,15 @@ public class UserService {
       case "google": {
         accounts.setLoginId("google_" + userResourceNode.get("id").asText());
         accounts.setEMail(userResourceNode.get("email").asText());
-        accounts.setName(userResourceNode.get("name").asText());
+        JsonNode nameNode = userResourceNode.get("name");
+        if (nameNode != null && !nameNode.isNull()) {
+          accounts.setName(nameNode.asText());
+        } else {
+          // "name" 필드가 제공되지 않은 경우에 대한 처리를 여기에 추가합니다.
+          // 예를 들어, 기본 이름을 설정하거나 빈 문자열("")로 설정할 수 있습니다.
+          accounts.setName("google_" + userResourceNode.get("id").asText());
+        }
+//        accounts.setName(userResourceNode.get("name").asText());
         accounts.setProfileUrl(userResourceNode.get("picture").asText());
         accounts.setLoginType(ELogin_Type.GOOGLE);
         System.out.println(accounts);
