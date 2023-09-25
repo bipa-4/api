@@ -21,7 +21,7 @@ public class ChannelDAO {
   }
 
   public Channels findChannel(Long accountId) {
-    return channelRepository.findByChannelName(accountId).get();
+    return channelRepository.findByChannelToAccountId(accountId).get();
   }
 
   public List<CustomChannelTop10> findLimitTimeSumCnt() {
