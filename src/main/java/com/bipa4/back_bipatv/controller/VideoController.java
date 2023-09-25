@@ -1,6 +1,5 @@
 package com.bipa4.back_bipatv.controller;
 
-import com.bipa4.back_bipatv.dto.video.GetAllResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetSearchResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetUrlResponseDto;
@@ -24,9 +23,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Api(tags = {"VideoController"})
+@RequestMapping("/video")
 @RequiredArgsConstructor
 @Controller
 public class VideoController {
@@ -40,7 +41,6 @@ public class VideoController {
   @GetMapping("/latest")
   public ResponseEntity<List<GetVideoResponseDto>> getAllVideos(@PathParam("page") int page,
       @PathParam("pageSize") int pageSize) {
-    System.out.println(page);
     List<GetVideoResponseDto> videos = videoRepository.getAllVideos(page, pageSize);
     return new ResponseEntity<List<GetVideoResponseDto>>(videos, HttpStatus.OK);
   }
@@ -48,20 +48,30 @@ public class VideoController {
 
   // 카테고리별 조회
   @GetMapping("/category/{category}")
-  public ResponseEntity<List<GetAllResponseDto>> getCategoryVideos(
-      @PathVariable("category") String category) {
-    List<GetAllResponseDto> videos = videoService.findByCategory(category);
-    return new ResponseEntity<List<GetAllResponseDto>>(videos, HttpStatus.OK);
+  public ResponseEntity<List<GetVideoResponseDto>> getCategoryVideos(
+      @PathVariable("category") String category, @PathParam("page") int page,
+      @PathParam("pageSize") int pageSize) {
+    System.out.println(category);
+    List<GetVideoResponseDto> videos = videoRepository.findByCategory(category, page, pageSize);
+    return new ResponseEntity<List<GetVideoResponseDto>>(videos, HttpStatus.OK);
+  }
+
+
+  // 카테고리 이름 리스트 조회
+  @GetMapping("/category")
+  public ResponseEntity<List> getCategoryVideos() {
+    List categorys = videoRepository.getCategoryNames();
+    return new ResponseEntity<List>(categorys, HttpStatus.OK);
   }
 
 
   // 조회수 급상승 TOP 10 + 디비 1시간 전 정보 저장
   @GetMapping("/top10")
   @Scheduled(cron = "0 0 0/1 * * *")
-  public ResponseEntity<List<GetAllResponseDto>> getViewsTop10Videos() {
-    List<GetAllResponseDto> videos = videoService.findByViews();
-    int result = videoService.updateViews();
-    return new ResponseEntity<List<GetAllResponseDto>>(videos, HttpStatus.OK);
+  public ResponseEntity<List<GetVideoResponseDto>> getViewsTop10Videos() {
+    List<GetVideoResponseDto> videos = videoRepository.findByViews();
+    int result = videoRepository.updateViews();
+    return new ResponseEntity<List<GetVideoResponseDto>>(videos, HttpStatus.OK);
   }
 
 

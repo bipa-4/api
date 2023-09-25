@@ -20,9 +20,10 @@ public class Categorys {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "category_id")
   private Long categoryId;
-  @Column(name = "name", nullable = false, length = 30)
-  private String name;
+  @ManyToOne
+  @JoinColumn(name = "category_name_id")
+  private CategoryName categoryNameId;
   @ManyToOne
   @JoinColumn(name = "video_id")
-  private Videos videos;
+  private Videos videoId;
 }
