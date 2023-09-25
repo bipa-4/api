@@ -47,13 +47,13 @@ public class UserController {
     refreshCookie.setPath("/");
     refreshCookie.setHttpOnly(true);
     refreshCookie.setSecure(true);
-    
+
     Cookie accessCookie = cookie.get("accessToken");
     System.out.println(accessCookie.getName() + ":" + accessCookie.getValue());
     accessCookie.setHttpOnly(true);
     accessCookie.setSecure(true);
     accessCookie.setPath("/");
-
+    httpresponse.addHeader("X_HEADER_CUSTOM", "TEST_VAULE");
     httpresponse.addCookie(refreshCookie);
 
     return cookie.get("accessToken").getValue();
