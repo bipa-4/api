@@ -12,6 +12,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -43,20 +44,24 @@ public class UserController {
 
     Map<String, Cookie> cookie = userService.socialLogin(code, registrationId);
     Cookie refreshCookie = cookie.get("refreshToken");
-    System.out.println(refreshCookie.getName() + ":" + refreshCookie.getValue());
     refreshCookie.setPath("/");
     refreshCookie.setHttpOnly(true);
     refreshCookie.setSecure(true);
 
     Cookie accessCookie = cookie.get("accessToken");
-    System.out.println(accessCookie.getName() + ":" + accessCookie.getValue());
     accessCookie.setHttpOnly(true);
     accessCookie.setSecure(true);
     accessCookie.setPath("/");
-    httpresponse.addHeader("X_HEADER_CUSTOM", "TEST_VAULE");
-    httpresponse.addCookie(refreshCookie);
 
-    return cookie.get("accessToken").getValue();
+    ResponseCookie test_cookie = ResponseCookie.from("refreshToken",
+            cookie.get("refreshToken").getValue())
+        .path("/")
+        .httpOnly(true)
+        .secure(true)
+        .sameSite("None")
+        .build();
+    httpresponse.addHeader("Set-Cookie", test_cookie.toString());
+    return accessCookie.getValue();
   }
 
   @ApiOperation(value = "Get_Account", notes = "유저 정보 받기")
