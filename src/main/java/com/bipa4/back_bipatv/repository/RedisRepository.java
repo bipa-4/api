@@ -11,13 +11,16 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class RedisRepository {
 
-  private static final long REFRESH_TOKEN_EXPIRATION_SECONDS = 60 * 60 * 24L; // 토큰 만료 시간 (10일)
+  private static final long REFRESH_TOKEN_EXPIRATION_SECONDS = 60 * 60 * 6L; // 토큰 만료 시간 (6시간)
 
   private final RedisTemplate<String, String> redisTemplate;
+  private final RedisTemplate<String, String> redisBlackListTemplate;
 
   @Autowired
-  public RedisRepository(RedisTemplate<String, String> redisTemplate) {
+  public RedisRepository(RedisTemplate<String, String> redisTemplate,
+      RedisTemplate<String, String> redisBlackListTemplate) {
     this.redisTemplate = redisTemplate;
+    this.redisBlackListTemplate = redisBlackListTemplate;
   }
 
   // Refresh Token을 Redis에 저장합니다.
@@ -39,4 +42,34 @@ public class RedisRepository {
     }
   }
 
+  public boolean delete(String refreshToken) {
+    if (redisTemplate.opsForValue().get(refreshToken) != null) {
+      redisTemplate.delete(refreshToken);
+      return true;
+    }
+    return false;
+  }
+
+  public void setBlackList(String accessTokenValue, String accessTokenName, Long expiration) {
+    ValueOperations<String, String> valueOperations = redisBlackListTemplate.opsForValue();
+    valueOperations.set(accessTokenValue, accessTokenName,
+        expiration, TimeUnit.SECONDS);
+  }
+
+  public String getBlackList(String accessTokenValue) {
+    return redisBlackListTemplate.opsForValue().get(accessTokenValue);
+  }
+
+  public boolean deleteBlackList(String accessTokenValue) {
+    if (redisBlackListTemplate.opsForValue().get(accessTokenValue) != null) {
+      redisBlackListTemplate.delete(accessTokenValue);
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+  public boolean hasKeyBlackList(String accessTokenValue) {
+    return redisBlackListTemplate.hasKey(accessTokenValue);
+  }
 }
