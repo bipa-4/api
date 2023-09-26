@@ -104,6 +104,28 @@ public class VideoController {
         videoService.search(searchQuery), HttpStatus.OK);
   }
 
+
+  // 좋아요
+  @ApiOperation(value = "좋아요", notes = "줗아요 버튼을 눌렀을 시")
+  @GetMapping("/detail/{videoId}/like")
+  public ResponseEntity<Boolean> like(@PathVariable("videoId") Long videoId,
+      @RequestParam("token") String token) {
+    return videoService.like(videoId, token) == 1 ? new ResponseEntity<>(true,
+        HttpStatus.OK)
+        : new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+
+  // 좋아요 취소
+  @ApiOperation(value = "좋아요 취소", notes = "줗아요 버튼을 다시 눌렀을 시")
+  @GetMapping("/detail/{videoId}/cancelLike")
+  public ResponseEntity<Boolean> cancelLike(@PathVariable("videoId") Long videoId,
+      @RequestParam("token") String token) {
+    return videoService.cancelLike(videoId, token) == 1 ? new ResponseEntity<>(true,
+        HttpStatus.OK)
+        : new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
   // 영상 업로드(S3) + 영상 정보 업로드(DB) [기존 방식 - 백엔드에서 영상 올리기]
 //  @PostMapping("/upload")
 //  public ResponseEntity uploadVideo(@RequestPart(value = "dto") PostSaveRequestDto requestDto,
