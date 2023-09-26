@@ -23,11 +23,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@Api(tags = {"readController"})
+@Api(tags = {"ReadController"})
 @RequestMapping("/read")
 @RequiredArgsConstructor
 @Controller
-public class readController {
+public class ReadController {
 
   private final VideoService videoService;
   private final CommentService commentService;
