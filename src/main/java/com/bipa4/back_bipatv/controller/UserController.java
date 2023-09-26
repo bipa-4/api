@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -47,6 +48,7 @@ public class UserController {
     ResponseCookie refreshCookie = ResponseCookie.from("refreshToken",
             cookieMap.get("refreshToken").getValue())
         .path("/")
+        .maxAge(60 * 60 * 6)//기간 1일 refreshToken도 6시간
         .httpOnly(true)
         .secure(true)
         .sameSite("None")
@@ -56,6 +58,7 @@ public class UserController {
     ResponseCookie accessCookie = ResponseCookie.from("accessToken",
             cookieMap.get("accessToken").getValue())
         .path("/")
+        .maxAge(60 * 60 * 2)//기간 2시간
         .httpOnly(true)
         .secure(true)
         .sameSite("None")
@@ -63,20 +66,20 @@ public class UserController {
     httpresponse.addHeader("Set-Cookie", accessCookie.toString());
   }
 
-  @ApiOperation(value = "Get_Account", notes = "유저 정보 받기")
-  @GetMapping("/account/{code}")
-  public ResponseEntity<Accounts> getAccountInfo(@PathVariable String code) {
-    Accounts loginAccounts = securityService.getSubjectAccount(code);
-    if (loginAccounts != null) {
-      return new ResponseEntity<>(loginAccounts, HttpStatus.OK);
-    } else {
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);// front에서 인증 재요청을 요청하기
-    }
-  }
+//  @ApiOperation(value = "Get_Account", notes = "유저 정보 받기")
+//  @GetMapping("/account/{code}")
+//  public ResponseEntity<Accounts> getAccountInfo(@PathVariable String code) {
+//    Accounts loginAccounts = securityService.getSubjectAccount(code);
+//    if (loginAccounts != null) {
+//      return new ResponseEntity<>(loginAccounts, HttpStatus.OK);
+//    } else {
+//      return new ResponseEntity<>(HttpStatus.NOT_FOUND);// front에서 인증 재요청을 요청하기
+//    }
+//  }
 
   @ApiOperation(value = "userUpdate", notes = "유저 정보 수정")
-  @PutMapping("/account/{code}")
-  public ResponseEntity<Accounts> updateAccount(@PathVariable String code,
+  @PutMapping("/account")
+  public ResponseEntity<Accounts> updateAccount(@CookieValue(value = "accessToken") String code,
       @RequestBody Accounts accounts) {
 
     Accounts loginAccount = securityService.getSubjectAccount(code);
@@ -99,5 +102,46 @@ public class UserController {
       return new ResponseEntity<>(url, HttpStatus.OK);
     }
     return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
+  }
+
+  @ApiOperation(value = "CheckAccount", notes = "accessToken에 맞는 Account반환")
+  @GetMapping("/account/check")
+  public ResponseEntity<Accounts> checkAccessTokenToAccount(
+      @CookieValue(name = "accessToken") String accessToken) {
+    System.out.println("accessToken:" + accessToken);
+    Accounts findAccount = securityService.getSubjectAccount(accessToken);
+    return findAccount == null ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
+        : new ResponseEntity<>(findAccount, HttpStatus.OK);
+  }
+
+  @ApiOperation(value = "Logout", notes = "로그아웃기능")
+  @PostMapping("account/logout")
+  public ResponseEntity<Boolean> doLogout(HttpServletResponse httpresponse,
+      @CookieValue(value = "refreshToken") String refreshToken,
+      @CookieValue(value = "accessToken") String accessToken) {
+
+    boolean result = userService.logout(refreshToken, accessToken);
+    //쿠키를 삭제하기 위해선 쿠키의 이름을 같게하고 유효기간을 0을 주어 삭제한다.
+    ResponseCookie refreshCookie = ResponseCookie.from("refreshToken",
+            "")
+        .path("/")
+        .maxAge(0)
+        .httpOnly(true)
+        .secure(true)
+        .sameSite("None")
+        .build();
+    httpresponse.addHeader("Set-Cookie", refreshCookie.toString());
+
+    ResponseCookie accessCookie = ResponseCookie.from("accessToken",
+            "")
+        .path("/")
+        .maxAge(0)
+        .httpOnly(true)
+        .secure(true)
+        .sameSite("None")
+        .build();
+    httpresponse.addHeader("Set-Cookie", accessCookie.toString());
+    return result ? new ResponseEntity<>(true, HttpStatus.OK)
+        : new ResponseEntity<>(false, HttpStatus.BAD_REQUEST);
   }
 }

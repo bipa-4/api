@@ -53,7 +53,7 @@ public class UserService {
   @Autowired
   private AccountRepository accountRepository;
 
-  private void insertUser(Accounts accounts, String refreshToken) {
+  private void insertUser(Accounts accounts) {
 
     Timestamp now = new Timestamp(System.currentTimeMillis());
     accounts.setJoinDate(now);
@@ -126,7 +126,7 @@ public class UserService {
   public Map<String, Cookie> socialLogin(String code,
       String registrationId) {//구글, 카카오에게 로그인 정보를 받은 후 실행되는거임 인증은 카카오랑 구글이 함
     String accessToken = getAccessToken(code, registrationId);
-    String refreshToken = securityService.createRefreshToken();
+
     JsonNode userResourceNode = getUserResource(accessToken, registrationId);
     System.out.println(userResourceNode);
     Accounts accounts = new Accounts();
@@ -139,11 +139,9 @@ public class UserService {
         if (nameNode != null && !nameNode.isNull()) {
           accounts.setName(nameNode.asText());
         } else {
-          // "name" 필드가 제공되지 않은 경우에 대한 처리를 여기에 추가합니다.
-          // 예를 들어, 기본 이름을 설정하거나 빈 문자열("")로 설정할 수 있습니다.
           accounts.setName("google_" + userResourceNode.get("id").asText());
         }
-//        accounts.setName(userResourceNode.get("name").asText());
+
         accounts.setProfileUrl(userResourceNode.get("picture").asText());
         accounts.setLoginType(ELogin_Type.GOOGLE);
         System.out.println(accounts);
@@ -175,29 +173,21 @@ public class UserService {
     }
     //유저 아이디에 대한 리프레쉬 토큰 검샘
     if (!findAccount(accounts)) {//
-      insertUser(accounts, refreshToken); //db에 그냥 refreshToken저장하려면 사용할 메소드
+      insertUser(accounts); //db에 그냥 refreshToken저장하려면 사용할 메소드
       insertChannels(accounts);
     }
+    String refreshToken = securityService.createRefreshToken(accounts);
+    RefreshToken Rtoken = null;
     if (redisRepository.findById(refreshToken).isEmpty()) {
-      RefreshToken Rtoken = new RefreshToken(refreshToken, accounts.getLoginId());
+      Rtoken = new RefreshToken(refreshToken, accounts.getLoginId());
       redisRepository.save(Rtoken);
     }
-//    System.out.println(
-//        "redis에서 꺼낸 애: " + redisRepository.findById(refreshToken).get().getRefreshToken());
-//    System.out.println(
-//        "redis에서 꺼낸 애: " + redisRepository.findById(refreshToken).get().getMemberId());
-    System.out.println("refreshToken: " + refreshToken);
+
     String loginAccountToken = securityService.createToken(accounts, EXP_TIME);
-    System.out.println("accessToken: " + loginAccountToken);
     Cookie refreshCookie = createCookie("RefreshToken", refreshToken);
     Cookie accessCookie = createCookie("AccessToken", loginAccountToken);
-
-//    System.out.println(refreshCookie.getName());
-//    System.out.println(loginAccountToken);
-//    System.out.println(securityService.get  Subject(loginAccountToken)); accessToken검증
-    // 재로그인 요청
-
-//    System.out.println("AccessToken 재요청 값:" + createAccessTokenToRefreshToken(refreshToken));
+    System.out.println("accessToken: " + loginAccountToken);
+    System.out.println("refreshToken: " + refreshToken);
     Map<String, Cookie> map = new HashMap<>();
     map.put("refreshToken", refreshCookie);
     map.put("accessToken", accessCookie);
@@ -238,4 +228,23 @@ public class UserService {
         "User with ID " + accountId + " not found"); // 리소스를 찾지 못한 경우 예외 던지기
   }
 
+  public boolean logout(String refreshToken, String accessToken) {
+    // 1. Access Token 검증
+    if (!securityService.isTokenValid(accessToken)) {//token값이 유효한가
+      throw new IllegalArgumentException("로그아웃 : 유효하지 않은 accessToken토큰입니다.");
+    }
+
+    // 2. Access Token 에서 authentication 을 가져옵니다.
+    Accounts accounts = securityService.getSubjectAccount(accessToken);
+
+    // 3. DB에 저장된 Refresh Token 제거
+    boolean flag1 = redisRepository.delete(refreshToken);
+    // 4. Access Token blacklist에 등록하여 만료시키기
+    // 해당 엑세스 토큰의 남은 유효시간을 얻음
+    Long expiration = securityService.getExpiration(accessToken);
+    redisRepository.setBlackList(accessToken, "accessToken",
+        expiration);
+    boolean flag2 = redisRepository.getBlackList(accessToken) != null;
+    return flag1 && flag2;
+  }
 }
