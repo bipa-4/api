@@ -107,8 +107,9 @@ public class UserController {
   @ApiOperation(value = "CheckAccount", notes = "accessToken에 맞는 Account반환")
   @GetMapping("/account/check")
   public ResponseEntity<Accounts> checkAccessTokenToAccount(
-      @CookieValue(value = "accessToken") Cookie accessCookie) {
-    Accounts findAccount = securityService.getSubjectAccount(accessCookie.getComment());
+      @CookieValue(name = "accessToken") String accessToken) {
+    System.out.println("accessToken:" + accessToken);
+    Accounts findAccount = securityService.getSubjectAccount(accessToken);
     return findAccount == null ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
         : new ResponseEntity<>(findAccount, HttpStatus.OK);
   }
@@ -116,10 +117,10 @@ public class UserController {
   @ApiOperation(value = "Logout", notes = "로그아웃기능")
   @PostMapping("account/logout")
   public ResponseEntity<Boolean> doLogout(HttpServletResponse httpresponse,
-      @CookieValue(value = "refreshToken") Cookie refreshTokenCookie,
-      @CookieValue(value = "accessToken") Cookie accessTokenCookie) {
+      @CookieValue(value = "refreshToken") String refreshToken,
+      @CookieValue(value = "accessToken") String accessToken) {
 
-    boolean result = userService.logout(refreshTokenCookie, accessTokenCookie);
+    boolean result = userService.logout(refreshToken, accessToken);
     //쿠키를 삭제하기 위해선 쿠키의 이름을 같게하고 유효기간을 0을 주어 삭제한다.
     ResponseCookie refreshCookie = ResponseCookie.from("refreshToken",
             "")

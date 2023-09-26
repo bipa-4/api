@@ -186,7 +186,8 @@ public class UserService {
     String loginAccountToken = securityService.createToken(accounts, EXP_TIME);
     Cookie refreshCookie = createCookie("RefreshToken", refreshToken);
     Cookie accessCookie = createCookie("AccessToken", loginAccountToken);
-
+    System.out.println("accessToken: " + loginAccountToken);
+    System.out.println("refreshToken: " + refreshToken);
     Map<String, Cookie> map = new HashMap<>();
     map.put("refreshToken", refreshCookie);
     map.put("accessToken", accessCookie);
@@ -227,23 +228,23 @@ public class UserService {
         "User with ID " + accountId + " not found"); // 리소스를 찾지 못한 경우 예외 던지기
   }
 
-  public boolean logout(Cookie refreshTokenCookie, Cookie accessTokenCookie) {
+  public boolean logout(String refreshToken, String accessToken) {
     // 1. Access Token 검증
-    if (!securityService.isTokenValid(accessTokenCookie.getComment())) {//token값이 유효한가
+    if (!securityService.isTokenValid(accessToken)) {//token값이 유효한가
       throw new IllegalArgumentException("로그아웃 : 유효하지 않은 accessToken토큰입니다.");
     }
 
     // 2. Access Token 에서 authentication 을 가져옵니다.
-    Accounts accounts = securityService.getSubjectAccount(accessTokenCookie.getComment());
+    Accounts accounts = securityService.getSubjectAccount(accessToken);
 
     // 3. DB에 저장된 Refresh Token 제거
-    boolean flag1 = redisRepository.delete(refreshTokenCookie.getComment());
+    boolean flag1 = redisRepository.delete(refreshToken);
     // 4. Access Token blacklist에 등록하여 만료시키기
     // 해당 엑세스 토큰의 남은 유효시간을 얻음
-    Long expiration = securityService.getExpiration(accessTokenCookie.getComment());
-    redisRepository.setBlackList(accessTokenCookie.getComment(), accessTokenCookie.getName(),
+    Long expiration = securityService.getExpiration(accessToken);
+    redisRepository.setBlackList(accessToken, "accessToken",
         expiration);
-    boolean flag2 = redisRepository.getBlackList(accessTokenCookie.getComment()) != null;
+    boolean flag2 = redisRepository.getBlackList(accessToken) != null;
     return flag1 && flag2;
   }
 }
