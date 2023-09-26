@@ -1,22 +1,17 @@
 package com.bipa4.back_bipatv.controller;
 
-import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetSearchResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetUrlResponseDto;
-import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.dto.video.PostUploadRequestDto;
 import com.bipa4.back_bipatv.dto.video.PutUpdateRequestDto;
-import com.bipa4.back_bipatv.repository.VideoRepository;
-import com.bipa4.back_bipatv.security.SecurityService;
 import com.bipa4.back_bipatv.service.PresignedUrlService;
 import com.bipa4.back_bipatv.service.VideoService;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 import java.util.List;
-import javax.websocket.server.PathParam;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,62 +29,14 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class VideoController {
 
   private final VideoService videoService;
-  private final SecurityService securityService;
-  private final VideoRepository videoRepository;
   private final PresignedUrlService presignedUrlService;
 
-
-  // 전체 조회 (최신 순으로)
-  @GetMapping("/latest")
-  public ResponseEntity<List<GetVideoResponseDto>> getAllVideos(@PathParam("page") int page,
-      @PathParam("pageSize") int pageSize) {
-    List<GetVideoResponseDto> videos = videoRepository.getAllVideos(page, pageSize);
-    return new ResponseEntity<List<GetVideoResponseDto>>(videos, HttpStatus.OK);
-  }
-
-
-  // 카테고리별 조회
-  @GetMapping("/category/{category}")
-  public ResponseEntity<List<GetVideoResponseDto>> getCategoryVideos(
-      @PathVariable("category") String category, @PathParam("page") int page,
-      @PathParam("pageSize") int pageSize) {
-    System.out.println(category);
-    List<GetVideoResponseDto> videos = videoRepository.findByCategory(category, page, pageSize);
-    return new ResponseEntity<List<GetVideoResponseDto>>(videos, HttpStatus.OK);
-  }
-
-
-  // 카테고리 이름 리스트 조회
-  @GetMapping("/category")
-  public ResponseEntity<List> getCategoryVideos() {
-    List categorys = videoRepository.getCategoryNames();
-    return new ResponseEntity<List>(categorys, HttpStatus.OK);
-  }
-
-
-  // 조회수 급상승 TOP 10 + 디비 1시간 전 정보 저장
-  @GetMapping("/top10")
-  @Scheduled(cron = "0 0 0/1 * * *")
-  public ResponseEntity<List<GetVideoResponseDto>> getViewsTop10Videos() {
-    List<GetVideoResponseDto> videos = videoRepository.findByViews();
-    int result = videoRepository.updateViews();
-    return new ResponseEntity<List<GetVideoResponseDto>>(videos, HttpStatus.OK);
-  }
-
-
-  // 영상 상세 조회
-  @GetMapping("/detail/{videoId}")
-  public ResponseEntity<GetDetailResponseDto> getVideoDetail(@PathVariable("videoId") Long id) {
-    GetDetailResponseDto video = videoRepository.getDetail(id);
-    return new ResponseEntity<GetDetailResponseDto>(video, HttpStatus.OK);
-  }
-
-
   // 본인 영상인지 확인
+  @ApiOperation(value = "본인의 영상이 맞는지 확인", notes = "토큰을 통해 본인의 영상이 맞는지 확인 (삭제 또는 업로드 등애 사용)")
   @GetMapping("/check")
   public ResponseEntity<Boolean> checkVideos(@RequestParam("token") String token,
       @RequestParam("videoId") Long videoId) {
-    Long owner = videoRepository.checkOwner(token, videoId);
+    Long owner = videoService.check(token, videoId);
     if (owner > 0) {
       return new ResponseEntity<>(true, HttpStatus.OK);
     }
@@ -98,16 +45,18 @@ public class VideoController {
 
 
   // 영상  삭제
+  @ApiOperation(value = "영상 삭제", notes = "영상 삭제 진행")
   @DeleteMapping("/{id}")
   public ResponseEntity<String> ResponseEntity(@PathVariable("id") Long id) {
 
-    return videoRepository.remove(id) == 1 ? new ResponseEntity<>("댓글 삭제 성공",
+    return videoService.removeVideo(id) == 1 ? new ResponseEntity<>("success",
         HttpStatus.OK)
-        : new ResponseEntity<>("비디오 삭제 실패", HttpStatus.INTERNAL_SERVER_ERROR);
+        : new ResponseEntity<>("fail", HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
 
   // S3 presigned-url 발급
+  @ApiOperation(value = "S3 presigned-url 발급", notes = "비디오 및 이미지 업로드를 위한 임시 url 발급")
   @PostMapping("/presigned")
   public ResponseEntity<GetUrlResponseDto> saveFile(@RequestParam("videoName") String videoName,
       @RequestParam("imageName") String imageName) {
@@ -123,9 +72,10 @@ public class VideoController {
 
 
   // 영상 업로드
+  @ApiOperation(value = "영상 업로드", notes = "영상 업로드 진행")
   @PostMapping("/upload")
   public ResponseEntity<Long> upload(@RequestBody PostUploadRequestDto responseDto) {
-    if (videoRepository.insert(responseDto) == 0) {
+    if (videoService.uploadVideo(responseDto) == 0) {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
@@ -134,10 +84,11 @@ public class VideoController {
 
 
   // 영상 수정
+  @ApiOperation(value = "영상 수정", notes = "영상 수정 진행")
   @PutMapping("/{id}")
   public ResponseEntity<Long> update(@PathVariable Long id,
-      @RequestBody PutUpdateRequestDto responseDto) {
-    if (videoRepository.update(id, responseDto) == 0) {
+      @RequestBody PutUpdateRequestDto requestDto) {
+    if (videoService.updateVideo(id, requestDto) == 0) {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
     return new ResponseEntity<>(HttpStatus.OK);
@@ -145,6 +96,7 @@ public class VideoController {
 
 
   // 영상 검색
+  @ApiOperation(value = "영상 검색", notes = "Full-text searches 진행")
   @GetMapping("/search")
   public ResponseEntity<List<GetSearchResponseDto>> search(
       @RequestParam("search_query") String searchQuery) {
@@ -152,7 +104,7 @@ public class VideoController {
         videoService.search(searchQuery), HttpStatus.OK);
   }
 
-  // 영상 업로드(S3) + 영상 정보 업로드(DB) [기존 방식 - 백엔드에서 영상 올리기] 삭제 금지 !!!!!!
+  // 영상 업로드(S3) + 영상 정보 업로드(DB) [기존 방식 - 백엔드에서 영상 올리기]
 //  @PostMapping("/upload")
 //  public ResponseEntity uploadVideo(@RequestPart(value = "dto") PostSaveRequestDto requestDto,
 //      @RequestParam(value = "file") MultipartFile multipartFile) {
