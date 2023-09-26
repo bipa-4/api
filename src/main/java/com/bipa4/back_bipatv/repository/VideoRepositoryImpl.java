@@ -5,6 +5,7 @@ import static com.querydsl.core.types.dsl.Expressions.asNumber;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.dto.video.PostUploadRequestDto;
+import com.bipa4.back_bipatv.dto.video.PutUpdateRequestDto;
 import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.entity.Channels;
 import com.bipa4.back_bipatv.entity.QAccounts;
@@ -28,8 +29,8 @@ import org.springframework.stereotype.Repository;
 public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   private final JPAQueryFactory jpaQueryFactory;
-  private final EntityManager entityManager;
   private final SecurityService securityService;
+  private final EntityManager entityManager;
 
   // 전체보기 (무한 스크롤)
   @Override
@@ -140,7 +141,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 상세보기
   @Override
-  public List<GetDetailResponseDto> getDetail(Long id) {
+  public GetDetailResponseDto getDetail(Long id) {
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
 
@@ -158,24 +159,64 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
             )).from(qVideos)
         .leftJoin(qVideos.channelId, qChannels)
         .where(qVideos.videoId.eq(id))
-        .fetch();
+        .fetchOne();
   }
 
   // 영상 삭제
   @Override
-  public Long remove(Long id, Channels channelId) {
+  public Long remove(Long id) {
     QVideos qVideos = QVideos.videos;
-    QViewLog qViewLog = QViewLog.viewLog;
 
-    Videos vidoes = new Videos();
-    vidoes.setVideoId(id);
+    Videos video = entityManager.find(Videos.class, id);
 
-    Long result = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
-        .where(qVideos.videoId.eq(id).and(qVideos.channelId.eq(channelId))).fetchCount();
-
-    return jpaQueryFactory.delete(qVideos)
-        .where(qVideos.videoId.eq(id)).execute();
+    if (video != null) {
+      entityManager.remove(video);
+      return 1L;
+    } else {
+      return 0L;
+    }
   }
+
+  // 영상 수정
+  @Override
+  public int update(Long id, PutUpdateRequestDto videoResponseDto) {
+    Videos video = entityManager.find(Videos.class, id);
+
+    if (video != null) {
+      video.setContent(videoResponseDto.getContent());
+      video.setCreateAt(new Timestamp(System.currentTimeMillis()));
+      video.setPrivateType(videoResponseDto.getPrivate_type());
+      video.setThumbnail(videoResponseDto.getThumbnailUrl());
+      video.setTitle(videoResponseDto.getTitle());
+      video.setVideoUrl(videoResponseDto.getVideoUrl());
+      video.setContent(videoResponseDto.getContent());
+    } else {
+      return 0;
+    }
+    return 1;
+  }
+
+  // 영상 본인 글인지 확인하기
+  @Override
+  public Long checkOwner(String token, Long videoId) {
+    QVideos qVideos = QVideos.videos;
+    QChannels qChannels = QChannels.channels;
+
+    Accounts account = securityService.getSubjectAccount(token);
+    Channels channel = jpaQueryFactory.selectFrom(qChannels)
+        .where(qChannels.accounts.eq(account)).fetchOne();
+
+    System.out.println(account);
+    System.out.println(channel);
+
+    Long result = jpaQueryFactory.select(qVideos.count()).from(qVideos)
+        .where(qVideos.channelId.eq(channel)).fetchFirst();
+
+    System.out.println(result);
+
+    return result;
+  }
+
 
   // 영상 업로드
   @Override
