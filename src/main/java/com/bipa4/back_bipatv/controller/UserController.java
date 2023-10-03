@@ -128,7 +128,6 @@ public class UserController {
         .httpOnly(true)
         .secure(true)
         .sameSite("None")
-        .domain("http://localhost:3000")
         .build();
     httpresponse.addHeader("Set-Cookie", accessCookie.toString());
     return result ? new ResponseEntity<>(true, HttpStatus.OK)
