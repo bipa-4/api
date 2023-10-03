@@ -2,7 +2,6 @@ package com.bipa4.back_bipatv.repository;
 
 import static com.querydsl.core.types.dsl.Expressions.asNumber;
 
-import com.bipa4.back_bipatv.dto.video.FavoritePKDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.dto.video.PostUploadRequestDto;
@@ -10,6 +9,7 @@ import com.bipa4.back_bipatv.dto.video.PutUpdateRequestDto;
 import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.entity.Channels;
 import com.bipa4.back_bipatv.entity.Favorite;
+import com.bipa4.back_bipatv.entity.FavoritePK;
 import com.bipa4.back_bipatv.entity.QAccounts;
 import com.bipa4.back_bipatv.entity.QCategoryName;
 import com.bipa4.back_bipatv.entity.QCategorys;
@@ -317,9 +317,9 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     Accounts account = securityService.getSubjectAccount(token);
 
     int result = entityManager.createNativeQuery(
-            "INSERT INTO Favorite VALUES (?, ?)")
-        .setParameter(1, videoId)
-        .setParameter(2, account.getAccountId())
+            "INSERT INTO favorite VALUES (?, ?)")
+        .setParameter(1, account.getAccountId())
+        .setParameter(2, videoId)
         .executeUpdate();
 
     return result;
@@ -329,13 +329,13 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
   // 좋아요 취소
   @Override
   public int minusLike(Long videoId, String token) {
-    QFavorite qFavorite = QFavorite.favorite;
-
     Videos video = new Videos();
     video.setVideoId(videoId);
     Accounts account = securityService.getSubjectAccount(token);
 
-    FavoritePKDto favoritePK = new FavoritePKDto(video, account);
+    FavoritePK favoritePK = new FavoritePK();
+    favoritePK.setVideos(video);
+    favoritePK.setAccounts(account);
 
     Favorite favorite = entityManager.find(Favorite.class, favoritePK);
 

@@ -115,7 +115,7 @@ public class UserController {
   }
 
   @ApiOperation(value = "Logout", notes = "로그아웃기능")
-  @PostMapping("account/logout")
+  @PostMapping("/account/logout")
   public ResponseEntity<Boolean> doLogout(HttpServletResponse httpresponse,
       @CookieValue(value = "refreshToken") String refreshToken,
       @CookieValue(value = "accessToken") String accessToken) {

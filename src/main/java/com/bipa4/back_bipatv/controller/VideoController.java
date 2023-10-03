@@ -8,6 +8,7 @@ import com.bipa4.back_bipatv.service.PresignedUrlService;
 import com.bipa4.back_bipatv.service.VideoService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -118,9 +119,10 @@ public class VideoController {
 
   // 좋아요 취소
   @ApiOperation(value = "좋아요 취소", notes = "줗아요 버튼을 다시 눌렀을 시")
-  @GetMapping("/detail/{videoId}/cancelLike")
-  public ResponseEntity<Boolean> cancelLike(@PathVariable("videoId") Long videoId,
-      @RequestParam("token") String token) {
+  @DeleteMapping("/detail/{videoId}/like")
+  public ResponseEntity<Boolean> cancelLike(
+      @ApiParam(value = "좋아요를 취소할 영상 아이디") @PathVariable("videoId") Long videoId,
+      @ApiParam(value = "좋아요를 취소할 유저의 토큰값") @RequestParam("token") String token) {
     return videoService.cancelLike(videoId, token) == 1 ? new ResponseEntity<>(true,
         HttpStatus.OK)
         : new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR);
