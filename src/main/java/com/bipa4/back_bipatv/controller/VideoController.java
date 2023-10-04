@@ -76,7 +76,8 @@ public class VideoController {
   // 영상 업로드
   @ApiOperation(value = "영상 업로드", notes = "영상 업로드 진행")
   @PostMapping("/upload")
-  public ResponseEntity<Long> upload(@RequestBody PostUploadRequestDto responseDto,
+  public ResponseEntity<Long> upload(
+      @RequestBody @ApiParam(value = "수정할 회원 정보", required = true) PostUploadRequestDto responseDto,
       @CookieValue(name = "accessToken") String accessToken) {
     System.out.println(accessToken);
     if (videoService.uploadVideo(responseDto, accessToken) == 0) {
