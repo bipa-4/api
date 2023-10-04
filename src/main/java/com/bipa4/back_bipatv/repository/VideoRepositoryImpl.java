@@ -10,7 +10,6 @@ import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.entity.Channels;
 import com.bipa4.back_bipatv.entity.Favorite;
 import com.bipa4.back_bipatv.entity.FavoritePK;
-import com.bipa4.back_bipatv.entity.QAccounts;
 import com.bipa4.back_bipatv.entity.QCategoryName;
 import com.bipa4.back_bipatv.entity.QCategorys;
 import com.bipa4.back_bipatv.entity.QChannels;
@@ -249,13 +248,11 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 영상 업로드
   @Override
-  public int insert(PostUploadRequestDto videoResponseDto) {
-    QVideos qVideos = QVideos.videos;
+  public int insert(PostUploadRequestDto videoResponseDto, String token) {
     QChannels qChannels = QChannels.channels;
-    QAccounts qAccounts = QAccounts.accounts;
 
     // chcannelId 가져오기.
-    Accounts account = securityService.getSubjectAccount(videoResponseDto.getUserToken());
+    Accounts account = securityService.getSubjectAccount(token);
     Long channelId = jpaQueryFactory.select(qChannels.channelId).from(qChannels)
         .where(qChannels.accounts.eq(account)).fetchOne();
 
@@ -264,20 +261,27 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
     // Videos 테이블 create.
     int result = entityManager.createNativeQuery(
-            "INSERT INTO Videos (video_url, thumbnail, title, content, private_type, create_at, channel_id, read_cnt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+            "INSERT INTO videos (video_url, thumbnail, title, content, private_type, create_at, channel_id, read_cnt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
         .setParameter(1, videoResponseDto.getVideoUrl())
         .setParameter(2, videoResponseDto.getThumbnailUrl())
         .setParameter(3, videoResponseDto.getTitle())
         .setParameter(4, videoResponseDto.getContent())
-        .setParameter(5, videoResponseDto.getPrivate_type())
-        .setParameter(6, new Timestamp(System.currentTimeMillis())).setParameter(7, channel)
+        .setParameter(5, videoResponseDto.getPrivateType())
+        .setParameter(6, new Timestamp(System.currentTimeMillis()))
+        .setParameter(7, channel)
         .setParameter(8, 0).executeUpdate();
 
-    // ViewLog 테이블 create.
     if (result != 0) {
+      // ViewLog 테이블 create.
       entityManager.createNativeQuery("INSERT INTO view_log VALUES ((SELECT LAST_INSERT_ID()), ?);")
           .setParameter(1, 0).executeUpdate();
+
+      // category 테이블 create.
+      entityManager.createNativeQuery(
+              "INSERT INTO categorys (video_id, category_name_id) VALUES ((SELECT LAST_INSERT_ID()), ?)")
+          .setParameter(1, videoResponseDto.getCategory()).executeUpdate();
     }
+
     return result;
   }
 

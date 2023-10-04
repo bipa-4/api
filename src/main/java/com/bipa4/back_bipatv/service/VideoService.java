@@ -21,12 +21,6 @@ public class VideoService {
   private final VideoRepository videoRepository;
   private final VideoChannelRepository videoChannelRepository;
 
-  // Upload to db.
-  @Transactional
-  public int upload(PostUploadRequestDto requestDto) {
-    return videoRepository.insert(requestDto);
-  }
-
   @Transactional
   public List<GetSearchResponseDto> search(String searchQuery) {
     return videoChannelRepository.findBySearchQuery(searchQuery);
@@ -42,8 +36,8 @@ public class VideoService {
   }
 
   @Transactional
-  public int uploadVideo(PostUploadRequestDto requestdto) {
-    return videoRepository.insert(requestdto);
+  public int uploadVideo(PostUploadRequestDto requestdto, String token) {
+    return videoRepository.insert(requestdto, token);
   }
 
   @Transactional

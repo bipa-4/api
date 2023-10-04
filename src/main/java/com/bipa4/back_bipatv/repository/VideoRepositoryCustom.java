@@ -20,7 +20,7 @@ public interface VideoRepositoryCustom {
 
   Long remove(Long id);
 
-  int insert(PostUploadRequestDto videoResponseDto);
+  int insert(PostUploadRequestDto videoResponseDto, String token);
 
   int update(Long id, PutUpdateRequestDto videoResponseDto);
 
