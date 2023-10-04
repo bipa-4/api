@@ -1,5 +1,6 @@
 package com.bipa4.back_bipatv.repository;
 
+import com.bipa4.back_bipatv.dto.video.GetCategoryNameRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.dto.video.PostUploadRequestDto;
@@ -24,7 +25,7 @@ public interface VideoRepositoryCustom {
 
   int update(Long id, PutUpdateRequestDto videoResponseDto);
 
-  List getCategoryNames();
+  List<GetCategoryNameRequestDto> getCategoryNames();
 
   Long checkOwner(String token, Long videoId);
 
