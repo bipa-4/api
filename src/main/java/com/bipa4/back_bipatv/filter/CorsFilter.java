@@ -24,7 +24,7 @@ public class CorsFilter implements Filter {
     String origin = request.getHeader("origin");
     System.out.println("origin값:" + origin);
 
-    if (origin.equals("http://localhost:8080") || origin.equals(
+    if (origin.equals("http://localhost:3000") || origin.equals(
         "https://bipa-streamwave.vercel.app")) {
       System.out.println("들어옴");
       response.setHeader("Access-Control-Allow-Origin", origin);
