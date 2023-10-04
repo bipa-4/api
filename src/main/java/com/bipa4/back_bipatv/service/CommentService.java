@@ -9,6 +9,11 @@ import com.bipa4.back_bipatv.entity.Comments;
 import com.bipa4.back_bipatv.entity.Videos;
 import com.bipa4.back_bipatv.repository.VideoRepository;
 import com.bipa4.back_bipatv.security.SecurityService;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -100,8 +105,9 @@ public class CommentService {
       comments.setGroupIndex(commentRequest.getGroupIndex());
     }
 
-    Instant instant = Instant.now();
-    commentRequest.setCreateAt(Timestamp.from(instant));
+    LocalDateTime now = LocalDateTime.now();
+
+    commentRequest.setCreateAt(Timestamp.valueOf(now.plusHours(9).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
     comments.setCreateAt(commentRequest.getCreateAt());
 
 
@@ -115,8 +121,9 @@ public class CommentService {
       comments.setContent(commentRequest.getContent());
     }
 
-    Instant instant = Instant.now();
-    commentRequest.setCreateAt(Timestamp.from(instant));
+    LocalDateTime now = LocalDateTime.now();
+
+    commentRequest.setCreateAt(Timestamp.valueOf(now.plusHours(9).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
     comments.setCreateAt(commentRequest.getCreateAt());
 
     return comments;
