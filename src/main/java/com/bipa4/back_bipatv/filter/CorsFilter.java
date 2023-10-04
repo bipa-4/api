@@ -25,7 +25,8 @@ public class CorsFilter implements Filter {
     System.out.println("origin값:" + origin);
 
     if (origin.equals("http://localhost:8080") || origin.equals(
-        "https://https://bipa-streamwave.vercel.app")) {
+        "https://bipa-streamwave.vercel.app")) {
+      System.out.println("들어옴");
       response.setHeader("Access-Control-Allow-Origin", origin);
     }
 //    response.setHeader("Access-Control-Allow-Origin", "https://bipa-streamwave.vercel.app");
