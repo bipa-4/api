@@ -36,14 +36,17 @@ public class VideoService {
     return videoRepository.checkOwner(token, videoId);
   }
 
+  @Transactional
   public Long removeVideo(Long videoId) {
     return videoRepository.remove(videoId);
   }
 
+  @Transactional
   public int uploadVideo(PostUploadRequestDto requestdto) {
     return videoRepository.insert(requestdto);
   }
 
+  @Transactional
   public int updateVideo(Long id, PutUpdateRequestDto requestDto) {
     return videoRepository.update(id, requestDto);
   }
@@ -61,6 +64,7 @@ public class VideoService {
     return videoRepository.getCategoryNames();
   }
 
+  @Transactional
   public List<GetVideoResponseDto> getViewsTop10Videos() {
     List<GetVideoResponseDto> videos = videoRepository.findByViews();
     int result = videoRepository.updateViews();
@@ -69,6 +73,28 @@ public class VideoService {
 
   public GetDetailResponseDto getVideoDetail(Long id) {
     return videoRepository.getDetail(id);
+  }
+
+  @Transactional
+  public int plusViews(Long videoId) {
+    return videoRepository.plusViews(videoId);
+  }
+
+  public boolean getFavorite(Long videoId, String token) {
+    if (videoRepository.getFavorite(videoId, token) == 1) {
+      return true;
+    }
+    return false;
+  }
+
+  @Transactional
+  public int like(Long videoId, String token) {
+    return videoRepository.plusLike(videoId, token);
+  }
+
+  @Transactional
+  public int cancelLike(Long videoId, String token) {
+    return videoRepository.minusLike(videoId, token);
   }
 
   // Upload to storage.

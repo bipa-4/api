@@ -18,6 +18,7 @@ public class GetDetailResponseDto {
   private String videoUrl;
   private String videoTitle;
   private String content;
+  private Boolean isFavorite;
   @DateTimeFormat(pattern = "yyyy-MM-dd")
   @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+9")
   private Timestamp createAt;
@@ -26,14 +27,15 @@ public class GetDetailResponseDto {
   private List<GetVideoResponseDto> recommendedList;
 
   public GetDetailResponseDto(String channelName, String channelProfileUrl, Long channelId,
-      String videoUrl, String videoTitle, String content, Timestamp createAt, Integer readCnt,
-      Long videoId, List<GetVideoResponseDto> recommendedList) {
+      String videoUrl, String videoTitle, String content, Boolean isFavorite, Timestamp createAt,
+      Integer readCnt, Long videoId, List<GetVideoResponseDto> recommendedList) {
     this.channelName = channelName;
     this.channelProfileUrl = channelProfileUrl;
     this.channelId = channelId;
     this.videoUrl = videoUrl;
     this.videoTitle = videoTitle;
     this.content = content;
+    this.isFavorite = isFavorite;
     this.createAt = createAt;
     this.readCnt = readCnt;
     this.videoId = videoId;

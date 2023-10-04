@@ -78,8 +78,11 @@ public class ReadController {
   // 영상 상세 조회
   @ApiOperation(value = "영상 상세 조회 및 추천 영상 조회", notes = "영상 클릭시 상세 정보 + 추천 영상 추출")
   @GetMapping("/video/detail/{videoId}")
-  public ResponseEntity<GetDetailResponseDto> getVideoDetail(@PathVariable("videoId") Long id) {
+  public ResponseEntity<GetDetailResponseDto> getVideoDetail(@PathVariable("videoId") Long id,
+      @RequestParam("token") String token) {
+    int viewsResult = videoService.plusViews(id); //  조회수 상승
     GetDetailResponseDto video = videoService.getVideoDetail(id);
+    video.setIsFavorite(videoService.getFavorite(id, token));// 좋아요 버튼 눌렀는지 여부
     return new ResponseEntity<GetDetailResponseDto>(video, HttpStatus.OK);
   }
 
@@ -100,7 +103,6 @@ public class ReadController {
   public List<CommentResponse> findChildComments(@PathVariable int videoId,
       @RequestParam int groupIndex) {
     List<CommentResponse> list = commentService.findChildComments(videoId, groupIndex);
-
     return list;
   }
 
