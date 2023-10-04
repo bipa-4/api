@@ -18,6 +18,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -79,10 +80,10 @@ public class ReadController {
   @ApiOperation(value = "영상 상세 조회 및 추천 영상 조회", notes = "영상 클릭시 상세 정보 + 추천 영상 추출")
   @GetMapping("/video/detail/{videoId}")
   public ResponseEntity<GetDetailResponseDto> getVideoDetail(@PathVariable("videoId") Long id,
-      @RequestParam("token") String token) {
+      @CookieValue(name = "accessToken") String accessToken) {
     int viewsResult = videoService.plusViews(id); //  조회수 상승
     GetDetailResponseDto video = videoService.getVideoDetail(id);
-    video.setIsFavorite(videoService.getFavorite(id, token));// 좋아요 버튼 눌렀는지 여부
+    video.setIsFavorite(videoService.getFavorite(id, accessToken));// 좋아요 버튼 눌렀는지 여부
     return new ResponseEntity<GetDetailResponseDto>(video, HttpStatus.OK);
   }
 

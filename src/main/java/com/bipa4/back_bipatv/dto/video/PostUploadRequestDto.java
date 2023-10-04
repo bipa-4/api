@@ -5,10 +5,12 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @Builder
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class PostUploadRequestDto {
@@ -17,18 +19,6 @@ public class PostUploadRequestDto {
   private String thumbnailUrl;
   private String title;
   private String content;
-  private Boolean private_type;
-  private String userToken;
-
-  @Override
-  public String toString() {
-    return "PostUploadRequestDto{" +
-        "videoUrl='" + videoUrl + '\'' +
-        ", thumbnailUrl='" + thumbnailUrl + '\'' +
-        ", title='" + title + '\'' +
-        ", content='" + content + '\'' +
-        ", private_type=" + private_type +
-        ", userToken='" + userToken + '\'' +
-        '}';
-  }
+  private Boolean privateType;
+  private int category;
 }
