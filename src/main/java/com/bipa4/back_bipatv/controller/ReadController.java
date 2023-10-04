@@ -2,6 +2,7 @@ package com.bipa4.back_bipatv.controller;
 
 import com.bipa4.back_bipatv.dto.channel.CustomChannelTop10;
 import com.bipa4.back_bipatv.dto.comment.CommentResponse;
+import com.bipa4.back_bipatv.dto.video.GetCategoryNameRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.entity.Accounts;
@@ -60,9 +61,9 @@ public class ReadController {
   // 카테고리 이름 리스트 조회
   @ApiOperation(value = "카테고리 리스트 조회", notes = "카테고리 메뉴 등을 위한 카테고리 이름 추출")
   @GetMapping("/video/category")
-  public ResponseEntity<List> getCategoryNames() {
-    List categorys = videoService.getCategoryNames();
-    return new ResponseEntity<List>(categorys, HttpStatus.OK);
+  public ResponseEntity<List<GetCategoryNameRequestDto>> getCategoryNames() {
+    List<GetCategoryNameRequestDto> categorys = videoService.getCategoryNames();
+    return new ResponseEntity<List<GetCategoryNameRequestDto>>(categorys, HttpStatus.OK);
   }
 
 
@@ -80,10 +81,12 @@ public class ReadController {
   @ApiOperation(value = "영상 상세 조회 및 추천 영상 조회", notes = "영상 클릭시 상세 정보 + 추천 영상 추출")
   @GetMapping("/video/detail/{videoId}")
   public ResponseEntity<GetDetailResponseDto> getVideoDetail(@PathVariable("videoId") Long id,
-      @CookieValue(name = "accessToken") String accessToken) {
+      @CookieValue(name = "accessToken", required = false) String accessToken) {
     int viewsResult = videoService.plusViews(id); //  조회수 상승
     GetDetailResponseDto video = videoService.getVideoDetail(id);
-    video.setIsFavorite(videoService.getFavorite(id, accessToken));// 좋아요 버튼 눌렀는지 여부
+    if (accessToken != null) {
+      video.setIsFavorite(videoService.getFavorite(id, accessToken));// 좋아요 버튼 눌렀는지 여부
+    }
     return new ResponseEntity<GetDetailResponseDto>(video, HttpStatus.OK);
   }
 

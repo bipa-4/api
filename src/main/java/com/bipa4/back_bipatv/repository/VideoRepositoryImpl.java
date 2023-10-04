@@ -2,6 +2,7 @@ package com.bipa4.back_bipatv.repository;
 
 import static com.querydsl.core.types.dsl.Expressions.asNumber;
 
+import com.bipa4.back_bipatv.dto.video.GetCategoryNameRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.dto.video.PostUploadRequestDto;
@@ -93,10 +94,17 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 카테고리 이름 리스트
   @Override
-  public List getCategoryNames() {
+  public List<GetCategoryNameRequestDto> getCategoryNames() {
     QCategoryName qCategoryName = QCategoryName.categoryName;
 
-    return jpaQueryFactory.select(qCategoryName.name).from(qCategoryName).fetch();
+    return jpaQueryFactory.select(
+        Projections.bean(
+            GetCategoryNameRequestDto.class,
+            qCategoryName.categoryNameId.as("categoryNameId"),
+            qCategoryName.name.as("categoryName"),
+            qCategoryName.path.as("categoryPath")
+        )
+    ).from(qCategoryName).fetch();
   }
 
 
@@ -146,6 +154,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
   public GetDetailResponseDto getDetail(Long id) {
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
+    QFavorite qFavorite = QFavorite.favorite;
 
     GetDetailResponseDto dto = jpaQueryFactory.select(
             Projections.bean(
@@ -158,7 +167,8 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 qVideos.content,
                 qVideos.createAt,
                 qVideos.readCnt,
-                qVideos.videoId
+                qVideos.videoId,
+                qVideos.thumbnail.as("thumbnailUrl")
             )).from(qVideos)
         .leftJoin(qVideos.channelId, qChannels)
         .where(qVideos.videoId.eq(id))
@@ -186,6 +196,15 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
         .limit(10).fetch();
 
     dto.setRecommendedList(recommendedVideos);
+
+    // 좋아요 개수
+    Videos videos = new Videos();
+    videos.setVideoId(dto.getVideoId());
+
+    long favoriteCnt = jpaQueryFactory.select(qFavorite.count()).from(qFavorite)
+        .where(qFavorite.favoritePK.videos.eq(videos)).fetchFirst();
+
+    dto.setFavoriteCnt(favoriteCnt);
 
     return dto;
   }

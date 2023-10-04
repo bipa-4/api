@@ -2,6 +2,7 @@ package com.bipa4.back_bipatv.service;
 
 //import com.amazonaws.services.s3.AmazonS3Client;
 
+import com.bipa4.back_bipatv.dto.video.GetCategoryNameRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetSearchResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
@@ -54,7 +55,7 @@ public class VideoService {
     return videoRepository.findByCategory(category, page, pageSize);
   }
 
-  public List<GetVideoResponseDto> getCategoryNames() {
+  public List<GetCategoryNameRequestDto> getCategoryNames() {
     return videoRepository.getCategoryNames();
   }
 
