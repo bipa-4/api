@@ -30,8 +30,7 @@ public class CorsFilter implements Filter {
         "https://port-0-api1-iciy2almriucc9.sel5.cloudtype.app".equals(origin)) {
       System.out.println("들어옴");
       response.setHeader("Access-Control-Allow-Origin", origin);
-    } else if ("http://localhost:8080".equals(host) ||
-        "https://port-0-api1-iciy2almriucc9.sel5.cloudtype.app".equals(host)) {
+    } else if ("http://localhost:8080".equals(host)) {
       response.setHeader("Access-Control-Allow-Origin", host);
     }
 

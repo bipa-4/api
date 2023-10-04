@@ -54,7 +54,7 @@ public class UserController {
         .sameSite("None")
         .build();
     httpresponse.addHeader("Set-Cookie", refreshCookie.toString());
-
+    System.out.println("acc=" + cookieMap.get("accessToken").getValue());
     ResponseCookie accessCookie = ResponseCookie.from("accessToken",
             cookieMap.get("accessToken").getValue())
         .path("/")
