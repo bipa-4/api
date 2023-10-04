@@ -1,5 +1,6 @@
 package com.bipa4.back_bipatv.dto.video;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -15,10 +16,21 @@ import lombok.ToString;
 @AllArgsConstructor
 public class PostUploadRequestDto {
 
+  @ApiModelProperty(example = "비디오 URL")
   private String videoUrl;
+
+  @ApiModelProperty(example = "썸네일 URL")
   private String thumbnailUrl;
+
+  @ApiModelProperty(example = "영상 제목")
   private String title;
+
+  @ApiModelProperty(example = "영상 내용")
   private String content;
+
+  @ApiModelProperty(example = "영상 공개 여부")
   private Boolean privateType;
+
+  @ApiModelProperty(example = "카테고리")
   private int category;
 }
