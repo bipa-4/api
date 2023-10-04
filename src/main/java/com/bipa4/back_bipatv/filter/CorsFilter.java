@@ -23,13 +23,13 @@ public class CorsFilter implements Filter {
     HttpServletResponse response = (HttpServletResponse) res;
     String origin = request.getHeader("origin");
     System.out.println("origin값:" + origin);
-    
+
     if (origin.equals("http://localhost:8080") || origin.equals(
         "https://https://bipa-streamwave.vercel.app")) {
       response.setHeader("Access-Control-Allow-Origin", origin);
     }
 //    response.setHeader("Access-Control-Allow-Origin", "https://bipa-streamwave.vercel.app");
-    response.setHeader("Access-Control-Allow-Origin", "*");
+//    response.setHeader("Access-Control-Allow-Origin", "*");
     response.setHeader("Access-Control-Allow-Credentials", "true");
     response.setHeader("Access-Control-Allow-Methods", "*");
     response.setHeader("Access-Control-Max-Age", "3600");
