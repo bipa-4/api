@@ -21,8 +21,20 @@ public class CorsFilter implements Filter {
       throws IOException, ServletException {
     HttpServletRequest request = (HttpServletRequest) req;
     HttpServletResponse response = (HttpServletResponse) res;
+    String origin = request.getHeader("origin");
+    System.out.println("origin값:" + origin);
+    String host = request.getHeader("Host");
+    System.out.println("host값 : " + host);
+    if ("http://localhost:3000".equals(origin) ||
+        "https://bipa-streamwave.vercel.app".equals(origin) ||
+        "https://port-0-api1-iciy2almriucc9.sel5.cloudtype.app".equals(origin)) {
+      System.out.println("들어옴");
+      response.setHeader("Access-Control-Allow-Origin", origin);
+    } else if ("http://localhost:8080".equals(host) ||
+        "https://port-0-api1-iciy2almriucc9.sel5.cloudtype.app".equals(host)) {
+      response.setHeader("Access-Control-Allow-Origin", host);
+    }
 
-    response.setHeader("Access-Control-Allow-Origin", "https://bipa-streamwave.vercel.app");
     response.setHeader("Access-Control-Allow-Credentials", "true");
     response.setHeader("Access-Control-Allow-Methods", "*");
     response.setHeader("Access-Control-Max-Age", "3600");
