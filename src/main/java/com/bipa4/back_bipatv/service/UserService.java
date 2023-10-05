@@ -17,7 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 import javax.servlet.http.Cookie;
 import javax.transaction.Transactional;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.core.env.Environment;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -30,28 +30,18 @@ import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
 
-  private final int EXP_TIME = 2 * 1000 * 60 * 60;
+  private final int EXP_TIME = 2 * 1000 * 60 * 60;//2시간
+
   private final Environment env;
   private final RestTemplate restTemplate = new RestTemplate();
-
-  public UserService(Environment env) {
-    this.env = env;
-  }
-
-  @Autowired
-  private AccountDAO accountDAO;
-  @Autowired
-  private ChannelDAO channelDAO;
-  @Autowired
-  private SecurityService securityService;
-  @Autowired
-  private RedisRepository redisRepository;
-  @Autowired
-  private ChannelService channelService;
-  @Autowired
-  private AccountRepository accountRepository;
+  private final AccountDAO accountDAO;
+  private final ChannelDAO channelDAO;
+  private final SecurityService securityService;
+  private final RedisRepository redisRepository;
+  private final AccountRepository accountRepository;
 
   private void insertUser(Accounts accounts) {
 
@@ -64,7 +54,7 @@ public class UserService {
 
   private void insertChannels(Accounts accounts) {
     Channels channels = new Channels();
-    channels.setName(accounts.getLoginId() + "_Channel");
+    channels.setChannelName(accounts.getLoginId() + "_Channel");
     channels.setAccounts(accounts);
     channels.setProfileUrl(accounts.getProfileUrl());
     channels.setContent(accounts.getName() + "의 채널");
@@ -246,5 +236,10 @@ public class UserService {
         expiration);
     boolean flag2 = redisRepository.getBlackList(accessToken) != null;
     return flag1 && flag2;
+  }
+
+  public void deleteAccount(String accessToken) {
+    Accounts loginAccount = securityService.getSubjectAccount(accessToken);
+    accountRepository.delete(loginAccount);
   }
 }

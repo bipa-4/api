@@ -45,7 +45,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     return jpaQueryFactory.select(
             Projections.bean(
                 GetVideoResponseDto.class,
-                qChannels.name.as("channelName"),
+                qChannels.channelName.as("channelName"),
                 qChannels.profileUrl.as("channelProfileUrl"),
                 qVideos.thumbnail,
                 qVideos.title.as("videoTitle"),
@@ -73,7 +73,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     return jpaQueryFactory.select(
             Projections.bean(
                 GetVideoResponseDto.class,
-                qChannels.name.as("channelName"),
+                qChannels.channelName.as("channelName"),
                 qChannels.profileUrl.as("channelProfileUrl"),
                 qVideos.thumbnail,
                 qVideos.title.as("videoTitle"),
@@ -118,7 +118,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     return jpaQueryFactory.select(
             Projections.bean(
                 GetVideoResponseDto.class,
-                qChannels.name.as("channelName"),
+                qChannels.channelName.as("channelName"),
                 qChannels.profileUrl.as("channelProfileUrl"),
                 qVideos.thumbnail,
                 qVideos.title.as("videoTitle"),
@@ -159,7 +159,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     GetDetailResponseDto dto = jpaQueryFactory.select(
             Projections.bean(
                 GetDetailResponseDto.class,
-                qChannels.name.as("channelName"),
+                qChannels.channelName.as("channelName"),
                 qChannels.profileUrl.as("channelProfileUrl"),
                 qChannels.channelId,
                 qVideos.videoUrl,
@@ -181,7 +181,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     List<GetVideoResponseDto> recommendedVideos = jpaQueryFactory.select(
             Projections.bean(
                 GetVideoResponseDto.class,
-                qChannels.name.as("channelName"),
+                qChannels.channelName.as("channelName"),
                 qChannels.profileUrl.as("channelProfileUrl"),
                 qVideos.thumbnail,
                 qVideos.title.as("videoTitle"),
@@ -368,5 +368,30 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     } else {
       return 0;
     }
+  }
+
+  @Override
+  public List<GetVideoResponseDto> getVideosInChannel(Long channelId) {
+    Channels channel = new Channels();
+    channel.setChannelId(channelId);
+    QVideos qVideos = QVideos.videos;
+    QChannels qChannels = QChannels.channels;
+
+    // 추천 영상 리스트 추출
+    return jpaQueryFactory.select(
+            Projections.bean(
+                GetVideoResponseDto.class,
+                qChannels.channelName.as("channelName"),
+                qChannels.profileUrl.as("channelProfileUrl"),
+                qVideos.thumbnail,
+                qVideos.title.as("videoTitle"),
+                qVideos.createAt,
+                qVideos.readCnt,
+                qVideos.videoId
+            )
+        )
+        .from(qVideos).leftJoin(qVideos.channelId, qChannels)
+        .where(qVideos.channelId.eq(channel))
+        .fetch();
   }
 }
