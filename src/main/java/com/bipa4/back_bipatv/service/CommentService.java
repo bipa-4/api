@@ -7,6 +7,7 @@ import com.bipa4.back_bipatv.dto.comment.CommentResponse;
 import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.entity.Comments;
 import com.bipa4.back_bipatv.entity.Videos;
+import com.bipa4.back_bipatv.exception.ResourceNotFoundException;
 import com.bipa4.back_bipatv.repository.VideoRepository;
 import com.bipa4.back_bipatv.security.SecurityService;
 import java.time.LocalDate;
@@ -45,15 +46,7 @@ public class CommentService {
   }
 
   public boolean saveComment(CommentRequest commentRequest) {
-    /**
-     * 로그인 아이디가 DB에 없는데도 그냥 존재만 하면 허용을 해줄껀가?
-     * 그거를 해봐라.. 현재는 ID만 있으면 그냥 허용임.
-     * redis session에 담긴 ID와 DB에 있는 ID가 동일한지 확인해야한다.
-     * - 프론트에 있따.
-     *
-     */
-    System.out.println("service"+ commentRequest);
-    System.out.println(Objects.nonNull(commentRequest.getAccountId()));
+
     if(Objects.nonNull(commentRequest.getAccountId())){
       Comments comments = convertDtoToEntityForInsert(commentRequest);
       return commentDAO.saveComment(comments);
@@ -65,7 +58,6 @@ public class CommentService {
 
   public boolean updateComment(CommentRequest commentRequest) {
 
-
     if(Objects.nonNull(commentRequest.getAccountId())){
       Comments comments = convertDtoToEntityForUpdate(commentRequest);
       return commentDAO.saveComment(comments);
@@ -76,9 +68,10 @@ public class CommentService {
   }
 
   private Comments convertDtoToEntityForInsert(CommentRequest commentRequest) {
-    System.out.println(commentRequest);
+
     Comments comments = new Comments();
     System.out.println("비디오 id:"+commentRequest.getVideoId());
+
     if(Objects.nonNull(commentRequest.getVideoId())){
       Videos videos = videoRepository.findById((long) commentRequest.getVideoId()).get();
       comments.setVideos(videos);
@@ -116,7 +109,9 @@ public class CommentService {
 
   private Comments convertDtoToEntityForUpdate(CommentRequest commentRequest) {
     Comments comments = commentDAO.findByCommentId(commentRequest.getCommentId());
-
+    if(comments == null){
+      throw new ResourceNotFoundException("해당하는 댓글을 찾을 수 없음");
+    }
     if(Objects.nonNull(commentRequest.getContent())) {
       comments.setContent(commentRequest.getContent());
     }

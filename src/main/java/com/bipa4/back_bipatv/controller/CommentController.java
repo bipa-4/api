@@ -62,7 +62,7 @@ public class CommentController {
   public String updateComment(@RequestBody CommentRequest commentRequest,
       @CookieValue(name = "accessToken") String accessToken) {
     if(commentRequest.getAccountId()==securityService.getSubjectAccount(accessToken).getAccountId()){
-      return String.valueOf(commentService.saveComment(commentRequest));
+      return String.valueOf(commentService.updateComment(commentRequest));
 
     } else {
       return "권한없음";
