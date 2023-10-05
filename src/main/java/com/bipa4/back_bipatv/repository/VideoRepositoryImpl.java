@@ -2,16 +2,19 @@ package com.bipa4.back_bipatv.repository;
 
 import static com.querydsl.core.types.dsl.Expressions.asNumber;
 
+import com.bipa4.back_bipatv.dto.video.GetCategoryNameRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.dto.video.PostUploadRequestDto;
 import com.bipa4.back_bipatv.dto.video.PutUpdateRequestDto;
 import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.entity.Channels;
-import com.bipa4.back_bipatv.entity.QAccounts;
+import com.bipa4.back_bipatv.entity.Favorite;
+import com.bipa4.back_bipatv.entity.FavoritePK;
 import com.bipa4.back_bipatv.entity.QCategoryName;
 import com.bipa4.back_bipatv.entity.QCategorys;
 import com.bipa4.back_bipatv.entity.QChannels;
+import com.bipa4.back_bipatv.entity.QFavorite;
 import com.bipa4.back_bipatv.entity.QVideos;
 import com.bipa4.back_bipatv.entity.QViewLog;
 import com.bipa4.back_bipatv.entity.Videos;
@@ -91,10 +94,17 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 카테고리 이름 리스트
   @Override
-  public List getCategoryNames() {
+  public List<GetCategoryNameRequestDto> getCategoryNames() {
     QCategoryName qCategoryName = QCategoryName.categoryName;
 
-    return jpaQueryFactory.select(qCategoryName.name).from(qCategoryName).fetch();
+    return jpaQueryFactory.select(
+        Projections.bean(
+            GetCategoryNameRequestDto.class,
+            qCategoryName.categoryNameId.as("categoryNameId"),
+            qCategoryName.name.as("categoryName"),
+            qCategoryName.path.as("categoryPath")
+        )
+    ).from(qCategoryName).fetch();
   }
 
 
@@ -144,6 +154,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
   public GetDetailResponseDto getDetail(Long id) {
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
+    QFavorite qFavorite = QFavorite.favorite;
 
     GetDetailResponseDto dto = jpaQueryFactory.select(
             Projections.bean(
@@ -156,7 +167,8 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 qVideos.content,
                 qVideos.createAt,
                 qVideos.readCnt,
-                qVideos.videoId
+                qVideos.videoId,
+                qVideos.thumbnail.as("thumbnailUrl")
             )).from(qVideos)
         .leftJoin(qVideos.channelId, qChannels)
         .where(qVideos.videoId.eq(id))
@@ -184,6 +196,15 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
         .limit(10).fetch();
 
     dto.setRecommendedList(recommendedVideos);
+
+    // 좋아요 개수
+    Videos videos = new Videos();
+    videos.setVideoId(dto.getVideoId());
+
+    long favoriteCnt = jpaQueryFactory.select(qFavorite.count()).from(qFavorite)
+        .where(qFavorite.favoritePK.videos.eq(videos)).fetchFirst();
+
+    dto.setFavoriteCnt(favoriteCnt);
 
     return dto;
   }
@@ -246,13 +267,11 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 영상 업로드
   @Override
-  public int insert(PostUploadRequestDto videoResponseDto) {
-    QVideos qVideos = QVideos.videos;
+  public int insert(PostUploadRequestDto videoResponseDto, String token) {
     QChannels qChannels = QChannels.channels;
-    QAccounts qAccounts = QAccounts.accounts;
 
     // chcannelId 가져오기.
-    Accounts account = securityService.getSubjectAccount(videoResponseDto.getUserToken());
+    Accounts account = securityService.getSubjectAccount(token);
     Long channelId = jpaQueryFactory.select(qChannels.channelId).from(qChannels)
         .where(qChannels.accounts.eq(account)).fetchOne();
 
@@ -261,20 +280,93 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
     // Videos 테이블 create.
     int result = entityManager.createNativeQuery(
-            "INSERT INTO Videos (video_url, thumbnail, title, content, private_type, create_at, channel_id, read_cnt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
+            "INSERT INTO videos (video_url, thumbnail, title, content, private_type, create_at, channel_id, read_cnt) VALUES (?, ?, ?, ?, ?, ?, ?, ?)")
         .setParameter(1, videoResponseDto.getVideoUrl())
         .setParameter(2, videoResponseDto.getThumbnailUrl())
         .setParameter(3, videoResponseDto.getTitle())
         .setParameter(4, videoResponseDto.getContent())
-        .setParameter(5, videoResponseDto.getPrivate_type())
-        .setParameter(6, new Timestamp(System.currentTimeMillis())).setParameter(7, channel)
+        .setParameter(5, videoResponseDto.getPrivateType())
+        .setParameter(6, new Timestamp(System.currentTimeMillis()))
+        .setParameter(7, channel)
         .setParameter(8, 0).executeUpdate();
 
-    // ViewLog 테이블 create.
     if (result != 0) {
+      // ViewLog 테이블 create.
       entityManager.createNativeQuery("INSERT INTO view_log VALUES ((SELECT LAST_INSERT_ID()), ?);")
           .setParameter(1, 0).executeUpdate();
+
+      // category 테이블 create.
+      entityManager.createNativeQuery(
+              "INSERT INTO categorys (video_id, category_name_id) VALUES ((SELECT LAST_INSERT_ID()), ?)")
+          .setParameter(1, videoResponseDto.getCategory()).executeUpdate();
     }
+
     return result;
+  }
+
+
+  // 조회수 상승
+  @Override
+  public int plusViews(Long videoId) {
+    Videos video = entityManager.find(Videos.class, videoId);
+
+    if (video != null) {
+      video.setReadCnt(video.getReadCnt() + 1);
+    } else {
+      return 0;
+    }
+    return 1;
+  }
+
+
+  // 좋아요 버튼 눌렀는지 여부
+  @Override
+  public Long getFavorite(Long videoId, String token) {
+    QFavorite qFavorite = QFavorite.favorite;
+
+    Videos videos = new Videos();
+    videos.setVideoId(videoId);
+    Accounts account = securityService.getSubjectAccount(token);
+
+    return jpaQueryFactory.select(qFavorite.count()).from(qFavorite)
+        .where(
+            qFavorite.favoritePK.videos.eq(videos).and(qFavorite.favoritePK.accounts.eq(account)))
+        .fetchFirst();
+  }
+
+  // 좋아요
+  @Override
+  public int plusLike(Long videoId, String token) {
+    Accounts account = securityService.getSubjectAccount(token);
+
+    int result = entityManager.createNativeQuery(
+            "INSERT INTO favorite VALUES (?, ?)")
+        .setParameter(1, account.getAccountId())
+        .setParameter(2, videoId)
+        .executeUpdate();
+
+    return result;
+  }
+
+
+  // 좋아요 취소
+  @Override
+  public int minusLike(Long videoId, String token) {
+    Videos video = new Videos();
+    video.setVideoId(videoId);
+    Accounts account = securityService.getSubjectAccount(token);
+
+    FavoritePK favoritePK = new FavoritePK();
+    favoritePK.setVideos(video);
+    favoritePK.setAccounts(account);
+
+    Favorite favorite = entityManager.find(Favorite.class, favoritePK);
+
+    if (favorite != null) {
+      entityManager.remove(favorite);
+      return 1;
+    } else {
+      return 0;
+    }
   }
 }

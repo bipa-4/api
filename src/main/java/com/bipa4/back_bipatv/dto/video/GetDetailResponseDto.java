@@ -4,11 +4,15 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import java.sql.Timestamp;
 import java.util.List;
 import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.springframework.format.annotation.DateTimeFormat;
 
 
 @Data
+@Setter
+@Getter
 @NoArgsConstructor
 public class GetDetailResponseDto {
 
@@ -18,25 +22,13 @@ public class GetDetailResponseDto {
   private String videoUrl;
   private String videoTitle;
   private String content;
+  private Boolean isFavorite;
   @DateTimeFormat(pattern = "yyyy-MM-dd")
   @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+9")
   private Timestamp createAt;
   private Integer readCnt;
   private Long videoId;
+  private String thumbnailUrl;
   private List<GetVideoResponseDto> recommendedList;
-
-  public GetDetailResponseDto(String channelName, String channelProfileUrl, Long channelId,
-      String videoUrl, String videoTitle, String content, Timestamp createAt, Integer readCnt,
-      Long videoId, List<GetVideoResponseDto> recommendedList) {
-    this.channelName = channelName;
-    this.channelProfileUrl = channelProfileUrl;
-    this.channelId = channelId;
-    this.videoUrl = videoUrl;
-    this.videoTitle = videoTitle;
-    this.content = content;
-    this.createAt = createAt;
-    this.readCnt = readCnt;
-    this.videoId = videoId;
-    this.recommendedList = recommendedList;
-  }
+  private Long favoriteCnt;
 }

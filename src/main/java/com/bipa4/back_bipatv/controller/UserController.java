@@ -48,13 +48,13 @@ public class UserController {
     ResponseCookie refreshCookie = ResponseCookie.from("refreshToken",
             cookieMap.get("refreshToken").getValue())
         .path("/")
-        .maxAge(60 * 60 * 6)//기간 1일 refreshToken도 6시간
+        .maxAge(60 * 60 * 6)// refreshToken도 6시간
         .httpOnly(true)
         .secure(true)
         .sameSite("None")
         .build();
     httpresponse.addHeader("Set-Cookie", refreshCookie.toString());
-
+    System.out.println("acc=" + cookieMap.get("accessToken").getValue());
     ResponseCookie accessCookie = ResponseCookie.from("accessToken",
             cookieMap.get("accessToken").getValue())
         .path("/")
@@ -65,17 +65,6 @@ public class UserController {
         .build();
     httpresponse.addHeader("Set-Cookie", accessCookie.toString());
   }
-
-//  @ApiOperation(value = "Get_Account", notes = "유저 정보 받기")
-//  @GetMapping("/account/{code}")
-//  public ResponseEntity<Accounts> getAccountInfo(@PathVariable String code) {
-//    Accounts loginAccounts = securityService.getSubjectAccount(code);
-//    if (loginAccounts != null) {
-//      return new ResponseEntity<>(loginAccounts, HttpStatus.OK);
-//    } else {
-//      return new ResponseEntity<>(HttpStatus.NOT_FOUND);// front에서 인증 재요청을 요청하기
-//    }
-//  }
 
   @ApiOperation(value = "userUpdate", notes = "유저 정보 수정")
   @PutMapping("/account")
@@ -115,7 +104,7 @@ public class UserController {
   }
 
   @ApiOperation(value = "Logout", notes = "로그아웃기능")
-  @PostMapping("account/logout")
+  @PostMapping("/account/logout")
   public ResponseEntity<Boolean> doLogout(HttpServletResponse httpresponse,
       @CookieValue(value = "refreshToken") String refreshToken,
       @CookieValue(value = "accessToken") String accessToken) {

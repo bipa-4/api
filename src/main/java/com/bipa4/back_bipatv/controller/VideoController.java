@@ -8,11 +8,13 @@ import com.bipa4.back_bipatv.service.PresignedUrlService;
 import com.bipa4.back_bipatv.service.VideoService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,9 +36,9 @@ public class VideoController {
   // 본인 영상인지 확인
   @ApiOperation(value = "본인의 영상이 맞는지 확인", notes = "토큰을 통해 본인의 영상이 맞는지 확인 (삭제 또는 업로드 등애 사용)")
   @GetMapping("/check")
-  public ResponseEntity<Boolean> checkVideos(@RequestParam("token") String token,
+  public ResponseEntity<Boolean> checkVideos(@CookieValue(name = "accessToken") String accessToken,
       @RequestParam("videoId") Long videoId) {
-    Long owner = videoService.check(token, videoId);
+    Long owner = videoService.check(accessToken, videoId);
     if (owner > 0) {
       return new ResponseEntity<>(true, HttpStatus.OK);
     }
@@ -74,8 +76,11 @@ public class VideoController {
   // 영상 업로드
   @ApiOperation(value = "영상 업로드", notes = "영상 업로드 진행")
   @PostMapping("/upload")
-  public ResponseEntity<Long> upload(@RequestBody PostUploadRequestDto responseDto) {
-    if (videoService.uploadVideo(responseDto) == 0) {
+  public ResponseEntity<Long> upload(
+      @RequestBody @ApiParam(value = "수정할 회원 정보", required = true) PostUploadRequestDto responseDto,
+      @CookieValue(name = "accessToken") String accessToken) {
+    System.out.println(accessToken);
+    if (videoService.uploadVideo(responseDto, accessToken) == 0) {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
 
@@ -102,6 +107,29 @@ public class VideoController {
       @RequestParam("search_query") String searchQuery) {
     return new ResponseEntity<List<GetSearchResponseDto>>(
         videoService.search(searchQuery), HttpStatus.OK);
+  }
+
+
+  // 좋아요
+  @ApiOperation(value = "좋아요", notes = "줗아요 버튼을 눌렀을 시")
+  @GetMapping("/detail/{videoId}/like")
+  public ResponseEntity<Boolean> like(@PathVariable("videoId") Long videoId,
+      @CookieValue(name = "accessToken") String accessToken) {
+    return videoService.like(videoId, accessToken) == 1 ? new ResponseEntity<>(true,
+        HttpStatus.OK)
+        : new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR);
+  }
+
+
+  // 좋아요 취소
+  @ApiOperation(value = "좋아요 취소", notes = "줗아요 버튼을 다시 눌렀을 시")
+  @DeleteMapping("/detail/{videoId}/like")
+  public ResponseEntity<Boolean> cancelLike(
+      @ApiParam(value = "좋아요를 취소할 영상 아이디") @PathVariable("videoId") Long videoId,
+      @ApiParam(value = "좋아요를 취소할 유저의 토큰값") @CookieValue(name = "accessToken") String accessTokenn) {
+    return videoService.cancelLike(videoId, accessTokenn) == 1 ? new ResponseEntity<>(true,
+        HttpStatus.OK)
+        : new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
   // 영상 업로드(S3) + 영상 정보 업로드(DB) [기존 방식 - 백엔드에서 영상 올리기]

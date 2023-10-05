@@ -1,34 +1,36 @@
 package com.bipa4.back_bipatv.dto.video;
 
+import io.swagger.annotations.ApiModelProperty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @Builder
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class PostUploadRequestDto {
 
+  @ApiModelProperty(example = "비디오 URL")
   private String videoUrl;
-  private String thumbnailUrl;
-  private String title;
-  private String content;
-  private Boolean private_type;
-  private String userToken;
 
-  @Override
-  public String toString() {
-    return "PostUploadRequestDto{" +
-        "videoUrl='" + videoUrl + '\'' +
-        ", thumbnailUrl='" + thumbnailUrl + '\'' +
-        ", title='" + title + '\'' +
-        ", content='" + content + '\'' +
-        ", private_type=" + private_type +
-        ", userToken='" + userToken + '\'' +
-        '}';
-  }
+  @ApiModelProperty(example = "썸네일 URL")
+  private String thumbnailUrl;
+
+  @ApiModelProperty(example = "영상 제목")
+  private String title;
+
+  @ApiModelProperty(example = "영상 내용")
+  private String content;
+
+  @ApiModelProperty(example = "영상 공개 여부")
+  private Boolean privateType;
+
+  @ApiModelProperty(example = "카테고리")
+  private int category;
 }

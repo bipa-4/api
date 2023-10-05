@@ -19,4 +19,6 @@ public class CategoryName {
   private Long categoryNameId;
   @Column(name = "name", nullable = false, length = 30)
   private String name;
+  @Column(name = "path", nullable = false, length = 30)
+  private String path;
 }
