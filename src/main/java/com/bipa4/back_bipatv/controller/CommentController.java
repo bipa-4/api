@@ -7,6 +7,7 @@ import com.bipa4.back_bipatv.service.CommentService;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -42,13 +43,13 @@ public class CommentController {
 
   @PostMapping("/comment")//insert
   public String insertComment(@RequestBody CommentRequest commentRequest,
-      @RequestParam("code") String code) {
+      @CookieValue(name = "accessToken") String accessToken) {
     /**
      * 서비스의 return 값이 boolean이고 Controller의 리턴값이 String이어서
      * String.valueOf()를 써서 boolean => String 바꿔줌
      */
 
-    if (securityService.getSubject(code)) {
+    if (securityService.getSubject(accessToken)) {
       return String.valueOf(commentService.saveComment(commentRequest));
 
     } else {
@@ -57,15 +58,15 @@ public class CommentController {
 
   }
 
-  @PutMapping("/comment")
+  @PutMapping("/comment")//update
   public String updateComment(@RequestBody CommentRequest commentRequest,
-      @RequestParam("code") String code) {
-
-    if (securityService.getSubject(code)) {
-      return String.valueOf(commentService.saveComment(commentRequest));
+      @CookieValue(name = "accessToken") String accessToken) {
+    if(commentRequest.getAccountId()==securityService.getSubjectAccount(accessToken).getAccountId()){
+      return String.valueOf(commentService.updateComment(commentRequest));
 
     } else {
       return "권한없음";
     }
   }
 }
+

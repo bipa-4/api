@@ -41,8 +41,7 @@ public class CommentDAO {
     }
 
     public Comments findByCommentId(int commentId){
-        System.out.println(commentRepository.findById(commentId).orElse(null));
-        return new Comments();
+        return commentRepository.findById(commentId).orElse(null);
     }
 //    public CommentRequest findById(int commentId){
 //        Comments comments = commentRepository.findById(commentId).orElse(null);
