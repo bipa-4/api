@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class GetChannelDTO {
 
+  private Long channelId;
   private String channelName;
   private String content;
   private boolean privateType;

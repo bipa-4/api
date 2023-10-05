@@ -24,6 +24,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
     return jpaQueryFactory.select(
             Projections.bean(
                 GetChannelDTO.class,
+                qChannels.channelId,
                 qChannels.channelName,
                 qChannels.profileUrl,
                 qChannels.content,
