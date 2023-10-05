@@ -1,6 +1,7 @@
 package com.bipa4.back_bipatv.controller;
 
 import com.bipa4.back_bipatv.dto.channel.CustomChannelTop10;
+import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.comment.CommentResponse;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
@@ -132,9 +133,9 @@ public class ReadController {
   // 전체 채널 조회
   @ApiOperation(value = "전체 채널 조회", notes = "전체 채널에 대한 정보")
   @GetMapping("/channel")
-  public ResponseEntity<List<Channels>> getAllChannels() {
-    List<Channels> list = channelService.getAllChannels();
+  public ResponseEntity<List<GetChannelDTO>> getAllChannels() {
+    List<GetChannelDTO> list = channelService.getAllChannels();
     list.forEach(System.out::println);
-    return new ResponseEntity<List<Channels>>(list, HttpStatus.OK);
+    return new ResponseEntity<>(list, HttpStatus.OK);
   }
 }

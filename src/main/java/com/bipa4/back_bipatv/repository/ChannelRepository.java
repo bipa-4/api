@@ -8,7 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
-public interface ChannelRepository extends JpaRepository<Channels, Long> {
+public interface ChannelRepository extends JpaRepository<Channels, Long>, ChannelRepositoryCustom {
 
   @Query(value = "select a.* "
       + "from channels a "
@@ -30,7 +30,5 @@ public interface ChannelRepository extends JpaRepository<Channels, Long> {
           + "limit 10 ", nativeQuery = true)
   List<CustomChannelTop10> findLimitTimeSumCnt();
 
-  List<Channels> findAll();
-
-  Channels findByName(String channelName);
+  Channels findByChannelId(Long channelId);
 }

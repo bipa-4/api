@@ -2,6 +2,7 @@ package com.bipa4.back_bipatv.security;
 
 import com.bipa4.back_bipatv.dao.AccountDAO;
 import com.bipa4.back_bipatv.entity.Accounts;
+import com.bipa4.back_bipatv.exception.ResourceNotFoundException;
 import com.bipa4.back_bipatv.repository.RedisRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -55,7 +56,7 @@ public class SecurityService {
     return Jwts.builder()//지금은 subject값고 만료시간만 넣어줌 but 다양한 값 넣을 수 있음 확인해보기
         .setSubject("RefreshToken" + accounts.getLoginId())
         .signWith(singingKey, signatureAlgorithm)
-        .setExpiration(new Date(System.currentTimeMillis() + 24 * 1000 * 60 * 60))//만료시간
+        .setExpiration(new Date(System.currentTimeMillis() + 6 * 1000 * 60 * 60))//만료시간
         .compact();
   }
 
@@ -99,7 +100,7 @@ public class SecurityService {
       dummyAccount.setLoginId(claims.getSubject());
       return accountDAO.selectAccount(dummyAccount);
     } else {
-      throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+      throw new ResourceNotFoundException("유효하지 않은 토큰입니다.");
     }
   }
 

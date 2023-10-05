@@ -9,6 +9,8 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import lombok.Data;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Data
@@ -27,6 +29,7 @@ public class Logs {
   private String logFunction;
   @ManyToOne
   @JoinColumn(name = "account_id")
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private Accounts accounts;
 
 }
