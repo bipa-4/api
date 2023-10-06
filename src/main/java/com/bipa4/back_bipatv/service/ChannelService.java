@@ -5,6 +5,7 @@ import com.bipa4.back_bipatv.dao.ChannelDAO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
 import com.bipa4.back_bipatv.dto.channel.PutChannelDTO;
+import com.bipa4.back_bipatv.dto.channel.SelectChannelDTO;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.entity.Channels;
@@ -28,8 +29,19 @@ public class ChannelService {
   private final ChannelRepository channelRepository;
   private final VideoRepository videoRepository;
 
-  public Channels findChannel(Long accountId) {
-    return channelDAO.findChannel(accountId);
+  public SelectChannelDTO findChannel(String accessToken, Long channelId) {
+    Accounts loginAccount = securityService.getSubjectAccount(accessToken);
+    Channels selectChannel = channelRepository.findByChannelId(channelId);
+    SelectChannelDTO selectChannelDTO = channelRepository.selectChannel(channelId);
+    System.out.println(selectChannelDTO);
+    if (Objects.equals(selectChannel.getAccounts().getAccountId(),
+        loginAccount.getAccountId())) {//수정 가능
+      selectChannelDTO.setUpdateFlag(true);
+      return selectChannelDTO;
+    } else {//수정 불가
+      selectChannelDTO.setUpdateFlag(false);
+      return selectChannelDTO;
+    }
   }
 
   public Channels findbyChannelId(Long channelId) {
