@@ -60,4 +60,8 @@ cloud:
     credentials:
       access-key: ${ACCESS_KEY}
       secret-key: ${SECRET_KEY}
+    path: ${PRIVATE_KEY_PATH}
+    cloudFront:
+      keyPairId: ${KEY_PAIR_ID}
+      distributionDomain: ${DISTRIBUTION_DOMAIN}
 
