@@ -11,6 +11,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 @Entity
 @Data
@@ -40,6 +42,7 @@ public class Videos {
   private String thumbnail;
   @ManyToOne
   @JoinColumn(name = "channel_id")
+  @OnDelete(action = OnDeleteAction.CASCADE)
   private Channels channelId;
 
 //  @Builder

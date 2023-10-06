@@ -10,11 +10,12 @@ import io.swagger.annotations.ApiOperation;
 import java.util.Map;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,15 +28,15 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @Api(value = "AccountController v1")
 @RequestMapping(produces = "application/json")
+@RequiredArgsConstructor
 public class UserController {
 
-  @Autowired
-  private UserService userService;
-  @Autowired
-  private SecurityService securityService;
-  @Autowired
-  private PresignedUrlService presignedUrlService;
-  private final int EXP_TIME = 2 * 1000 * 60 * 60;
+
+  private final UserService userService;
+  private final SecurityService securityService;
+  private final PresignedUrlService presignedUrlService;
+  private final int ACCESSTOKEN_EXP_TIME = 60 * 60 * 2;//2시간
+  private final int REFRESHTOKEN_EXP_TIME = 60 * 60 * 6;//6시간
 
 
   @ApiOperation(value = "Social_Login", notes = "소셜 로그인")
@@ -48,7 +49,7 @@ public class UserController {
     ResponseCookie refreshCookie = ResponseCookie.from("refreshToken",
             cookieMap.get("refreshToken").getValue())
         .path("/")
-        .maxAge(60 * 60 * 6)// refreshToken도 6시간
+        .maxAge(REFRESHTOKEN_EXP_TIME)// refreshToken도 6시간
         .httpOnly(true)
         .secure(true)
         .sameSite("None")
@@ -58,7 +59,7 @@ public class UserController {
     ResponseCookie accessCookie = ResponseCookie.from("accessToken",
             cookieMap.get("accessToken").getValue())
         .path("/")
-        .maxAge(60 * 60 * 2)//기간 2시간
+        .maxAge(ACCESSTOKEN_EXP_TIME)//기간 2시간
         .httpOnly(true)
         .secure(true)
         .sameSite("None")
@@ -132,5 +133,12 @@ public class UserController {
     httpresponse.addHeader("Set-Cookie", accessCookie.toString());
     return result ? new ResponseEntity<>(true, HttpStatus.OK)
         : new ResponseEntity<>(false, HttpStatus.BAD_REQUEST);
+  }
+
+  @ApiOperation(value = "Delete Account", notes = "회원 탈퇴")
+  @DeleteMapping("/account")
+  public void deleteAccount(
+      @CookieValue("accessToken") String accessToken) {
+    userService.deleteAccount(accessToken);
   }
 }

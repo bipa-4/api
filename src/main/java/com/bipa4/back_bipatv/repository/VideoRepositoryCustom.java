@@ -36,4 +36,6 @@ public interface VideoRepositoryCustom {
   int plusLike(Long videoId, String token);
 
   int minusLike(Long videoId, String token);
+
+  List<GetVideoResponseDto> getVideosInChannel(Long channelId);
 }
