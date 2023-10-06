@@ -86,7 +86,7 @@ public class ReadController {
     int viewsResult = videoService.plusViews(id); //  조회수 상승
     GetDetailResponseDto video = videoService.getVideoDetail(id);
     if (accessToken != null) {
-      video.setIsFavorite(videoService.getFavorite(id, accessToken));// 좋아요 버튼 눌렀는지 여부
+      video.setIsLike(videoService.getFavorite(id, accessToken));// 좋아요 버튼 눌렀는지 여부
     }
     return new ResponseEntity<GetDetailResponseDto>(video, HttpStatus.OK);
   }
