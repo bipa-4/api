@@ -1,6 +1,6 @@
 package com.bipa4.back_bipatv.dao;
 
-import com.bipa4.back_bipatv.dto.channel.CustomChannelTop10;
+import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
 import com.bipa4.back_bipatv.entity.Channels;
 import com.bipa4.back_bipatv.repository.ChannelRepository;
 import java.util.List;
@@ -24,11 +24,7 @@ public class ChannelDAO {
     return channelRepository.findByChannelToAccountId(accountId).get();
   }
 
-  public List<CustomChannelTop10> findLimitTimeSumCnt() {
-    return channelRepository.findLimitTimeSumCnt();
-  }
-
-  public List<Channels> getAllChannels() {
-    return channelRepository.findAll();
+  public List<GetChannelTop5DTO> findTop5Channels() {
+    return channelRepository.findTop5Channels();
   }
 }

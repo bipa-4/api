@@ -45,12 +45,12 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     return jpaQueryFactory.select(
             Projections.bean(
                 GetVideoResponseDto.class,
-                qChannels.name.as("channelName"),
+                qChannels.channelName.as("channelName"),
                 qChannels.profileUrl.as("channelProfileUrl"),
                 qVideos.thumbnail,
                 qVideos.title.as("videoTitle"),
                 qVideos.createAt,
-                qVideos.readCnt,
+                qVideos.readCnt.as("readCount"),
                 qVideos.videoId
             )
         )
@@ -73,12 +73,12 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     return jpaQueryFactory.select(
             Projections.bean(
                 GetVideoResponseDto.class,
-                qChannels.name.as("channelName"),
+                qChannels.channelName.as("channelName"),
                 qChannels.profileUrl.as("channelProfileUrl"),
                 qVideos.thumbnail,
                 qVideos.title.as("videoTitle"),
                 qVideos.createAt,
-                qVideos.readCnt,
+                qVideos.readCnt.as("readCount"),
                 qVideos.videoId
             )
         )
@@ -101,8 +101,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
         Projections.bean(
             GetCategoryNameRequestDto.class,
             qCategoryName.categoryNameId.as("categoryNameId"),
-            qCategoryName.name.as("categoryName"),
-            qCategoryName.path.as("categoryPath")
+            qCategoryName.name.as("categoryName")
         )
     ).from(qCategoryName).fetch();
   }
@@ -118,12 +117,12 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     return jpaQueryFactory.select(
             Projections.bean(
                 GetVideoResponseDto.class,
-                qChannels.name.as("channelName"),
+                qChannels.channelName.as("channelName"),
                 qChannels.profileUrl.as("channelProfileUrl"),
                 qVideos.thumbnail,
                 qVideos.title.as("videoTitle"),
                 qVideos.createAt,
-                qVideos.readCnt,
+                qVideos.readCnt.as("readCount"),
                 qVideos.videoId
             )
         )
@@ -159,16 +158,16 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     GetDetailResponseDto dto = jpaQueryFactory.select(
             Projections.bean(
                 GetDetailResponseDto.class,
-                qChannels.name.as("channelName"),
+                qChannels.channelName.as("channelName"),
                 qChannels.profileUrl.as("channelProfileUrl"),
                 qChannels.channelId,
                 qVideos.videoUrl,
                 qVideos.title.as("videoTitle"),
                 qVideos.content,
                 qVideos.createAt,
-                qVideos.readCnt,
+                qVideos.readCnt.as("readCount"),
                 qVideos.videoId,
-                qVideos.thumbnail.as("thumbnailUrl")
+                qVideos.thumbnail
             )).from(qVideos)
         .leftJoin(qVideos.channelId, qChannels)
         .where(qVideos.videoId.eq(id))
@@ -181,12 +180,12 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     List<GetVideoResponseDto> recommendedVideos = jpaQueryFactory.select(
             Projections.bean(
                 GetVideoResponseDto.class,
-                qChannels.name.as("channelName"),
+                qChannels.channelName.as("channelName"),
                 qChannels.profileUrl.as("channelProfileUrl"),
                 qVideos.thumbnail,
                 qVideos.title.as("videoTitle"),
                 qVideos.createAt,
-                qVideos.readCnt,
+                qVideos.readCnt.as("readCount"),
                 qVideos.videoId
             )
         )
@@ -197,14 +196,14 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
     dto.setRecommendedList(recommendedVideos);
 
-    // 좋아요 개수
+    // 영상의 좋아요 총 개수
     Videos videos = new Videos();
     videos.setVideoId(dto.getVideoId());
 
     long favoriteCnt = jpaQueryFactory.select(qFavorite.count()).from(qFavorite)
         .where(qFavorite.favoritePK.videos.eq(videos)).fetchFirst();
 
-    dto.setFavoriteCnt(favoriteCnt);
+    dto.setLikeCount(favoriteCnt);
 
     return dto;
   }
@@ -368,5 +367,30 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     } else {
       return 0;
     }
+  }
+
+  @Override
+  public List<GetVideoResponseDto> getVideosInChannel(Long channelId) {
+    Channels channel = new Channels();
+    channel.setChannelId(channelId);
+    QVideos qVideos = QVideos.videos;
+    QChannels qChannels = QChannels.channels;
+
+    // 추천 영상 리스트 추출
+    return jpaQueryFactory.select(
+            Projections.bean(
+                GetVideoResponseDto.class,
+                qChannels.channelName.as("channelName"),
+                qChannels.profileUrl.as("channelProfileUrl"),
+                qVideos.thumbnail,
+                qVideos.title.as("videoTitle"),
+                qVideos.createAt,
+                qVideos.readCnt.as("readCount"),
+                qVideos.videoId
+            )
+        )
+        .from(qVideos).leftJoin(qVideos.channelId, qChannels)
+        .where(qVideos.channelId.eq(channel))
+        .fetch();
   }
 }

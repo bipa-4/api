@@ -73,6 +73,21 @@ public class VideoController {
   }
 
 
+  @ApiOperation(value = "CDN presigned-url 발급", notes = "비디오 및 이미지 업로드를 위한 임시 url 발급")
+  @PostMapping("/presigned-cdn")
+  public ResponseEntity<GetUrlResponseDto> saveFileCDN(@RequestParam("videoName") String videoName,
+      @RequestParam("imageName") String imageName) {
+    GetUrlResponseDto urls = new GetUrlResponseDto(
+        presignedUrlService.getPreSignedUrlCDN(videoName),
+        presignedUrlService.getPreSignedUrlCDN(imageName));
+
+    if (urls.getVideoUrl() == null || urls.getVideoUrl() == null) {
+      return new ResponseEntity<>(urls, HttpStatus.BAD_REQUEST);
+    }
+
+    return new ResponseEntity<>(urls, HttpStatus.OK);
+  }
+
   // 영상 업로드
   @ApiOperation(value = "영상 업로드", notes = "영상 업로드 진행")
   @PostMapping("/upload")

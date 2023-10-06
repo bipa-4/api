@@ -1,12 +1,12 @@
 package com.bipa4.back_bipatv.controller;
 
-import com.bipa4.back_bipatv.dto.channel.CustomChannelTop10;
+import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
+import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
+import com.bipa4.back_bipatv.dto.channel.SelectChannelDTO;
 import com.bipa4.back_bipatv.dto.comment.CommentResponse;
 import com.bipa4.back_bipatv.dto.video.GetCategoryNameRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
-import com.bipa4.back_bipatv.entity.Accounts;
-import com.bipa4.back_bipatv.entity.Channels;
 import com.bipa4.back_bipatv.security.SecurityService;
 import com.bipa4.back_bipatv.service.ChannelService;
 import com.bipa4.back_bipatv.service.CommentService;
@@ -22,11 +22,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Api(tags = {"ReadController"})
-@RequestMapping("/read")
 @RequiredArgsConstructor
 @Controller
 public class ReadController {
@@ -85,7 +83,7 @@ public class ReadController {
     int viewsResult = videoService.plusViews(id); //  조회수 상승
     GetDetailResponseDto video = videoService.getVideoDetail(id);
     if (accessToken != null) {
-      video.setIsFavorite(videoService.getFavorite(id, accessToken));// 좋아요 버튼 눌렀는지 여부
+      video.setIsLike(videoService.getFavorite(id, accessToken));// 좋아요 버튼 눌렀는지 여부
     }
     return new ResponseEntity<GetDetailResponseDto>(video, HttpStatus.OK);
   }
@@ -112,32 +110,43 @@ public class ReadController {
 
 
   // 나의 채널 정보 조회
-  @ApiOperation(value = "마이 채널 정보", notes = "나의 채널 정보")
-  @GetMapping("/channel/{code}")
-  public ResponseEntity<Channels> getMyChannelInfo(@PathVariable String code) {
-    Accounts loginAccount = securityService.getSubjectAccount(code);
-    System.out.println(channelService.findChannel(loginAccount.getAccountId()));
-    return new ResponseEntity<Channels>(channelService.findChannel(loginAccount.getAccountId()),
-        HttpStatus.OK);
+  @ApiOperation(value = "채널 상세 조회", notes = "채널 상세 조회")
+  @GetMapping("/channel/{channelId}")
+  public ResponseEntity<SelectChannelDTO> getMyChannelInfo(@CookieValue("accessToken") String code,
+      @PathVariable("channelId") Long channelId) {
+    if (channelService.findChannel(code, channelId) != null) {
+      return new ResponseEntity<>(channelService.findChannel(code, channelId),
+          HttpStatus.OK);
+    } else {
+      return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+    }
   }
 
 
   // 인기 채널 top 10 조회
-  @ApiOperation(value = "실시간 인기 채널 10", notes = "가장 인기 있는 채널 TOP10을 들고온다")
-  @GetMapping("/channel/top10")
-  public ResponseEntity<List<CustomChannelTop10>> getViewsTop10Channels() {
-    List<CustomChannelTop10> channels = channelService.findLimitTimeSumCnt();
+  @ApiOperation(value = "실시간 인기 채널 5", notes = "가장 인기 있는 채널 TOP5을 들고온다")
+  @GetMapping("/channel/top5")
+  public ResponseEntity<List<GetChannelTop5DTO>> getViewsTop10Channels() {
+    List<GetChannelTop5DTO> channels = channelService.findLimitTimeSumCnt();
     channels.forEach(System.out::println);
-    return new ResponseEntity<List<CustomChannelTop10>>(channels, HttpStatus.OK);
+    return new ResponseEntity<List<GetChannelTop5DTO>>(channels, HttpStatus.OK);
   }
 
 
   // 전체 채널 조회
   @ApiOperation(value = "전체 채널 조회", notes = "전체 채널에 대한 정보")
-  @GetMapping("/channel")
-  public ResponseEntity<List<Channels>> getAllChannels() {
-    List<Channels> list = channelService.getAllChannels();
+  @GetMapping("/channelAll")
+  public ResponseEntity<List<GetChannelDTO>> getAllChannels() {
+    List<GetChannelDTO> list = channelService.getAllChannels();
     list.forEach(System.out::println);
-    return new ResponseEntity<List<Channels>>(list, HttpStatus.OK);
+    return new ResponseEntity<>(list, HttpStatus.OK);
   }
+
+  @ApiOperation(value = "채널 내 영상 조회", notes = "채널 내 영상 조회")
+  @GetMapping("/channel/video/{channelId}")
+  public ResponseEntity<List<GetVideoResponseDto>> getVideosInChannel(
+      @PathVariable("channelId") Long channelId) {
+    return new ResponseEntity<>(channelService.getVideosInChannel(channelId), HttpStatus.OK);
+  }
+
 }

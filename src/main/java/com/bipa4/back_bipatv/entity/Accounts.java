@@ -11,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.Pattern;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -24,20 +25,31 @@ public class Accounts {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "account_id")
   private Long accountId;
+
+
   @Column(name = "join_date", nullable = false)
   private Timestamp joinDate;
+
+
   @Column(name = "login_type", nullable = false, length = 20)
   @Enumerated(value = EnumType.STRING)
   private ELogin_Type loginType;
+
+
   @Column(name = "login_Id", nullable = false, length = 100)
   private String loginId;
+
+
   @Column(name = "name", nullable = false, length = 20)
+  @Pattern(regexp = "^[^0-9!@#$%^&*()_+{}\\[\\]:;<>,.?/~\\\\|\\s]{1,20}$")//특수문자 숫자를 제외한 문자 20글자
   private String name;
+
   @Column(name = "profile_url", nullable = true, length = 200)
   private String profileUrl;
-  @Column(name = "email", nullable = true, length = 40)
+
+  @Column(name = "email", nullable = true, length = 50)
+  @Pattern(regexp = "^[A-Za-z0-9_\\.\\-]+@[A-Za-z0-9\\-]+\\.[A-Za-z0-9\\-]{1,50}$")
   private String eMail;
-//  @Column(name = "refresh_token", nullable = true, length = 300)//redis사용할 때 nullable=false로 바꾸기
-//  private String refreshToken;
+
 
 }

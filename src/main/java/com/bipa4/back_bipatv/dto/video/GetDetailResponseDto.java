@@ -22,13 +22,13 @@ public class GetDetailResponseDto {
   private String videoUrl;
   private String videoTitle;
   private String content;
-  private Boolean isFavorite;
+  private Boolean isLike;
   @DateTimeFormat(pattern = "yyyy-MM-dd")
   @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+9")
   private Timestamp createAt;
-  private Integer readCnt;
+  private Integer readCount;
   private Long videoId;
-  private String thumbnailUrl;
+  private String thumbnail;
   private List<GetVideoResponseDto> recommendedList;
-  private Long favoriteCnt;
+  private Long likeCount;
 }
