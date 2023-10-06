@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -70,7 +71,7 @@ public class UserController {
   @ApiOperation(value = "userUpdate", notes = "유저 정보 수정")
   @PutMapping("/account")
   public ResponseEntity<Accounts> updateAccount(@CookieValue(value = "accessToken") String code,
-      @RequestBody Accounts accounts) {
+      @RequestBody @Validated Accounts accounts) {
 
     Accounts loginAccount = securityService.getSubjectAccount(code);
     System.out.println(accounts);

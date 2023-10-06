@@ -1,19 +1,17 @@
 package com.bipa4.back_bipatv.controller;
 
 import com.bipa4.back_bipatv.dto.channel.PutChannelDTO;
-import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.entity.Channels;
 import com.bipa4.back_bipatv.exception.ResourceNotFoundException;
 import com.bipa4.back_bipatv.service.ChannelService;
 import com.bipa4.back_bipatv.service.PresignedUrlService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -35,7 +33,8 @@ public class ChannelController {
   @ApiOperation(value = "updateMyChannel", notes = "채널 정보 수정")
   @PutMapping("/{channelId}")
   public ResponseEntity<Channels> updateMyChannelInfo(@PathVariable Long chnnaelId,
-      @RequestBody PutChannelDTO putChannelDTO, @CookieValue(value = "accessToken") String code) {
+      @RequestBody @Validated PutChannelDTO putChannelDTO,
+      @CookieValue(value = "accessToken") String code) {
     try {
       Channels updatedChannel = channelService.updateChannel(chnnaelId, code, putChannelDTO);
       return new ResponseEntity<>(updatedChannel, HttpStatus.OK);
@@ -55,13 +54,5 @@ public class ChannelController {
     return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
   }
 
-  @ApiOperation(value = "Video in Channel", notes = "채널 내 영상 조회")
-  @GetMapping("/video")
-  public ResponseEntity<List<GetVideoResponseDto>> getVideosInChannel(
-      @RequestParam("channelId") Long channelId) {
-    if (!(channelService.getVideosInChannel(channelId).isEmpty())) {
-      return new ResponseEntity<>(channelService.getVideosInChannel(channelId), HttpStatus.OK);
-    }
-    return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
-  }
+
 }

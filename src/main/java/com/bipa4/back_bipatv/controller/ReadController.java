@@ -1,7 +1,7 @@
 package com.bipa4.back_bipatv.controller;
 
-import com.bipa4.back_bipatv.dto.channel.CustomChannelTop10;
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
+import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
 import com.bipa4.back_bipatv.dto.comment.CommentResponse;
 import com.bipa4.back_bipatv.dto.video.GetCategoryNameRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
@@ -125,11 +125,11 @@ public class ReadController {
 
   // 인기 채널 top 10 조회
   @ApiOperation(value = "실시간 인기 채널 10", notes = "가장 인기 있는 채널 TOP10을 들고온다")
-  @GetMapping("/channel/top10")
-  public ResponseEntity<List<CustomChannelTop10>> getViewsTop10Channels() {
-    List<CustomChannelTop10> channels = channelService.findLimitTimeSumCnt();
+  @GetMapping("/channel/top5")
+  public ResponseEntity<List<GetChannelTop5DTO>> getViewsTop10Channels() {
+    List<GetChannelTop5DTO> channels = channelService.findLimitTimeSumCnt();
     channels.forEach(System.out::println);
-    return new ResponseEntity<List<CustomChannelTop10>>(channels, HttpStatus.OK);
+    return new ResponseEntity<List<GetChannelTop5DTO>>(channels, HttpStatus.OK);
   }
 
 
@@ -141,4 +141,15 @@ public class ReadController {
     list.forEach(System.out::println);
     return new ResponseEntity<>(list, HttpStatus.OK);
   }
+
+  @ApiOperation(value = "Video in Channel", notes = "채널 내 영상 조회")
+  @GetMapping("/channel/video/{channelId}")
+  public ResponseEntity<List<GetVideoResponseDto>> getVideosInChannel(
+      @PathVariable("channelId") Long channelId) {
+    if (!(channelService.getVideosInChannel(channelId).isEmpty())) {
+      return new ResponseEntity<>(channelService.getVideosInChannel(channelId), HttpStatus.OK);
+    }
+    return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+  }
+
 }
