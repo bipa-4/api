@@ -17,12 +17,12 @@ public class CommentDAO {
     private final CommentRepository commentRepository;
 
 
-    public List<CommentResponse> findParentComments(int videoId){
+    public List<CommentResponse> findParentComments(Long videoId){
         List<CommentResponse> list = commentRepository.findParentComments(videoId);
         return list;
     }
 
-    public List<CommentResponse> findChildComments(int videoId, int groupIndex){
+    public List<CommentResponse> findChildComments(Long videoId, int groupIndex){
         List<CommentResponse> list = commentRepository.findChildComments(videoId,groupIndex);
         return list;
     }

@@ -27,14 +27,14 @@ public class CommentController {
   private final SecurityService securityService;
 
   @GetMapping("/{videoId}/comment-parent")
-  public List<CommentResponse> findParentComments(@PathVariable int videoId) {
+  public List<CommentResponse> findParentComments(@PathVariable Long videoId) {
     List<CommentResponse> list = commentService.findParentComments(videoId);
 
     return list;
   }
 
   @GetMapping("/{videoId}/comment-child")
-  public List<CommentResponse> findChildComments(@PathVariable int videoId,
+  public List<CommentResponse> findChildComments(@PathVariable Long videoId,
       @RequestParam int groupIndex) {
     List<CommentResponse> list = commentService.findChildComments(videoId, groupIndex);
 
@@ -73,7 +73,7 @@ public class CommentController {
   }
 
   @DeleteMapping("/{videoId}/comment/{commentId}")
-  public ResponseEntity<String> deleteComment(@RequestBody CommentRequest commentRequest, @PathVariable Long videoId, @PathVariable Integer commentId,
+  public ResponseEntity<String> deleteComment(@RequestBody CommentRequest commentRequest, @PathVariable Long videoId, @PathVariable int commentId,
       @CookieValue(name = "accessToken") String accessToken) {
     if (commentRequest.getAccountId() == securityService.getSubjectAccount(accessToken)
         .getAccountId()) {

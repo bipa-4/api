@@ -32,14 +32,14 @@ public class CommentService {
   private final VideoRepository videoRepository;
   private final SecurityService securityService;
 
-  public List<CommentResponse> findParentComments(int videoId){
+  public List<CommentResponse> findParentComments(Long videoId){
     List<CommentResponse> list = commentDAO.findParentComments(videoId);
 
     return list;
 
   }
 
-  public List<CommentResponse> findChildComments(int videoId, int groupIndex){
+  public List<CommentResponse> findChildComments(Long videoId, int groupIndex){
     List<CommentResponse> list = commentDAO.findChildComments(videoId,groupIndex);
 
     return list;
