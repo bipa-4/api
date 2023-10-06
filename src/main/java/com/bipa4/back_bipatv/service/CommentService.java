@@ -67,6 +67,11 @@ public class CommentService {
 
   }
 
+  public boolean deleteComment(int commentId){
+    return commentDAO.deleteComment(commentId);
+  }
+
+
   private Comments convertDtoToEntityForInsert(CommentRequest commentRequest) {
 
     Comments comments = new Comments();
@@ -123,4 +128,6 @@ public class CommentService {
 
     return comments;
   }
+
+
 }

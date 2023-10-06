@@ -16,11 +16,6 @@ public class CommentDAO {
 
     private final CommentRepository commentRepository;
 
-    @Autowired
-    VideoRepository videoRepository;
-    @Autowired
-    AccountDAO accountDAO;
-
 
     public List<CommentResponse> findParentComments(int videoId){
         List<CommentResponse> list = commentRepository.findParentComments(videoId);
@@ -39,6 +34,20 @@ public class CommentDAO {
         }
         return false;
     }
+
+    public boolean deleteComment(int commentId){
+        Comments comments = commentRepository.findById(commentId).orElse(null);
+        if (comments != null) {
+            commentRepository.deleteById(commentId);
+            return true; // 댓글 삭제 성공
+        } else {
+            return false; // 댓글이 없거나 삭제 실패
+        }
+    }
+
+
+
+
 
     public Comments findByCommentId(int commentId){
         return commentRepository.findById(commentId).orElse(null);
