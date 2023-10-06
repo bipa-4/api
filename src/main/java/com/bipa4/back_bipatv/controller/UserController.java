@@ -101,7 +101,7 @@ public class UserController {
       @CookieValue(name = "accessToken") String accessToken) {
     System.out.println("accessToken:" + accessToken);
     Accounts findAccount = securityService.getSubjectAccount(accessToken);
-    return findAccount == null ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
+    return findAccount == null ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
         : new ResponseEntity<>(findAccount, HttpStatus.OK);
   }
 

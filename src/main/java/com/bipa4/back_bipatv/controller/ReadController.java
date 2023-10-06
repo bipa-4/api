@@ -22,11 +22,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Api(tags = {"ReadController"})
-@RequestMapping("/read")
 @RequiredArgsConstructor
 @Controller
 public class ReadController {
@@ -122,8 +120,6 @@ public class ReadController {
     } else {
       return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
     }
-
-
   }
 
 
@@ -146,14 +142,11 @@ public class ReadController {
     return new ResponseEntity<>(list, HttpStatus.OK);
   }
 
-  @ApiOperation(value = "Video in Channel", notes = "채널 내 영상 조회")
+  @ApiOperation(value = "채널 내 영상 조회", notes = "채널 내 영상 조회")
   @GetMapping("/channel/video/{channelId}")
   public ResponseEntity<List<GetVideoResponseDto>> getVideosInChannel(
       @PathVariable("channelId") Long channelId) {
-    if (!(channelService.getVideosInChannel(channelId).isEmpty())) {
-      return new ResponseEntity<>(channelService.getVideosInChannel(channelId), HttpStatus.OK);
-    }
-    return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+    return new ResponseEntity<>(channelService.getVideosInChannel(channelId), HttpStatus.OK);
   }
 
 }
