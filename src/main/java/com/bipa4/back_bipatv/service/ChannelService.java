@@ -2,8 +2,8 @@ package com.bipa4.back_bipatv.service;
 
 import com.bipa4.back_bipatv.dao.AccountDAO;
 import com.bipa4.back_bipatv.dao.ChannelDAO;
-import com.bipa4.back_bipatv.dto.channel.CustomChannelTop10;
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
+import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
 import com.bipa4.back_bipatv.dto.channel.PutChannelDTO;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.entity.Accounts;
@@ -14,6 +14,7 @@ import com.bipa4.back_bipatv.repository.VideoRepository;
 import com.bipa4.back_bipatv.security.SecurityService;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.IntStream;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -35,9 +36,33 @@ public class ChannelService {
     return channelRepository.findByChannelId(channelId);
   }
 
-  public List<CustomChannelTop10> findLimitTimeSumCnt() {
-    return channelDAO.findLimitTimeSumCnt();
+  public List<GetChannelTop5DTO> findLimitTimeSumCnt() {
+    List<GetChannelTop5DTO> list = channelDAO.findTop5Channels();
+
+    IntStream.range(0, list.size())
+        .forEach(i -> list.get(i).setRanking(i + 1));
+    return list;
   }
+
+  public List<GetChannelTop5DTO> findLimitTimeSumCntV2() {
+    List<GetChannelTop5DTO> list = channelDAO.findTop5Channels();
+
+    int i = 0;
+    list.get(0).setRanking(1);
+    for (GetChannelTop5DTO item : list) {
+      i++;
+      if (Objects.equals(list.get(i - 1).getTimeLimitSumCnt(), list.get(i).getTimeLimitSumCnt())) {
+        list.get(i).setRanking(item.getRanking());
+      } else {
+        list.get(i).setRanking(i + 1);
+      }
+      if (i == list.size() - 1) {
+        break;
+      }
+    }
+    return list;
+  }
+
 
   public List<GetChannelDTO> getAllChannels() {
     return channelRepository.getNotPrivateChannel();

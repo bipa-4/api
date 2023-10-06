@@ -21,14 +21,19 @@ public class Channels {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   @Column(name = "channel_id")
   private Long channelId;
-  @Column(name = "name", nullable = false, unique = true)
+
+  @Column(name = "name", nullable = false, unique = true, length = 100)
   private String channelName;
-  @Column(name = "content", nullable = true)
+
+  @Column(name = "content", nullable = true, length = 200)
   private String content;
+
   @Column(name = "private_type", nullable = true)
   private boolean privateType;
+
   @Column(name = "profile_url", nullable = true)
   private String profileUrl;
+
   @OneToOne
   @JoinColumn(name = "account_id", nullable = false)
   @OnDelete(action = OnDeleteAction.CASCADE)
