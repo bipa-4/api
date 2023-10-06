@@ -21,7 +21,4 @@ public class GetCategoryNameRequestDto {
 
   @ApiModelProperty(example = "카테고리 이름")
   private String categoryName;
-
-  @ApiModelProperty(example = "카테고리 path")
-  private String categoryPath;
 }

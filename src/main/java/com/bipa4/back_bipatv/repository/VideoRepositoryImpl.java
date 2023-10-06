@@ -50,7 +50,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 qVideos.thumbnail,
                 qVideos.title.as("videoTitle"),
                 qVideos.createAt,
-                qVideos.readCnt,
+                qVideos.readCnt.as("readCount"),
                 qVideos.videoId
             )
         )
@@ -78,7 +78,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 qVideos.thumbnail,
                 qVideos.title.as("videoTitle"),
                 qVideos.createAt,
-                qVideos.readCnt,
+                qVideos.readCnt.as("readCount"),
                 qVideos.videoId
             )
         )
@@ -101,8 +101,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
         Projections.bean(
             GetCategoryNameRequestDto.class,
             qCategoryName.categoryNameId.as("categoryNameId"),
-            qCategoryName.name.as("categoryName"),
-            qCategoryName.path.as("categoryPath")
+            qCategoryName.name.as("categoryName")
         )
     ).from(qCategoryName).fetch();
   }
@@ -123,7 +122,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 qVideos.thumbnail,
                 qVideos.title.as("videoTitle"),
                 qVideos.createAt,
-                qVideos.readCnt,
+                qVideos.readCnt.as("readCount"),
                 qVideos.videoId
             )
         )
@@ -166,9 +165,9 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 qVideos.title.as("videoTitle"),
                 qVideos.content,
                 qVideos.createAt,
-                qVideos.readCnt,
+                qVideos.readCnt.as("readCount"),
                 qVideos.videoId,
-                qVideos.thumbnail.as("thumbnailUrl")
+                qVideos.thumbnail
             )).from(qVideos)
         .leftJoin(qVideos.channelId, qChannels)
         .where(qVideos.videoId.eq(id))
@@ -186,7 +185,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 qVideos.thumbnail,
                 qVideos.title.as("videoTitle"),
                 qVideos.createAt,
-                qVideos.readCnt,
+                qVideos.readCnt.as("readCount"),
                 qVideos.videoId
             )
         )
@@ -197,14 +196,14 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
     dto.setRecommendedList(recommendedVideos);
 
-    // 좋아요 개수
+    // 영상의 좋아요 총 개수
     Videos videos = new Videos();
     videos.setVideoId(dto.getVideoId());
 
     long favoriteCnt = jpaQueryFactory.select(qFavorite.count()).from(qFavorite)
         .where(qFavorite.favoritePK.videos.eq(videos)).fetchFirst();
 
-    dto.setFavoriteCnt(favoriteCnt);
+    dto.setLikeCount(favoriteCnt);
 
     return dto;
   }
@@ -386,7 +385,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                 qVideos.thumbnail,
                 qVideos.title.as("videoTitle"),
                 qVideos.createAt,
-                qVideos.readCnt,
+                qVideos.readCnt.as("readCount"),
                 qVideos.videoId
             )
         )
