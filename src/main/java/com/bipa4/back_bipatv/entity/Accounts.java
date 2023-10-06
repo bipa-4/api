@@ -11,7 +11,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -27,20 +26,20 @@ public class Accounts {
   @Column(name = "account_id")
   private Long accountId;
 
-  @NotBlank
+
   @Column(name = "join_date", nullable = false)
   private Timestamp joinDate;
 
-  @NotBlank
+
   @Column(name = "login_type", nullable = false, length = 20)
   @Enumerated(value = EnumType.STRING)
   private ELogin_Type loginType;
 
-  @NotBlank
+
   @Column(name = "login_Id", nullable = false, length = 100)
   private String loginId;
 
-  @NotBlank
+
   @Column(name = "name", nullable = false, length = 20)
   @Pattern(regexp = "^[^0-9!@#$%^&*()_+{}\\[\\]:;<>,.?/~\\\\|\\s]{1,20}$")//특수문자 숫자를 제외한 문자 20글자
   private String name;

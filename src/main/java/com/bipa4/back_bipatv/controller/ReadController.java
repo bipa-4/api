@@ -2,12 +2,11 @@ package com.bipa4.back_bipatv.controller;
 
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
+import com.bipa4.back_bipatv.dto.channel.SelectChannelDTO;
 import com.bipa4.back_bipatv.dto.comment.CommentResponse;
 import com.bipa4.back_bipatv.dto.video.GetCategoryNameRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
-import com.bipa4.back_bipatv.entity.Accounts;
-import com.bipa4.back_bipatv.entity.Channels;
 import com.bipa4.back_bipatv.security.SecurityService;
 import com.bipa4.back_bipatv.service.ChannelService;
 import com.bipa4.back_bipatv.service.CommentService;
@@ -113,18 +112,23 @@ public class ReadController {
 
 
   // 나의 채널 정보 조회
-  @ApiOperation(value = "마이 채널 정보", notes = "나의 채널 정보")
-  @GetMapping("/channel/{code}")
-  public ResponseEntity<Channels> getMyChannelInfo(@PathVariable String code) {
-    Accounts loginAccount = securityService.getSubjectAccount(code);
-    System.out.println(channelService.findChannel(loginAccount.getAccountId()));
-    return new ResponseEntity<Channels>(channelService.findChannel(loginAccount.getAccountId()),
-        HttpStatus.OK);
+  @ApiOperation(value = "채널 상세 조회", notes = "채널 상세 조회")
+  @GetMapping("/channel/{channelId}")
+  public ResponseEntity<SelectChannelDTO> getMyChannelInfo(@CookieValue("accessToken") String code,
+      @PathVariable("channelId") Long channelId) {
+    if (channelService.findChannel(code, channelId) != null) {
+      return new ResponseEntity<>(channelService.findChannel(code, channelId),
+          HttpStatus.OK);
+    } else {
+      return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+    }
+
+
   }
 
 
   // 인기 채널 top 10 조회
-  @ApiOperation(value = "실시간 인기 채널 10", notes = "가장 인기 있는 채널 TOP10을 들고온다")
+  @ApiOperation(value = "실시간 인기 채널 5", notes = "가장 인기 있는 채널 TOP5을 들고온다")
   @GetMapping("/channel/top5")
   public ResponseEntity<List<GetChannelTop5DTO>> getViewsTop10Channels() {
     List<GetChannelTop5DTO> channels = channelService.findLimitTimeSumCnt();
@@ -135,7 +139,7 @@ public class ReadController {
 
   // 전체 채널 조회
   @ApiOperation(value = "전체 채널 조회", notes = "전체 채널에 대한 정보")
-  @GetMapping("/channel")
+  @GetMapping("/channelAll")
   public ResponseEntity<List<GetChannelDTO>> getAllChannels() {
     List<GetChannelDTO> list = channelService.getAllChannels();
     list.forEach(System.out::println);

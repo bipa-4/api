@@ -5,13 +5,12 @@ import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class GetChannelTop5DTO {
+public class SelectChannelDTO {
 
-  private Integer ranking; // ranking 필드 추가
   private Long channelId;
   private String channelName;
-  private String profileUrl;
   private String content;
-  private Integer timeLimitSumCnt;
-
+  private boolean privateType;
+  private String profileUrl;
+  private boolean updateFlag;
 }

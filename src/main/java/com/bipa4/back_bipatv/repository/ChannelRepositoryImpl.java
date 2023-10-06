@@ -4,6 +4,7 @@ import static com.querydsl.core.types.dsl.Expressions.asNumber;
 
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
+import com.bipa4.back_bipatv.dto.channel.SelectChannelDTO;
 import com.bipa4.back_bipatv.entity.QChannels;
 import com.bipa4.back_bipatv.entity.QVideos;
 import com.bipa4.back_bipatv.entity.QViewLog;
@@ -49,6 +50,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
     return jpaQueryFactory.select(
             Projections.bean(
                 GetChannelTop5DTO.class,
+                qChannels.channelId,
                 qChannels.channelName,
                 qChannels.profileUrl,
                 qChannels.content,
@@ -63,5 +65,23 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
             asNumber(qVideos.readCnt.subtract(qViewLog.viewCnt)).doubleValue().desc()
         )
         .limit(5).fetch();
+  }
+
+  @Override
+  public SelectChannelDTO selectChannel(Long channelId) {
+    QChannels qChannels = QChannels.channels;
+    return jpaQueryFactory.select(
+            Projections.bean(
+                SelectChannelDTO.class,
+                qChannels.channelId,
+                qChannels.channelName,
+                qChannels.profileUrl,
+                qChannels.content,
+                qChannels.privateType
+            )
+        )
+        .from(qChannels)
+        .where(qChannels.channelId.eq(channelId))
+        .fetchOne();
   }
 }
