@@ -82,17 +82,20 @@ public class VideoService {
     return videos;
   }
 
-  public GetDetailResponseDto getVideoDetail(UUID id) {
-    return videoRepository.getDetail(id);
+  public GetDetailResponseDto getVideoDetail(String id) {
+    UUID uuid = UUID.fromString(id);
+    return videoRepository.getDetail(uuid);
   }
 
   @Transactional
-  public int plusViews(UUID videoId) {
-    return videoRepository.plusViews(videoId);
+  public int plusViews(String videoId) {
+    UUID uuid = UUID.fromString(videoId);
+    return videoRepository.plusViews(uuid);
   }
 
-  public boolean getFavorite(UUID videoId, String token) {
-    if (videoRepository.getFavorite(videoId, token) == 1) {
+  public boolean getFavorite(String videoId, String token) {
+    UUID uuid = UUID.fromString(videoId);
+    if (videoRepository.getFavorite(uuid, token) == 1) {
       return true;
     }
     return false;

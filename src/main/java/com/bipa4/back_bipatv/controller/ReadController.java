@@ -90,7 +90,8 @@ public class ReadController {
   // 영상 상세 조회
   @ApiOperation(value = "영상 상세 조회 및 추천 영상 조회", notes = "영상 클릭시 상세 정보 + 추천 영상 추출")
   @GetMapping("/video/detail/{videoId}")
-  public ResponseEntity<GetDetailResponseDto> getVideoDetail(@PathVariable("videoId") UUID id,
+  public ResponseEntity<GetDetailResponseDto> getVideoDetail(
+      @PathVariable("videoId") String id,
       @CookieValue(name = "accessToken", required = false) String accessToken) {
     int viewsResult = videoService.plusViews(id); //  조회수 상승
     GetDetailResponseDto video = videoService.getVideoDetail(id);
