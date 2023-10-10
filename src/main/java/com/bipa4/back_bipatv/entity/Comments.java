@@ -1,6 +1,7 @@
 package com.bipa4.back_bipatv.entity;
 
 import java.sql.Timestamp;
+import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
@@ -10,6 +11,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import lombok.Data;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -19,9 +21,10 @@ import org.hibernate.annotations.OnDeleteAction;
 public class Comments {
 
   @Id
-  @GeneratedValue
-  @Column(name = "comment_id")
-  private int commentId;
+  @GeneratedValue(generator = "uuid2")
+  @GenericGenerator(name = "uuid2", strategy = "uuid2")
+  @Column(name = "comment_id", columnDefinition = "BINARY(16)")
+  private UUID commentId;
   @Column(name = "content", length = 200, nullable = true)
   private String content;
   @Column(name = "parent_child", nullable = false)

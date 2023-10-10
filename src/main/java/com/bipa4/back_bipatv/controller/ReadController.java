@@ -14,6 +14,7 @@ import com.bipa4.back_bipatv.service.VideoService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -114,7 +115,7 @@ public class ReadController {
   @GetMapping("/channel/{channelId}")
   public ResponseEntity<SelectChannelDTO> getMyChannelInfo(
       @CookieValue(value = "accessToken", required = false) String code,
-      @PathVariable("channelId") Long channelId) {
+      @PathVariable("channelId") UUID channelId) {
     if (code == null) {
       return new ResponseEntity<>(channelService.findChannel(channelId), HttpStatus.OK);
     }
@@ -149,7 +150,7 @@ public class ReadController {
   @ApiOperation(value = "채널 내 영상 조회", notes = "채널 내 영상 조회")
   @GetMapping("/channel/video/{channelId}")
   public ResponseEntity<List<GetVideoResponseDto>> getVideosInChannel(
-      @PathVariable("channelId") Long channelId) {
+      @PathVariable("channelId") UUID channelId) {
     return new ResponseEntity<>(channelService.getVideosInChannel(channelId), HttpStatus.OK);
   }
 

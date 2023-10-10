@@ -15,6 +15,7 @@ import com.bipa4.back_bipatv.repository.VideoRepository;
 import com.bipa4.back_bipatv.security.SecurityService;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.IntStream;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,7 @@ public class ChannelService {
   private final ChannelRepository channelRepository;
   private final VideoRepository videoRepository;
 
-  public SelectChannelDTO findChannel(String accessToken, Long channelId) {
+  public SelectChannelDTO findChannel(String accessToken, UUID channelId) {
     Accounts loginAccount = securityService.getSubjectAccount(accessToken);
     Channels selectChannel = channelRepository.findByChannelId(channelId);
     SelectChannelDTO selectChannelDTO = channelRepository.selectChannel(channelId);
@@ -44,7 +45,7 @@ public class ChannelService {
     }
   }
 
-  public SelectChannelDTO findChannel(Long channelId) {
+  public SelectChannelDTO findChannel(UUID channelId) {
 
     SelectChannelDTO selectChannelDTO = channelRepository.selectChannel(channelId);
 
@@ -53,7 +54,7 @@ public class ChannelService {
 
   }
 
-  public Channels findbyChannelId(Long channelId) {
+  public Channels findbyChannelId(UUID channelId) {
     return channelRepository.findByChannelId(channelId);
   }
 
@@ -90,7 +91,7 @@ public class ChannelService {
   }
 
   @Transactional
-  public Channels updateChannel(Long chnnaelId, String code, PutChannelDTO putChannelDTO) {
+  public Channels updateChannel(UUID chnnaelId, String code, PutChannelDTO putChannelDTO) {
     Accounts loginAccount = securityService.getSubjectAccount(code);
     AccountDAO accountDAO = new AccountDAO();
     Accounts putAccount = accountDAO.selectAccount(putChannelDTO.getAccounts());
@@ -115,7 +116,7 @@ public class ChannelService {
     return channelRepository.save(myChannel);
   }
 
-  public List<GetVideoResponseDto> getVideosInChannel(Long channelId) {
+  public List<GetVideoResponseDto> getVideosInChannel(UUID channelId) {
     return videoRepository.getVideosInChannel(channelId);
   }
 }

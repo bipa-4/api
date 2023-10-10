@@ -3,6 +3,7 @@ package com.bipa4.back_bipatv.dto.video;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.UUID;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -18,7 +19,7 @@ public class GetDetailResponseDto {
 
   private String channelName;
   private String channelProfileUrl;
-  private Long channelId;
+  private UUID channelId;
   private String videoUrl;
   private String videoTitle;
   private String content;

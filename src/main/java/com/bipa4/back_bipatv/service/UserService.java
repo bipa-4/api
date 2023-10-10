@@ -15,6 +15,7 @@ import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import javax.servlet.http.Cookie;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +47,8 @@ public class UserService {
   private void insertUser(Accounts accounts) {
 
     Timestamp now = new Timestamp(System.currentTimeMillis());
+    String uuid = UUID.randomUUID().toString();
+    accounts.setAccountId(uuid);
     accounts.setJoinDate(now);
     System.out.println(accounts);
     accountDAO.createAccount(accounts);
@@ -54,6 +57,8 @@ public class UserService {
 
   private void insertChannels(Accounts accounts) {
     Channels channels = new Channels();
+    UUID uuid = UUID.randomUUID();
+    channels.setChannelId(uuid);
     channels.setChannelName(accounts.getLoginId() + "_Channel");
     channels.setAccounts(accounts);
     channels.setProfileUrl(accounts.getProfileUrl());
@@ -118,7 +123,6 @@ public class UserService {
     String accessToken = getAccessToken(code, registrationId);
 
     JsonNode userResourceNode = getUserResource(accessToken, registrationId);
-    System.out.println(userResourceNode);
     Accounts accounts = new Accounts();
 
     switch (registrationId) {
@@ -198,7 +202,7 @@ public class UserService {
   }
 
   @Transactional
-  public Accounts updateAccount(Long accountId, Accounts accounts) {
+  public Accounts updateAccount(String accountId, Accounts accounts) {
     Accounts user = accountRepository.findById(accountId).orElse(null);
 
     if (user != null) {

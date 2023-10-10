@@ -1,16 +1,11 @@
 package com.bipa4.back_bipatv.dto.comment;
 
-import com.bipa4.back_bipatv.entity.Accounts;
-import com.bipa4.back_bipatv.entity.Videos;
+import java.sql.Timestamp;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-
-import javax.persistence.Column;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import java.sql.Timestamp;
 
 
 @Getter
@@ -19,24 +14,25 @@ import java.sql.Timestamp;
 @AllArgsConstructor
 public class CommentRequest {
 
-    private int commentId;
-    private String content;
-    private int parentChild;
-    private int groupIndex;
-    private Timestamp createAt;
-    private int videoId;
-    private int accountId;
-    @Override
-    public String toString() {
-        return "CommentRequest{" +
-                "commentId=" + commentId +
-                ", content='" + content + '\'' +
-                ", parentChild=" + parentChild +
-                ", groupIndex=" + groupIndex +
-                ", createAt=" + createAt +
-                ", videoId=" + videoId +
-                ", accountId=" + accountId +
-                '}';
-    }
+  private UUID commentId;
+  private String content;
+  private int parentChild;
+  private int groupIndex;
+  private Timestamp createAt;
+  private int videoId;
+  private String accountId;
+
+  @Override
+  public String toString() {
+    return "CommentRequest{" +
+        "commentId=" + commentId +
+        ", content='" + content + '\'' +
+        ", parentChild=" + parentChild +
+        ", groupIndex=" + groupIndex +
+        ", createAt=" + createAt +
+        ", videoId=" + videoId +
+        ", accountId=" + accountId +
+        '}';
+  }
 
 }

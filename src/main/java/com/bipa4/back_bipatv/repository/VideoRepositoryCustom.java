@@ -6,6 +6,7 @@ import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.dto.video.PostUploadRequestDto;
 import com.bipa4.back_bipatv.dto.video.PutUpdateRequestDto;
 import java.util.List;
+import java.util.UUID;
 
 public interface VideoRepositoryCustom {
 
@@ -37,5 +38,5 @@ public interface VideoRepositoryCustom {
 
   int minusLike(Long videoId, String token);
 
-  List<GetVideoResponseDto> getVideosInChannel(Long channelId);
+  List<GetVideoResponseDto> getVideosInChannel(UUID channelId);
 }
