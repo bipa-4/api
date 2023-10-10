@@ -6,6 +6,7 @@ import com.bipa4.back_bipatv.dto.channel.SelectChannelDTO;
 import com.bipa4.back_bipatv.dto.comment.CommentResponse;
 import com.bipa4.back_bipatv.dto.video.GetCategoryNameRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
+import com.bipa4.back_bipatv.dto.video.GetInfiniteScrollRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.security.SecurityService;
 import com.bipa4.back_bipatv.service.ChannelService;
@@ -14,6 +15,7 @@ import com.bipa4.back_bipatv.service.VideoService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -36,23 +38,33 @@ public class ReadController {
 
 
   // 전체 조회 (최신 순으로)
-  @ApiOperation(value = "전체 조회", notes = "최신순으로 전체 조회 (무한스크롤)")
+  @ApiOperation(value = "전체 조회", notes = "최신순으로 전체 조회 (무한스크롤) / 처음엔 page 안넘겨주면 됨.")
   @GetMapping("/video/latest")
-  public ResponseEntity<List<GetVideoResponseDto>> getAllVideos(@RequestParam("page") int page,
+  public ResponseEntity<GetInfiniteScrollRequestDto> getAllVideos(
+      @RequestParam(value = "page", required = false) String page,
       @RequestParam("pageSize") int pageSize) {
-    List<GetVideoResponseDto> videos = videoService.getAllViideos(page, pageSize);
-    return new ResponseEntity<List<GetVideoResponseDto>>(videos, HttpStatus.OK);
+    List<GetVideoResponseDto> videos = videoService.getAllVideos(page, pageSize);
+    String nextUUID = videoService.getNextUUID(
+        videos.get(videos.size() - 1).getVideoId()); // 마지막 page의 UUID 호출
+    GetInfiniteScrollRequestDto responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
+
+    return ResponseEntity.ok().body(responseDto);
   }
 
 
   // 카테고리별 조회
   @ApiOperation(value = "카테고리별 전체 조회", notes = "카테고리 별 전체 조회 (무한스크롤)")
   @GetMapping("/video/category/{category}")
-  public ResponseEntity<List<GetVideoResponseDto>> getCategoryVideos(
-      @PathVariable("category") String category, @RequestParam("page") int page,
+  public ResponseEntity<GetInfiniteScrollRequestDto> getCategoryVideos(
+      @PathVariable("category") UUID category,
+      @RequestParam(value = "page", required = false) String page,
       @RequestParam("pageSize") int pageSize) {
     List<GetVideoResponseDto> videos = videoService.getCategoryVideos(category, page, pageSize);
-    return new ResponseEntity<List<GetVideoResponseDto>>(videos, HttpStatus.OK);
+    String nextUUID = videoService.getNextUUID(
+        videos.get(videos.size() - 1).getVideoId()); // 마지막 page의 UUID 호출
+    GetInfiniteScrollRequestDto responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
+
+    return ResponseEntity.ok().body(responseDto);
   }
 
 
@@ -78,7 +90,7 @@ public class ReadController {
   // 영상 상세 조회
   @ApiOperation(value = "영상 상세 조회 및 추천 영상 조회", notes = "영상 클릭시 상세 정보 + 추천 영상 추출")
   @GetMapping("/video/detail/{videoId}")
-  public ResponseEntity<GetDetailResponseDto> getVideoDetail(@PathVariable("videoId") Long id,
+  public ResponseEntity<GetDetailResponseDto> getVideoDetail(@PathVariable("videoId") UUID id,
       @CookieValue(name = "accessToken", required = false) String accessToken) {
     int viewsResult = videoService.plusViews(id); //  조회수 상승
     GetDetailResponseDto video = videoService.getVideoDetail(id);
@@ -92,7 +104,7 @@ public class ReadController {
   // 부모 댓글 전체 조회
   @ApiOperation(value = "부모 댓글 조회", notes = "부모 댓글 조회")
   @GetMapping("/comment/{videoId}/comment-parent")
-  public List<CommentResponse> findParentComments(@PathVariable int videoId) {
+  public List<CommentResponse> findParentComments(@PathVariable long videoId) {
     List<CommentResponse> list = commentService.findParentComments(videoId);
 
     return list;
@@ -102,7 +114,7 @@ public class ReadController {
   // 자식 댓글 전체 조회
   @ApiOperation(value = "자식 댓글 조회", notes = "자식 댓글 조회")
   @GetMapping("/comment/{videoId}/comment-child")
-  public List<CommentResponse> findChildComments(@PathVariable int videoId,
+  public List<CommentResponse> findChildComments(@PathVariable long videoId,
       @RequestParam int groupIndex) {
     List<CommentResponse> list = commentService.findChildComments(videoId, groupIndex);
     return list;
