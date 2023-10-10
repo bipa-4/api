@@ -355,7 +355,6 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
   @Override
   public int plusViews(UUID videoId) {
     Videos video = entityManager.find(Videos.class, videoId);
-    System.out.println(video);
 
     if (video != null) {
       video.setReadCnt(video.getReadCnt() + 1);
@@ -374,7 +373,6 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     Videos videos = new Videos();
     videos.setVideoId(videoId);
     Accounts account = securityService.getSubjectAccount(token);
-    System.out.println(account);
 
     return jpaQueryFactory.select(qFavorite.count()).from(qFavorite)
         .where(
