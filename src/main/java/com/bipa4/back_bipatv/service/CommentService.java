@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -27,14 +28,15 @@ public class CommentService {
   private final VideoRepository videoRepository;
   private final SecurityService securityService;
 
-  public List<CommentResponse> findParentComments(int videoId) {
+  public List<CommentResponse> findParentComments(UUID videoId) {
     List<CommentResponse> list = commentDAO.findParentComments(videoId);
 
     return list;
 
   }
 
-  public List<CommentResponse> findChildComments(int videoId, int groupIndex) {
+
+  public List<CommentResponse> findChildComments(UUID videoId, int groupIndex) {
     List<CommentResponse> list = commentDAO.findChildComments(videoId, groupIndex);
 
     return list;
@@ -61,6 +63,11 @@ public class CommentService {
     }
 
   }
+
+  public boolean deleteComment(UUID commentId) {
+    return commentDAO.deleteComment(commentId);
+  }
+
 
   private Comments convertDtoToEntityForInsert(CommentRequest commentRequest) {
 
@@ -119,4 +126,6 @@ public class CommentService {
 
     return comments;
   }
+
+
 }

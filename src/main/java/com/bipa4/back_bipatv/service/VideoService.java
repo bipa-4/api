@@ -11,6 +11,7 @@ import com.bipa4.back_bipatv.dto.video.PutUpdateRequestDto;
 import com.bipa4.back_bipatv.repository.VideoChannelRepository;
 import com.bipa4.back_bipatv.repository.VideoRepository;
 import java.util.List;
+import java.util.UUID;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,7 +28,7 @@ public class VideoService {
     return videoChannelRepository.findBySearchQuery(searchQuery);
   }
 
-  public Long check(String token, Long videoId) {
+  public Long check(String token, UUID videoId) {
     return videoRepository.checkOwner(token, videoId);
   }
 
@@ -46,13 +47,28 @@ public class VideoService {
     return videoRepository.update(id, requestDto);
   }
 
-  public List<GetVideoResponseDto> getAllViideos(int page, int pageSize) {
-    System.out.println(page + " " + pageSize);
-    return videoRepository.getAllVideos(page, pageSize);
+  public List<GetVideoResponseDto> getAllVideos(String page, int pageSize) {
+    UUID uuid;
+    if (page == null) {
+      uuid = videoRepository.lastUUID();
+    } else {
+      uuid = UUID.fromString(page);
+    }
+    return videoRepository.getAllVideos(uuid, pageSize);
   }
 
-  public List<GetVideoResponseDto> getCategoryVideos(String category, int page, int pageSize) {
-    return videoRepository.findByCategory(category, page, pageSize);
+  public String getNextUUID(UUID uuid) {
+    return videoRepository.getNextUUID(uuid);
+  }
+
+  public List<GetVideoResponseDto> getCategoryVideos(UUID category, String page, int pageSize) {
+    UUID uuid;
+    if (page == null) {
+      uuid = videoRepository.lastCategoryUUID(category);
+    } else {
+      uuid = UUID.fromString(page);
+    }
+    return videoRepository.findByCategory(category, uuid, pageSize);
   }
 
   public List<GetCategoryNameRequestDto> getCategoryNames() {
@@ -66,29 +82,32 @@ public class VideoService {
     return videos;
   }
 
-  public GetDetailResponseDto getVideoDetail(Long id) {
-    return videoRepository.getDetail(id);
+  public GetDetailResponseDto getVideoDetail(String id) {
+    UUID uuid = UUID.fromString(id);
+    return videoRepository.getDetail(uuid);
   }
 
   @Transactional
-  public int plusViews(Long videoId) {
-    return videoRepository.plusViews(videoId);
+  public int plusViews(String videoId) {
+    UUID uuid = UUID.fromString(videoId);
+    return videoRepository.plusViews(uuid);
   }
 
-  public boolean getFavorite(Long videoId, String token) {
-    if (videoRepository.getFavorite(videoId, token) == 1) {
+  public boolean getFavorite(String videoId, String token) {
+    UUID uuid = UUID.fromString(videoId);
+    if (videoRepository.getFavorite(uuid, token) == 1) {
       return true;
     }
     return false;
   }
 
   @Transactional
-  public int like(Long videoId, String token) {
+  public int like(UUID videoId, String token) {
     return videoRepository.plusLike(videoId, token);
   }
 
   @Transactional
-  public int cancelLike(Long videoId, String token) {
+  public int cancelLike(UUID videoId, String token) {
     return videoRepository.minusLike(videoId, token);
   }
 

@@ -28,7 +28,7 @@ public class GetDetailResponseDto {
   @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+9")
   private Timestamp createAt;
   private Integer readCount;
-  private Long videoId;
+  private UUID videoId;
   private String thumbnail;
   private List<GetVideoResponseDto> recommendedList;
   private Long likeCount;

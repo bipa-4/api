@@ -16,18 +16,19 @@ public class CommentDAO {
 
   private final CommentRepository commentRepository;
 
+
   @Autowired
   VideoRepository videoRepository;
   @Autowired
   AccountDAO accountDAO;
 
 
-  public List<CommentResponse> findParentComments(int videoId) {
+  public List<CommentResponse> findParentComments(UUID videoId) {
     List<CommentResponse> list = commentRepository.findParentComments(videoId);
     return list;
   }
 
-  public List<CommentResponse> findChildComments(int videoId, int groupIndex) {
+  public List<CommentResponse> findChildComments(UUID videoId, int groupIndex) {
     List<CommentResponse> list = commentRepository.findChildComments(videoId, groupIndex);
     return list;
   }
@@ -43,19 +44,17 @@ public class CommentDAO {
   public Comments findByCommentId(UUID commentId) {
     return commentRepository.findById(commentId).orElse(null);
   }
-//    public CommentRequest findById(int commentId){
-//        Comments comments = commentRepository.findById(commentId).orElse(null);
-//        if(comments == null){
-//            return null;
-//        }
-//
-//        CommentRequest commentRequest = new CommentRequest();
-//        commentRequest.setCommentId(comments.getCommentId());
-//        commentRequest.setContent(comments.getContent());
-//        commentRequest.setCreateAt(comments.getCreateAt());
-//        commentRequest.setParentChild(comments.getParentChild());
-//        commentRequest.setGroupIndex(comments.getGroupIndex());
-//        return commentRequest;
-//
-//    }
+
+
+  public boolean deleteComment(UUID commentId) {
+    Comments comments = commentRepository.findById(commentId).orElse(null);
+    if (comments != null) {
+      commentRepository.deleteById(commentId);
+      return true; // 댓글 삭제 성공
+    } else {
+      return false; // 댓글이 없거나 삭제 실패
+    }
+  }
+
+
 }
