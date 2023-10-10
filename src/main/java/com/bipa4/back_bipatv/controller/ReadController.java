@@ -124,8 +124,12 @@ public class ReadController {
   // 나의 채널 정보 조회
   @ApiOperation(value = "채널 상세 조회", notes = "채널 상세 조회")
   @GetMapping("/channel/{channelId}")
-  public ResponseEntity<SelectChannelDTO> getMyChannelInfo(@CookieValue("accessToken") String code,
+  public ResponseEntity<SelectChannelDTO> getMyChannelInfo(
+      @CookieValue(value = "accessToken", required = false) String code,
       @PathVariable("channelId") Long channelId) {
+    if (code == null) {
+      return new ResponseEntity<>(channelService.findChannel(channelId), HttpStatus.OK);
+    }
     if (channelService.findChannel(code, channelId) != null) {
       return new ResponseEntity<>(channelService.findChannel(code, channelId),
           HttpStatus.OK);

@@ -44,6 +44,15 @@ public class ChannelService {
     }
   }
 
+  public SelectChannelDTO findChannel(Long channelId) {
+
+    SelectChannelDTO selectChannelDTO = channelRepository.selectChannel(channelId);
+
+    selectChannelDTO.setUpdateFlag(false);
+    return selectChannelDTO;
+
+  }
+
   public Channels findbyChannelId(Long channelId) {
     return channelRepository.findByChannelId(channelId);
   }

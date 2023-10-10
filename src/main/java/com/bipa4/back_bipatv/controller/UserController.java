@@ -98,7 +98,10 @@ public class UserController {
   @ApiOperation(value = "CheckAccount", notes = "accessToken에 맞는 Account반환")
   @GetMapping("/account/check")
   public ResponseEntity<Accounts> checkAccessTokenToAccount(
-      @CookieValue(name = "accessToken") String accessToken) {
+      @CookieValue(name = "accessToken", required = false) String accessToken) {
+    if (accessToken == null) {
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
     System.out.println("accessToken:" + accessToken);
     Accounts findAccount = securityService.getSubjectAccount(accessToken);
     return findAccount == null ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
