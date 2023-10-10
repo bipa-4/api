@@ -8,6 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Table;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 
 @Entity
 @Data
@@ -15,9 +16,10 @@ import org.hibernate.annotations.GenericGenerator;
 public class CategoryName {
 
   @Id
-  @GenericGenerator(name = "uuid4", strategy = "uuid2")
-  @GeneratedValue(generator = "uuid4")
+  @GeneratedValue(generator = "UUID")
+  @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
   @Column(columnDefinition = "BINARY(16)")
+  @Type(type = "uuid-binary")
   private UUID categoryNameId;
   @Column(name = "name", nullable = false, length = 30)
   private String name;

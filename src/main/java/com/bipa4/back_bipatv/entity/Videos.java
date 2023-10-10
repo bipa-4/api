@@ -1,18 +1,20 @@
 package com.bipa4.back_bipatv.entity;
 
 import java.sql.Timestamp;
+import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.Type;
 
 @Entity
 @Data
@@ -21,9 +23,11 @@ import org.hibernate.annotations.OnDeleteAction;
 public class Videos {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "video_id")
-  private Long videoId;
+  @GeneratedValue(generator = "UUID")
+  @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+  @Column(columnDefinition = "BINARY(16)")
+  @Type(type = "uuid-binary")
+  private UUID videoId;
   @Column(name = "video_url", nullable = true, length = 200)
   private String videoUrl;
   @Column(name = "title", nullable = true, length = 100)

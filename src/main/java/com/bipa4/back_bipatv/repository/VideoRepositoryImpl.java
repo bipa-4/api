@@ -23,6 +23,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.UUID;
 import javax.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -37,12 +38,11 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 전체보기 (무한 스크롤)
   @Override
-  public List<GetVideoResponseDto> getAllVideos(int page, int pageSize) {
+  public List<GetVideoResponseDto> getAllVideos(UUID page, int pageSize) {
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
-    Long total = jpaQueryFactory.select(qVideos.count()).from(qVideos).fetchFirst();
 
-    return jpaQueryFactory.select(
+    List<GetVideoResponseDto> dto = jpaQueryFactory.select(
             Projections.bean(
                 GetVideoResponseDto.class,
                 qChannels.channelName.as("channelName"),
@@ -55,14 +55,46 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
             )
         )
         .from(qVideos).leftJoin(qVideos.channelId, qChannels)
-        .where(qVideos.videoId.loe(total - (page - 2))).orderBy(qVideos.videoId.desc())
+        .where(qVideos.videoId.loe(page))
+        .orderBy(qVideos.videoId.desc())
         .limit(pageSize).fetch();
+
+    return dto;
+  }
+
+
+  // Default UUID (무한 스크롤 시작점 찾기)
+  @Override
+  public UUID lastUUID() {
+    QVideos qVideos = QVideos.videos;
+
+    return jpaQueryFactory.select(qVideos.videoId).from(qVideos)
+        .orderBy(qVideos.videoId.desc()).limit(1)
+        .fetchOne();
+  }
+
+
+  // 다음 페이지의 UUID 찾기
+  @Override
+  public String getNextUUID(UUID uuid) {
+    QVideos qVideos = QVideos.videos;
+
+    UUID nextUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
+        .where(qVideos.videoId.lt(uuid))
+        .orderBy(qVideos.videoId.desc())
+        .limit(1).fetchOne();
+
+    if (nextUUID == null) {
+      return "";
+    }
+
+    return nextUUID.toString();
   }
 
 
   // 카테고리별 전체보기
   @Override
-  public List<GetVideoResponseDto> findByCategory(String category, int page, int pageSize) {
+  public List<GetVideoResponseDto> findByCategory(UUID category, UUID page, int pageSize) {
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
     QCategorys qCategorys = QCategorys.categorys;
@@ -86,11 +118,26 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
         .leftJoin(qCategorys.videoId, qVideos)
         .leftJoin(qVideos.channelId, qChannels)
         .leftJoin(qCategorys.categoryNameId, qCategoryName)
-        .where(qCategoryName.name.eq(category).and(qVideos.videoId.loe(total - (page - 2))))
+        .where(
+            qCategoryName.categoryNameId.eq(category)
+                .and(qVideos.videoId.loe(page)))
         .orderBy(qVideos.videoId.desc())
         .limit(pageSize).fetch();
   }
 
+  @Override
+  public UUID lastCategoryUUID(UUID category) {
+    QVideos qVideos = QVideos.videos;
+    QCategorys qCategorys = QCategorys.categorys;
+    QCategoryName qCategoryName = QCategoryName.categoryName;
+
+    return jpaQueryFactory.select(qVideos.videoId).from(qCategorys)
+        .leftJoin(qCategorys.videoId, qVideos)
+        .leftJoin(qCategorys.categoryNameId, qCategoryName)
+        .where(qCategoryName.categoryNameId.eq(category))
+        .orderBy(qVideos.videoId.desc()).limit(1)
+        .fetchOne();
+  }
 
   // 카테고리 이름 리스트
   @Override
@@ -100,7 +147,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     return jpaQueryFactory.select(
         Projections.bean(
             GetCategoryNameRequestDto.class,
-            qCategoryName.categoryNameId.as("categoryNameId"),
+            qCategoryName.categoryNameId,
             qCategoryName.name.as("categoryName")
         )
     ).from(qCategoryName).fetch();
@@ -150,7 +197,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 상세보기
   @Override
-  public GetDetailResponseDto getDetail(Long id) {
+  public GetDetailResponseDto getDetail(UUID id) {
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
     QFavorite qFavorite = QFavorite.favorite;
@@ -244,7 +291,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 영상 본인 글인지 확인하기
   @Override
-  public Long checkOwner(String token, Long videoId) {
+  public Long checkOwner(String token, UUID videoId) {
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
 
@@ -306,7 +353,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 조회수 상승
   @Override
-  public int plusViews(Long videoId) {
+  public int plusViews(UUID videoId) {
     Videos video = entityManager.find(Videos.class, videoId);
 
     if (video != null) {
@@ -320,7 +367,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 좋아요 버튼 눌렀는지 여부
   @Override
-  public Long getFavorite(Long videoId, String token) {
+  public Long getFavorite(UUID videoId, String token) {
     QFavorite qFavorite = QFavorite.favorite;
 
     Videos videos = new Videos();
@@ -335,7 +382,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 좋아요
   @Override
-  public int plusLike(Long videoId, String token) {
+  public int plusLike(UUID videoId, String token) {
     Accounts account = securityService.getSubjectAccount(token);
 
     int result = entityManager.createNativeQuery(
@@ -350,7 +397,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 좋아요 취소
   @Override
-  public int minusLike(Long videoId, String token) {
+  public int minusLike(UUID videoId, String token) {
     Videos video = new Videos();
     video.setVideoId(videoId);
     Accounts account = securityService.getSubjectAccount(token);

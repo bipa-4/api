@@ -10,6 +10,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,7 +38,7 @@ public class VideoController {
   @ApiOperation(value = "본인의 영상이 맞는지 확인", notes = "토큰을 통해 본인의 영상이 맞는지 확인 (삭제 또는 업로드 등애 사용)")
   @GetMapping("/check")
   public ResponseEntity<Boolean> checkVideos(@CookieValue(name = "accessToken") String accessToken,
-      @RequestParam("videoId") Long videoId) {
+      @RequestParam("videoId") UUID videoId) {
     Long owner = videoService.check(accessToken, videoId);
     if (owner > 0) {
       return new ResponseEntity<>(true, HttpStatus.OK);
@@ -128,7 +129,7 @@ public class VideoController {
   // 좋아요
   @ApiOperation(value = "좋아요", notes = "줗아요 버튼을 눌렀을 시")
   @GetMapping("/detail/{videoId}/like")
-  public ResponseEntity<Boolean> like(@PathVariable("videoId") Long videoId,
+  public ResponseEntity<Boolean> like(@PathVariable("videoId") UUID videoId,
       @CookieValue(name = "accessToken") String accessToken) {
     return videoService.like(videoId, accessToken) == 1 ? new ResponseEntity<>(true,
         HttpStatus.OK)
@@ -140,7 +141,7 @@ public class VideoController {
   @ApiOperation(value = "좋아요 취소", notes = "줗아요 버튼을 다시 눌렀을 시")
   @DeleteMapping("/detail/{videoId}/like")
   public ResponseEntity<Boolean> cancelLike(
-      @ApiParam(value = "좋아요를 취소할 영상 아이디") @PathVariable("videoId") Long videoId,
+      @ApiParam(value = "좋아요를 취소할 영상 아이디") @PathVariable("videoId") UUID videoId,
       @ApiParam(value = "좋아요를 취소할 유저의 토큰값") @CookieValue(name = "accessToken") String accessTokenn) {
     return videoService.cancelLike(videoId, accessTokenn) == 1 ? new ResponseEntity<>(true,
         HttpStatus.OK)

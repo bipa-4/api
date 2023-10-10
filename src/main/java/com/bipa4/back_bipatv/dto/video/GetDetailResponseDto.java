@@ -3,6 +3,7 @@ package com.bipa4.back_bipatv.dto.video;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.UUID;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,7 +28,7 @@ public class GetDetailResponseDto {
   @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+9")
   private Timestamp createAt;
   private Integer readCount;
-  private Long videoId;
+  private UUID videoId;
   private String thumbnail;
   private List<GetVideoResponseDto> recommendedList;
   private Long likeCount;
