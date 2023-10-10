@@ -104,7 +104,7 @@ public class ReadController {
   // 부모 댓글 전체 조회
   @ApiOperation(value = "부모 댓글 조회", notes = "부모 댓글 조회")
   @GetMapping("/comment/{videoId}/comment-parent")
-  public List<CommentResponse> findParentComments(@PathVariable int videoId) {
+  public List<CommentResponse> findParentComments(@PathVariable long videoId) {
     List<CommentResponse> list = commentService.findParentComments(videoId);
 
     return list;
@@ -114,7 +114,7 @@ public class ReadController {
   // 자식 댓글 전체 조회
   @ApiOperation(value = "자식 댓글 조회", notes = "자식 댓글 조회")
   @GetMapping("/comment/{videoId}/comment-child")
-  public List<CommentResponse> findChildComments(@PathVariable int videoId,
+  public List<CommentResponse> findChildComments(@PathVariable long videoId,
       @RequestParam int groupIndex) {
     List<CommentResponse> list = commentService.findChildComments(videoId, groupIndex);
     return list;
