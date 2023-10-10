@@ -17,7 +17,7 @@ public interface CommentRepository extends JpaRepository<Comments, Integer> {
             "ON comments.account_id = accounts.account_id " +
             "WHERE video_id = :videoId AND parent_child = 0 " +
             "ORDER BY comments.create_at", nativeQuery = true)
-    List<CommentResponse> findParentComments(@Param("videoId") int videoId);
+    List<CommentResponse> findParentComments(@Param("videoId") Long videoId);
 
     @Query(value = "SELECT accounts.profile_url, accounts.name, comments.content, comments.create_at " +
             "FROM comments comments " +
@@ -25,7 +25,7 @@ public interface CommentRepository extends JpaRepository<Comments, Integer> {
             "ON comments.account_id = accounts.account_id " +
             "WHERE video_id = :videoId AND parent_child = 1 AND group_index = :groupIndex " +
             "ORDER BY comments.create_at", nativeQuery = true)
-    List<CommentResponse> findChildComments(@Param("videoId") int videoId, @Param("groupIndex") int groupIndex);
+    List<CommentResponse> findChildComments(@Param("videoId") Long videoId, @Param("groupIndex") int groupIndex);
 
 
 
