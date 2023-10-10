@@ -1,16 +1,18 @@
 package com.bipa4.back_bipatv.entity;
 
+import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import lombok.Data;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.Type;
 
 @Entity
 @Data
@@ -18,9 +20,11 @@ import org.hibernate.annotations.OnDeleteAction;
 public class Channels {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @GeneratedValue(generator = "uuid2")
+  @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
+  @Type(type = "uuid-char")
   @Column(name = "channel_id")
-  private Long channelId;
+  private UUID channelId;
 
   @Column(name = "name", nullable = false, unique = true, length = 100)
   private String channelName;

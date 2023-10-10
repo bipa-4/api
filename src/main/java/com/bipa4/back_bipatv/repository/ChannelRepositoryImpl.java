@@ -12,6 +12,7 @@ import com.bipa4.back_bipatv.security.SecurityService;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.util.List;
+import java.util.UUID;
 import javax.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -61,6 +62,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
         .leftJoin(qViewLog.videoId, qVideos)
         .leftJoin(qVideos.channelId, qChannels)
         .where(qChannels.privateType.eq(false))
+        .groupBy(qChannels.channelId)
         .orderBy(
             asNumber(qVideos.readCnt.subtract(qViewLog.viewCnt)).doubleValue().desc()
         )
@@ -68,7 +70,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
   }
 
   @Override
-  public SelectChannelDTO selectChannel(Long channelId) {
+  public SelectChannelDTO selectChannel(UUID channelId) {
     QChannels qChannels = QChannels.channels;
     return jpaQueryFactory.select(
             Projections.bean(

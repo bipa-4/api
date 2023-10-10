@@ -44,5 +44,5 @@ public interface VideoRepositoryCustom {
 
   int minusLike(UUID videoId, String token);
 
-  List<GetVideoResponseDto> getVideosInChannel(Long channelId);
+  List<GetVideoResponseDto> getVideosInChannel(UUID channelId);
 }

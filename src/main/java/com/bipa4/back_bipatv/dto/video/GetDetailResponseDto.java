@@ -19,7 +19,7 @@ public class GetDetailResponseDto {
 
   private String channelName;
   private String channelProfileUrl;
-  private Long channelId;
+  private UUID channelId;
   private String videoUrl;
   private String videoTitle;
   private String content;

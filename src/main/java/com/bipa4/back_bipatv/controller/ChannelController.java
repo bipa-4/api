@@ -7,6 +7,7 @@ import com.bipa4.back_bipatv.service.ChannelService;
 import com.bipa4.back_bipatv.service.PresignedUrlService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -32,7 +33,7 @@ public class ChannelController {
 
   @ApiOperation(value = "updateMyChannel", notes = "채널 정보 수정")
   @PutMapping("/{channelId}")
-  public ResponseEntity<Channels> updateMyChannelInfo(@PathVariable Long chnnaelId,
+  public ResponseEntity<Channels> updateMyChannelInfo(@PathVariable UUID chnnaelId,
       @RequestBody @Validated PutChannelDTO putChannelDTO,
       @CookieValue(value = "accessToken") String code) {
     try {

@@ -105,7 +105,7 @@ public class ReadController {
   // 부모 댓글 전체 조회
   @ApiOperation(value = "부모 댓글 조회", notes = "부모 댓글 조회")
   @GetMapping("/comment/{videoId}/comment-parent")
-  public List<CommentResponse> findParentComments(@PathVariable long videoId) {
+  public List<CommentResponse> findParentComments(@PathVariable UUID videoId) {
     List<CommentResponse> list = commentService.findParentComments(videoId);
 
     return list;
@@ -115,7 +115,7 @@ public class ReadController {
   // 자식 댓글 전체 조회
   @ApiOperation(value = "자식 댓글 조회", notes = "자식 댓글 조회")
   @GetMapping("/comment/{videoId}/comment-child")
-  public List<CommentResponse> findChildComments(@PathVariable long videoId,
+  public List<CommentResponse> findChildComments(@PathVariable UUID videoId,
       @RequestParam int groupIndex) {
     List<CommentResponse> list = commentService.findChildComments(videoId, groupIndex);
     return list;
@@ -127,7 +127,7 @@ public class ReadController {
   @GetMapping("/channel/{channelId}")
   public ResponseEntity<SelectChannelDTO> getMyChannelInfo(
       @CookieValue(value = "accessToken", required = false) String code,
-      @PathVariable("channelId") Long channelId) {
+      @PathVariable("channelId") UUID channelId) {
     if (code == null) {
       return new ResponseEntity<>(channelService.findChannel(channelId), HttpStatus.OK);
     }
@@ -162,7 +162,7 @@ public class ReadController {
   @ApiOperation(value = "채널 내 영상 조회", notes = "채널 내 영상 조회")
   @GetMapping("/channel/video/{channelId}")
   public ResponseEntity<List<GetVideoResponseDto>> getVideosInChannel(
-      @PathVariable("channelId") Long channelId) {
+      @PathVariable("channelId") UUID channelId) {
     return new ResponseEntity<>(channelService.getVideosInChannel(channelId), HttpStatus.OK);
   }
 

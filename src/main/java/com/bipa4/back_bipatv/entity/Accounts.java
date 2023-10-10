@@ -7,8 +7,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import javax.validation.constraints.Pattern;
@@ -22,9 +20,8 @@ import lombok.NoArgsConstructor;
 public class Accounts {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.IDENTITY)
-  @Column(name = "account_id")
-  private Long accountId;
+  @Column(name = "account_id", length = 36)
+  private String accountId;
 
 
   @Column(name = "join_date", nullable = false)

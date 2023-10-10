@@ -318,7 +318,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
     // chcannelId 가져오기.
     Accounts account = securityService.getSubjectAccount(token);
-    Long channelId = jpaQueryFactory.select(qChannels.channelId).from(qChannels)
+    UUID channelId = jpaQueryFactory.select(qChannels.channelId).from(qChannels)
         .where(qChannels.accounts.eq(account)).fetchOne();
 
     Channels channel = new Channels();
@@ -417,7 +417,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
   }
 
   @Override
-  public List<GetVideoResponseDto> getVideosInChannel(Long channelId) {
+  public List<GetVideoResponseDto> getVideosInChannel(UUID channelId) {
     Channels channel = new Channels();
     channel.setChannelId(channelId);
     QVideos qVideos = QVideos.videos;
