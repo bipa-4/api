@@ -86,8 +86,14 @@ public class ChannelService {
   }
 
 
-  public List<GetChannelDTO> getAllChannels() {
-    return channelRepository.getNotPrivateChannel();
+  public List<GetChannelDTO> getAllChannels(String page, int pageSize) {
+    UUID uuid;
+    if (page == null) {
+      uuid = channelRepository.lastUUID();
+    } else {
+      uuid = UUID.fromString(page);
+    }
+    return channelRepository.getNotPrivateChannel(uuid, pageSize);
   }
 
   @Transactional
@@ -116,7 +122,13 @@ public class ChannelService {
     return channelRepository.save(myChannel);
   }
 
-  public List<GetVideoResponseDto> getVideosInChannel(UUID channelId) {
-    return videoRepository.getVideosInChannel(channelId);
+  public List<GetVideoResponseDto> getVideosInChannel(UUID channelId, String page, int pageSize) {
+    UUID uuid = null;
+    if (page == null) {
+      uuid = videoRepository.lastUUIDInChannel(channelId);
+    } else {
+      uuid = UUID.fromString(page);
+    }
+    return videoRepository.getVideosInChannel(channelId, uuid, pageSize);
   }
 }
