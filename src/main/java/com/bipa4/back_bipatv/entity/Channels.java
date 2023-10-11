@@ -3,6 +3,7 @@ package com.bipa4.back_bipatv.entity;
 import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
@@ -23,8 +24,9 @@ public class Channels {
 //  @Column(name = "channel_id", length = 36)
 //  private UUID channelId;
   @Id
+  @GeneratedValue(generator = "UUID")
+  @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
   @Column(name = "channel_id", columnDefinition = "BINARY(16)")
-  @GenericGenerator(name = "uuid2", strategy = "uuid2")
   private UUID channelId;
 
   @Column(name = "name", nullable = false, unique = true, length = 100)

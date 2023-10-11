@@ -14,6 +14,8 @@ public interface VideoRepositoryCustom {
 
   UUID lastUUID();
 
+  UUID lastUUIDInChannel(UUID channelId);
+
   UUID lastCategoryUUID(UUID category);
 
   String getNextUUID(UUID uuid);
@@ -44,5 +46,5 @@ public interface VideoRepositoryCustom {
 
   int minusLike(UUID videoId, String token);
 
-  List<GetVideoResponseDto> getVideosInChannel(UUID channelId);
+  List<GetVideoResponseDto> getVideosInChannel(UUID channelId, UUID uuid, int pageSize);
 }
