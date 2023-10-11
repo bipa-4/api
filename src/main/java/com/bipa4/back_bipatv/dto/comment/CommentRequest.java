@@ -20,7 +20,7 @@ public class CommentRequest {
   private int groupIndex;
   private Timestamp createAt;
   private int videoId;
-  private String accountId;
+  private UUID accountId;
 
   @Override
   public String toString() {

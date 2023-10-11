@@ -8,7 +8,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
-import javax.persistence.MapsId;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import lombok.Data;
@@ -26,7 +25,6 @@ public class ViewLog {
   private Long viewLogId;
 
   @OneToOne(fetch = FetchType.EAGER)
-  @MapsId //@MapsId 는 @id로 지정한 컬럼에 @OneToOne 이나 @ManyToOne 관계를 매핑시키는 역할
   @JoinColumn(name = "video_id")
   @OnDelete(action = OnDeleteAction.CASCADE)
   private Videos videoId;
