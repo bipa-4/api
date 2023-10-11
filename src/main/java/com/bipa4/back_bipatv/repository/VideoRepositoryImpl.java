@@ -100,8 +100,6 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QCategorys qCategorys = QCategorys.categorys;
     QCategoryName qCategoryName = QCategoryName.categoryName;
 
-    Long total = jpaQueryFactory.select(qVideos.count()).from(qVideos).fetchFirst();
-
     return jpaQueryFactory.select(
             Projections.bean(
                 GetVideoResponseDto.class,
@@ -316,7 +314,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
   public int insert(PostUploadRequestDto videoResponseDto, String token) {
     QChannels qChannels = QChannels.channels;
 
-    // chcannelId 가져오기.
+    // channelId 가져오기.
     Accounts account = securityService.getSubjectAccount(token);
     UUID channelId = jpaQueryFactory.select(qChannels.channelId).from(qChannels)
         .where(qChannels.accounts.eq(account)).fetchOne();

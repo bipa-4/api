@@ -40,8 +40,6 @@ public class Videos {
   private Timestamp createAt;
   @Column(name = "private_type")
   private boolean privateType;
-  @Column(name = "comment_permission")
-  private boolean commentPermission;
   @Column(name = "thumbnail", nullable = true, length = 200)
   private String thumbnail;
   @ManyToOne
