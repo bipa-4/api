@@ -47,7 +47,7 @@ public class UserService {
   private void insertUser(Accounts accounts) {
 
     Timestamp now = new Timestamp(System.currentTimeMillis());
-    String uuid = UUID.randomUUID().toString();
+    UUID uuid = UUID.randomUUID();
     accounts.setAccountId(uuid);
     accounts.setJoinDate(now);
     System.out.println(accounts);
@@ -63,6 +63,7 @@ public class UserService {
     channels.setAccounts(accounts);
     channels.setProfileUrl(accounts.getProfileUrl());
     channels.setContent(accounts.getName() + "의 채널");
+    System.out.println(channels);
     channelDAO.createChannel(channels);
   }
 
@@ -202,7 +203,7 @@ public class UserService {
   }
 
   @Transactional
-  public Accounts updateAccount(String accountId, Accounts accounts) {
+  public Accounts updateAccount(UUID accountId, Accounts accounts) {
     Accounts user = accountRepository.findById(accountId).orElse(null);
 
     if (user != null) {

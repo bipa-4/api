@@ -2,9 +2,10 @@ package com.bipa4.back_bipatv.repository;
 
 import com.bipa4.back_bipatv.entity.Accounts;
 import java.util.Optional;
+import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface AccountRepository extends JpaRepository<Accounts, String> { //<entity명,pk자료형>
+public interface AccountRepository extends JpaRepository<Accounts, UUID> { //<entity명,pk자료형>
 
   Optional<Accounts> findByLoginId(String loginId);
 
