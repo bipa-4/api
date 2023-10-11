@@ -3,7 +3,6 @@ package com.bipa4.back_bipatv.entity;
 import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
@@ -12,18 +11,20 @@ import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.hibernate.annotations.Type;
 
 @Entity
 @Data
 @Table(name = "Channels")
 public class Channels {
 
+  //  @Id
+//  @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
+//  @Type(type = "uuid-char")
+//  @Column(name = "channel_id", length = 36)
+//  private UUID channelId;
   @Id
-  @GeneratedValue(generator = "uuid2")
-  @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
-  @Type(type = "uuid-char")
-  @Column(name = "channel_id")
+  @Column(name = "channel_id", columnDefinition = "BINARY(16)")
+  @GenericGenerator(name = "uuid2", strategy = "uuid2")
   private UUID channelId;
 
   @Column(name = "name", nullable = false, unique = true, length = 100)
