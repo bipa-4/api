@@ -2,28 +2,28 @@ package com.bipa4.back_bipatv.dto.video;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.util.Date;
-import java.util.UUID;
 import org.springframework.format.annotation.DateTimeFormat;
+
 
 public interface GetSearchResponseDto {
 
-  UUID getVideo_id();
+  String getVideoId();
 
   String getThumbnail();
 
-  String getVideo_title();
+  String getVideoTitle();
 
   String getContent();
 
   @DateTimeFormat(pattern = "yyyy-MM-dd")
   @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+9")
-  Date getCreate_at();
+  Date getCreateAt();
 
-  Integer getRead_cnt();
+  Integer getReadCnt();
 
-  Boolean getPrivate_type();
+  Boolean getPrivateType();
 
-  String getChannel_profile_url();
+  String getChannelProfileUrl();
 
-  String getChannel_name();
+  String getChannelName();
 }

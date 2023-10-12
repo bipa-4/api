@@ -25,7 +25,11 @@ public class VideoService {
 
   @Transactional
   public List<GetSearchResponseDto> search(String searchQuery) {
-    return videoChannelRepository.findBySearchQuery(searchQuery);
+    List<GetSearchResponseDto> dto = videoChannelRepository.findBySearchQuery(searchQuery);
+    for (int i = 0; i < dto.size(); i++) {
+      System.out.println(dto.get(i));
+    }
+    return dto;
   }
 
   public Long check(String token, UUID videoId) {
@@ -39,7 +43,8 @@ public class VideoService {
 
   @Transactional
   public int uploadVideo(PostUploadRequestDto requestdto, String token) {
-    return videoRepository.insert(requestdto, token);
+    UUID uuid = generateUUIDv1(requestdto.getContent());
+    return videoRepository.insert(requestdto, token, uuid);
   }
 
   @Transactional
@@ -109,6 +114,20 @@ public class VideoService {
   @Transactional
   public int cancelLike(UUID videoId, String token) {
     return videoRepository.minusLike(videoId, token);
+  }
+
+  public UUID generateUUIDv1(String content) {
+    // Generate a UUID version 1 using current time and MAC address
+    long timestamp = System.currentTimeMillis();
+    long timeLow = timestamp & 0xFFFFFFFFL;
+    long timeMid = (timestamp >> 32) & 0xFFFFL;
+    long timeHigh = (timestamp >> 48) & 0x0FFF0L;
+    long customNode = content.hashCode() & 0xFFFFFFFFFFFFL;
+
+    long mostSigBits = (timeLow << 32) | (timeMid << 16) | timeHigh | 0x1000L;
+    long leastSigBits = (customNode << 16) | 0x800000000000L;
+
+    return new UUID(mostSigBits, leastSigBits);
   }
 
   // Upload to storage.
