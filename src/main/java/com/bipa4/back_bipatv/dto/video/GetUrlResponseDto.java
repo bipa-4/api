@@ -10,4 +10,6 @@ public class GetUrlResponseDto {
 
   private String videoUrl;
   private String imageUrl;
+  private String videoName;
+  private String imageName;
 }
