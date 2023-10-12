@@ -8,9 +8,11 @@ import java.util.UUID;
 
 public interface ChannelRepositoryCustom {
 
-  List<GetChannelDTO> getNotPrivateChannel();
+  List<GetChannelDTO> getNotPrivateChannel(UUID page, int pageSize);
 
   List<GetChannelTop5DTO> findTop5Channels();
 
   SelectChannelDTO selectChannel(UUID channelId);
+
+  UUID lastUUID();
 }

@@ -83,7 +83,7 @@ public class CommentService {
 
     if (Objects.nonNull(commentRequest.getAccountId())) {
       Accounts tempAccounts = new Accounts();
-      tempAccounts.setAccountId((String) commentRequest.getAccountId());
+      tempAccounts.setAccountId((UUID) commentRequest.getAccountId());
 
       Accounts accounts = accountDAO.selectAccountId(tempAccounts);
       System.out.println(accounts);

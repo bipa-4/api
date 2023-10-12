@@ -12,13 +12,17 @@ import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
-import org.hibernate.annotations.Type;
 
 @Entity
 @Data
 @Table(name = "Channels")
 public class Channels {
 
+  //  @Id
+//  @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
+//  @Type(type = "uuid-char")
+//  @Column(name = "channel_id", length = 36)
+//  private UUID channelId;
   @Id
   @GeneratedValue(generator = "UUID")
   @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")

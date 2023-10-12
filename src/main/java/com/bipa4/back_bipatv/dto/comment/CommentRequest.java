@@ -19,8 +19,8 @@ public class CommentRequest {
   private int parentChild;
   private int groupIndex;
   private Timestamp createAt;
-  private UUID videoId;
-  private String accountId;
+  private int videoId;
+  private UUID accountId;
 
   @Override
   public String toString() {

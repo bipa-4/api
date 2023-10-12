@@ -13,6 +13,7 @@ import javax.persistence.Table;
 import javax.validation.constraints.Pattern;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
 
 @Entity
 @Data
@@ -21,7 +22,8 @@ import lombok.NoArgsConstructor;
 public class Accounts {
 
   @Id
-  @Column(name = "account_id", length = 36)
+  @Column(name = "account_id", columnDefinition = "BINARY(16)")
+  @GenericGenerator(name = "uuid2", strategy = "uuid2")
   private UUID accountId;
 
 
@@ -45,8 +47,8 @@ public class Accounts {
   @Column(name = "profile_url", nullable = true, length = 200)
   private String profileUrl;
 
-  @Column(name = "email", nullable = true, length = 50)
-  @Pattern(regexp = "^[A-Za-z0-9_\\.\\-]+@[A-Za-z0-9\\-]+\\.[A-Za-z0-9\\-]{1,50}$")
+  @Column(name = "email")
+  @Pattern(regexp = "^(|^[A-Za-z0-9_\\.-]+@[A-Za-z0-9-]+\\.[A-Za-z0-9-]{1,50}$)")
   private String eMail;
 
 
