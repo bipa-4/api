@@ -1,6 +1,7 @@
 package com.bipa4.back_bipatv.dto.video;
 
 import io.swagger.annotations.ApiModelProperty;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -32,5 +33,5 @@ public class PostUploadRequestDto {
   private Boolean privateType;
 
   @ApiModelProperty(example = "카테고리")
-  private int category;
+  private List<String> category;
 }

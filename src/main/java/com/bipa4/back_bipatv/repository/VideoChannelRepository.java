@@ -14,7 +14,7 @@ public interface VideoChannelRepository extends JpaRepository<Videos, Long> {
 
   @Modifying
   @Query(value =
-      "SELECT video_id, v.content, create_at, v.private_type, read_cnt, thumbnail, title as video_title, profile_url as channel_profile_url, name as channel_name FROM videos v\n"
+      "SELECT video_id as videoId, v.content, create_at as createAt, v.private_type as privateType, read_cnt as readCnt, thumbnail, title as videoTitle, profile_url as channelProfileUrl, name as channelName FROM videos v\n"
           + "    left outer join channels c on v.channel_id = c.channel_id\n"
           + "    WHERE MATCH (v.title, v.content)\n"
           + "    AGAINST (:searchQuery WITH QUERY EXPANSION)", nativeQuery = true)
