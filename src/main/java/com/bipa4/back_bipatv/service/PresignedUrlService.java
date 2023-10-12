@@ -68,9 +68,9 @@ public class PresignedUrlService {
       SignerUtils.Protocol protocol = SignerUtils.Protocol.http;
       File privateKeyFile = ResourceUtils.getFile(path);
       String s3VideoKey =
-          videoName.split("[.]")[0] + LocalDateTime.now() + videoName.split("[.]")[1];
+          videoName.split("[.]")[0] + LocalDateTime.now() + "." + videoName.split("[.]")[1];
       String s3ImageKey =
-          imageName.split("[.]")[0] + LocalDateTime.now() + imageName.split("[.]")[1];
+          imageName.split("[.]")[0] + LocalDateTime.now() + "." + imageName.split("[.]")[1];
 
       Date expirationTime = new Date(System.currentTimeMillis() + 3600000); // 1 hour from now
 
