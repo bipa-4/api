@@ -80,11 +80,15 @@ public class VideoService {
     return videoRepository.getCategoryNames();
   }
 
-  @Transactional
+
   public List<GetVideoResponseDto> getViewsTop10Videos() {
     List<GetVideoResponseDto> videos = videoRepository.findByViews();
-    int result = videoRepository.updateViews();
     return videos;
+  }
+
+  @Transactional
+  public int updateViews() {
+    return videoRepository.updateViews();
   }
 
   public GetDetailResponseDto getVideoDetail(String id) {
