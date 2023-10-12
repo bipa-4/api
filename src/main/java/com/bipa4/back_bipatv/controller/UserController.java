@@ -42,30 +42,34 @@ public class UserController {
 
   @ApiOperation(value = "Social_Login", notes = "소셜 로그인")
   @GetMapping("/auth/{registrationId}/callback")
-  public void doLogin(@RequestParam String code, @PathVariable String registrationId,
+  public ResponseEntity<String> doLogin(@RequestParam String code,
+      @PathVariable String registrationId,
       HttpServletResponse httpresponse) {
 
     Map<String, Cookie> cookieMap = userService.socialLogin(code, registrationId);
-
-    ResponseCookie refreshCookie = ResponseCookie.from("refreshToken",
-            cookieMap.get("refreshToken").getValue())
-        .path("/")
-        .maxAge(REFRESHTOKEN_EXP_TIME)// refreshToken도 6시간
-        .httpOnly(true)
-        .secure(true)
-        .sameSite("None")
-        .build();
-    httpresponse.addHeader("Set-Cookie", refreshCookie.toString());
-    System.out.println("acc=" + cookieMap.get("accessToken").getValue());
-    ResponseCookie accessCookie = ResponseCookie.from("accessToken",
-            cookieMap.get("accessToken").getValue())
-        .path("/")
-        .maxAge(ACCESSTOKEN_EXP_TIME)//기간 2시간
-        .httpOnly(true)
-        .secure(true)
-        .sameSite("None")
-        .build();
-    httpresponse.addHeader("Set-Cookie", accessCookie.toString());
+    if (cookieMap != null) {
+      ResponseCookie refreshCookie = ResponseCookie.from("refreshToken",
+              cookieMap.get("refreshToken").getValue())
+          .path("/")
+          .maxAge(REFRESHTOKEN_EXP_TIME)// refreshToken도 6시간
+          .httpOnly(true)
+          .secure(true)
+          .sameSite("None")
+          .build();
+      httpresponse.addHeader("Set-Cookie", refreshCookie.toString());
+      System.out.println("acc=" + cookieMap.get("accessToken").getValue());
+      ResponseCookie accessCookie = ResponseCookie.from("accessToken",
+              cookieMap.get("accessToken").getValue())
+          .path("/")
+          .maxAge(ACCESSTOKEN_EXP_TIME)//기간 2시간
+          .httpOnly(true)
+          .secure(true)
+          .sameSite("None")
+          .build();
+      httpresponse.addHeader("Set-Cookie", accessCookie.toString());
+      return new ResponseEntity<>("로그인 성공", HttpStatus.OK);
+    }
+    return new ResponseEntity<>("로그인 실패", HttpStatus.NO_CONTENT);
   }
 
   @ApiOperation(value = "userUpdate", notes = "유저 정보 수정")
@@ -144,5 +148,20 @@ public class UserController {
   public void deleteAccount(
       @CookieValue("accessToken") String accessToken) {
     userService.deleteAccount(accessToken);
+  }
+
+  @ApiOperation(value = "ReCreateAcessToken", notes = "액세스 토큰 재발급")
+  @GetMapping("/account/reAcessToken")
+  public void reCreateAcessToken(@CookieValue("refreshToken") String refreshToken,
+      HttpServletResponse httpresponse) {
+    ResponseCookie accessCokkie = ResponseCookie.from("accessToken",
+            userService.createAccessTokenToRefreshToken(refreshToken))
+        .path("/")
+        .maxAge(ACCESSTOKEN_EXP_TIME)// refreshToken도 6시간
+        .httpOnly(true)
+        .secure(true)
+        .sameSite("None")
+        .build();
+    httpresponse.addHeader("Set-Cookie", accessCokkie.toString());
   }
 }

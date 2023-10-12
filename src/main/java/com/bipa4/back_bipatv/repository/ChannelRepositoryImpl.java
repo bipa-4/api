@@ -39,7 +39,11 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
             )
         )
         .from(qChannels)
-        .where(qChannels.privateType.eq(false).and(qChannels.channelId.loe(page)))
+        .where(
+            qChannels.privateType.eq(false)
+                .and(qChannels.accounts.deleteAt.isNull())
+                .and(qChannels.channelId.loe(page))
+        )
         .orderBy(qChannels.channelId.desc())
         .limit(pageSize).fetch();
   }
@@ -62,7 +66,10 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
         .from(qViewLog)
         .leftJoin(qViewLog.videoId, qVideos)
         .leftJoin(qVideos.channelId, qChannels)
-        .where(qChannels.privateType.eq(false))
+        .where(
+            qChannels.privateType.eq(false)
+                .and(qChannels.accounts.deleteAt.isNull())
+        )
         .groupBy(qChannels.channelId)
         .orderBy(
             asNumber(qVideos.readCnt.subtract(qViewLog.viewCnt)).doubleValue().desc()
@@ -84,7 +91,10 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
             )
         )
         .from(qChannels)
-        .where(qChannels.channelId.eq(channelId))
+        .where(
+            qChannels.channelId.eq(channelId)
+                .and(qChannels.accounts.deleteAt.isNull())
+        )
         .fetchOne();
   }
 
@@ -92,7 +102,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
   public UUID lastUUID() {
     QChannels qChannels = QChannels.channels;
     return jpaQueryFactory.select(qChannels.channelId).from(qChannels)
-        .where(qChannels.privateType.eq(false))
+        .where(qChannels.privateType.eq(false).and(qChannels.accounts.deleteAt.isNull()))
         .orderBy(qChannels.channelId.desc()).limit(1)
         .fetchOne();
   }

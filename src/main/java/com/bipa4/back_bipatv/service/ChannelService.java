@@ -1,6 +1,5 @@
 package com.bipa4.back_bipatv.service;
 
-import com.bipa4.back_bipatv.dao.AccountDAO;
 import com.bipa4.back_bipatv.dao.ChannelDAO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
@@ -85,21 +84,25 @@ public class ChannelService {
     return list;
   }
 
+  public String getNextUUID(UUID uuid) {
+    return videoRepository.getNextUUID(uuid);
+  }
 
   public List<GetChannelDTO> getAllChannels(String page, int pageSize) {
     UUID uuid;
     if (page == null) {
       uuid = channelRepository.lastUUID();
+
     } else {
       uuid = UUID.fromString(page);
     }
+    System.out.println("Service getAllChannels Method uuid: " + uuid);
     return channelRepository.getNotPrivateChannel(uuid, pageSize);
   }
 
   @Transactional
   public Channels updateChannel(UUID channelId, String code, PutChannelDTO putChannelDTO) {
     Accounts loginAccount = securityService.getSubjectAccount(code);
-    AccountDAO accountDAO = new AccountDAO();
     Accounts putAccount = channelRepository.findByChannelId(channelId).getAccounts();
     if (!Objects.equals(loginAccount.getAccountId(),
         putAccount.getAccountId())) { //로그인한 accountId와 수정할 채널의 accountId가 같은 경우
