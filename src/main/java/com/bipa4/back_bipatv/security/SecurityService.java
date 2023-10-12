@@ -2,7 +2,7 @@ package com.bipa4.back_bipatv.security;
 
 import com.bipa4.back_bipatv.dao.AccountDAO;
 import com.bipa4.back_bipatv.entity.Accounts;
-import com.bipa4.back_bipatv.exception.ResourceNotFoundException;
+import com.bipa4.back_bipatv.exception.JwtNotFoundException;
 import com.bipa4.back_bipatv.repository.RedisRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -77,7 +77,7 @@ public class SecurityService {
       dummyAccount.setLoginId(claims.getSubject());
       return accountDAO.findAccount(dummyAccount);
     } else {
-      throw new IllegalArgumentException("유효하지 않은 토큰입니다.");
+      throw new JwtNotFoundException();
     }
 
   }
@@ -100,7 +100,7 @@ public class SecurityService {
       dummyAccount.setLoginId(claims.getSubject());
       return accountDAO.selectAccount(dummyAccount);
     } else {
-      throw new ResourceNotFoundException("유효하지 않은 토큰입니다.");
+      throw new JwtNotFoundException();
     }
   }
 

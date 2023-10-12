@@ -40,8 +40,7 @@ public class Accounts {
   private String loginId;
 
 
-  @Column(name = "name", nullable = false, length = 20)
-  @Pattern(regexp = "^[^0-9!@#$%^&*()_+{}\\[\\]:;<>,.?/~\\\\|\\s]{1,20}$")//특수문자 숫자를 제외한 문자 20글자
+  @Column(name = "name", nullable = false, length = 100)
   private String name;
 
   @Column(name = "profile_url", nullable = true, length = 200)
@@ -51,5 +50,6 @@ public class Accounts {
   @Pattern(regexp = "^(|^[A-Za-z0-9_\\.-]+@[A-Za-z0-9-]+\\.[A-Za-z0-9-]{1,50}$)")
   private String eMail;
 
-
+  @Column(name = "dalete_at")
+  private Timestamp deleteAt;
 }

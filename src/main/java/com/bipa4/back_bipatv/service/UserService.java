@@ -12,6 +12,8 @@ import com.bipa4.back_bipatv.repository.RedisRepository;
 import com.bipa4.back_bipatv.security.SecurityService;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -168,8 +170,11 @@ public class UserService {
     }
     //유저 아이디에 대한 리프레쉬 토큰 검샘
     if (!findAccount(accounts)) {//
-      insertUser(accounts); //db에 그냥 refreshToken저장하려면 사용할 메소드
+      insertUser(accounts);
       insertChannels(accounts);
+    }
+    if (accountDAO.selectAccount(accounts).getDeleteAt() != null) {//삭제된 아이디로 로그인 시 null반환
+      return null;
     }
     String refreshToken = securityService.createRefreshToken(accounts);
     RefreshToken Rtoken = null;
@@ -198,7 +203,7 @@ public class UserService {
       dummyAccount.setLoginId(optRefreshToken.get().getMemberId());
       return securityService.createToken(accountDAO.selectAccount(dummyAccount), EXP_TIME);
     } else {//재 로그인 요청
-      return "재로그인해주세요";
+      return null;
     }
   }
 
@@ -245,6 +250,10 @@ public class UserService {
 
   public void deleteAccount(String accessToken) {
     Accounts loginAccount = securityService.getSubjectAccount(accessToken);
-    accountRepository.delete(loginAccount);
+    LocalDateTime now = LocalDateTime.now();
+
+    loginAccount.setDeleteAt(Timestamp.valueOf(
+        now.plusHours(9).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
+    accountRepository.save(loginAccount);
   }
 }
