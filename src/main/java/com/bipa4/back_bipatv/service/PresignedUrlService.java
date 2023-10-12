@@ -8,6 +8,7 @@ import com.amazonaws.services.s3.Headers;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
 import java.io.File;
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
@@ -65,8 +66,10 @@ public class PresignedUrlService {
     try {
       SignerUtils.Protocol protocol = SignerUtils.Protocol.http;
       File privateKeyFile = ResourceUtils.getFile(path);
-
-      String s3ObjectKey = fileName;
+      String[] fileNames = fileName.split("[.]");
+      System.out.println(fileNames[0]);
+      String s3ObjectKey =
+          fileName.split("[.]")[0] + LocalDateTime.now() + fileName.split("[.]")[1];
 
       Date expirationTime = new Date(System.currentTimeMillis() + 3600000); // 1 hour from now
       System.out.println(expirationTime);

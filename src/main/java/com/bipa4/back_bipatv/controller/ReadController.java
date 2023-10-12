@@ -83,6 +83,7 @@ public class ReadController {
   @Scheduled(cron = "0 0 0/1 * * *")
   public ResponseEntity<List<GetVideoResponseDto>> getViewsTop10Videos() {
     List<GetVideoResponseDto> videos = videoService.getViewsTop10Videos();
+    int result = videoService.updateViews();
     return new ResponseEntity<List<GetVideoResponseDto>>(videos, HttpStatus.OK);
   }
 
