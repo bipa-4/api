@@ -6,8 +6,10 @@ import lombok.Getter;
 
 @AllArgsConstructor
 @Getter
-public class GetUrlResponseDto {
+public class GetCDNUrlResponseDto {
 
   private String videoUrl;
   private String imageUrl;
+  private String videoName;
+  private String imageName;
 }

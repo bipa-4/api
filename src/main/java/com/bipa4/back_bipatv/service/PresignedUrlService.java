@@ -7,6 +7,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.Headers;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+import com.bipa4.back_bipatv.dto.video.GetCDNUrlResponseDto;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.Calendar;
@@ -60,32 +61,43 @@ public class PresignedUrlService {
     return amazonS3.generatePresignedUrl(generateVideoPresignedUrlRequest).toString();
   }
 
-  public String getPreSignedUrlCDN(String fileName) {
-    String signedURL = "";
+  public GetCDNUrlResponseDto getPreSignedUrlCDN(String fileName, String imageName) {
+    GetCDNUrlResponseDto requestDto = null;
 
     try {
       SignerUtils.Protocol protocol = SignerUtils.Protocol.http;
       File privateKeyFile = ResourceUtils.getFile(path);
-      String[] fileNames = fileName.split("[.]");
-      System.out.println(fileNames[0]);
-      String s3ObjectKey =
+      String s3VideoKey =
+          fileName.split("[.]")[0] + LocalDateTime.now() + fileName.split("[.]")[1];
+      String s3ImageKey =
           fileName.split("[.]")[0] + LocalDateTime.now() + fileName.split("[.]")[1];
 
       Date expirationTime = new Date(System.currentTimeMillis() + 3600000); // 1 hour from now
-      System.out.println(expirationTime);
 
-      signedURL = CloudFrontUrlSigner.getSignedURLWithCannedPolicy(
+      String signedVideoURL = CloudFrontUrlSigner.getSignedURLWithCannedPolicy(
           protocol,
           distributionDomain,
           privateKeyFile,
-          s3ObjectKey,
+          s3VideoKey,
           keyPairId,
           expirationTime
       );
+
+      String signedImageURL = CloudFrontUrlSigner.getSignedURLWithCannedPolicy(
+          protocol,
+          distributionDomain,
+          privateKeyFile,
+          s3ImageKey,
+          keyPairId,
+          expirationTime
+      );
+
+      requestDto = new GetCDNUrlResponseDto(signedVideoURL, signedImageURL, s3VideoKey, s3ImageKey);
+
     } catch (Exception e) {
       e.printStackTrace();
     }
-    System.out.println(signedURL);
-    return signedURL;
+
+    return requestDto;
   }
 }
