@@ -74,8 +74,10 @@ public class CommentService {
     Comments comments = new Comments();
     System.out.println("비디오 id:" + commentRequest.getVideoId());
 
-    if (Objects.nonNull(commentRequest.getVideoId())) {
-      Videos videos = videoRepository.findById((long) commentRequest.getVideoId()).get();
+    if (commentRequest.getVideoId()!= null) {
+      System.out.println(commentRequest.getVideoId());
+      Videos videos = videoRepository.findById((UUID)commentRequest.getVideoId()).orElse(null);
+      System.out.println(videos);
       comments.setVideos(videos);
     }
 

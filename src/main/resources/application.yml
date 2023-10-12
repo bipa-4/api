@@ -1,9 +1,9 @@
 server:
-  #  address: localhost
+  address: localhost
   port: 8080
 spring:
   redis:
-    host: ${Redis_Host}
+    host: ec2-13-125-157-12.ap-northeast-2.compute.amazonaws.com
     port: 6379
   servlet:
     multipart:
@@ -11,9 +11,9 @@ spring:
       maxRequestSize: 50MB
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    password: ${MYSQL_PASSWORD}
-    url: jdbc:mysql://${MY_SQL_HOST}:${MY_SQL_PORT}/${DATA_BASE_NAME}?useSSL=false&characterEncoding=UTF-8&serverTimezone=UTC
-    username: ${MYSQL_USER_NAME}
+    password: v12341234
+    url: jdbc:mysql://database.c9cnfhe9srwu.eu-north-1.rds.amazonaws.com:3306/bipaTV?useSSL=false&characterEncoding=UTF-8&serverTimezone=UTC
+    username: admin
   jpa: # https://victorydntmd.tistory.com/323
     database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
     database: mysql
@@ -24,30 +24,27 @@ spring:
     properties:
       hibernate:
         format_sql: true
-  h2:
-    console:
-      enabled: true
 
 
-
+  # developers.kakao?? Application ?? ?? REST API ??, RedirectURL? ?????. ??? ?????.
 oauth2:
   kakao:
-    token-uri: ${KTOKEN_URI}
-    resource-uri: ${KRESOURCE_URI}
-    client-id: ${KCLIENT_ID}
-    redirect-uri: ${KREDIRECT_URI}
+    token-uri: https://kauth.kakao.com/oauth/token
+    resource-uri: https://kapi.kakao.com/v2/user/me
+    client-id: 213b8cd0450835fc9e56958890458a96
+    redirect-uri: http://localhost:8080/auth/kakao/callback
     logging:
       level:
         com.example.kakaologin: debug
   google:
-    client-id: ${GCLIENT_ID}
-    client-secret: ${GCLIENT_SECRET}
-    redirect-uri: ${GREDIRECT_URI}
-    token-uri: ${GTOKEN_URI}
-    resource-uri: ${GRESOURCE_URI}
+    client-id: 1017186225524-ur3gd5fvh518iehnr9d68a8l0nl7op16.apps.googleusercontent.com
+    client-secret: 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
+    redirect-uri: http://localhost:8080/auth/google/callback
+    token-uri: https://oauth2.googleapis.com/token
+    resource-uri: https://www.googleapis.com/oauth2/v2/userinfo
 
 security:
-  secretKey: ${JWT_SECRETKEY}
+  secretKey: sdsadwqascaqwasdasfwqqgASDWQEasdgfqweghweyqwevht
 cloud:
   aws:
     s3:
@@ -58,9 +55,9 @@ cloud:
       static: ap-northeast-2
       auto: false
     credentials:
-      access-key: ${ACCESS_KEY}
-      secret-key: ${SECRET_KEY}
-    path: ${PRIVATE_KEY_PATH}
+      access-key: AKIA6ABZ54JVA3QUXWE5
+      secret-key: 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
+    path: src/main/resources/private_key.pem
     cloudFront:
-      keyPairId: ${KEY_PAIR_ID}
-      distributionDomain: ${DISTRIBUTION_DOMAIN}
+      keyPairId: K2BGKC2WPH3ISX
+      distributionDomain: du30t7lolw1uk.cloudfront.net

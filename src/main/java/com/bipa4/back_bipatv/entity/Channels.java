@@ -20,10 +20,9 @@ import org.hibernate.annotations.Type;
 public class Channels {
 
   @Id
-  @GeneratedValue(generator = "uuid2")
-  @GenericGenerator(name = "uuid2", strategy = "org.hibernate.id.UUIDGenerator")
-  @Type(type = "uuid-char")
-  @Column(name = "channel_id")
+  @GeneratedValue(generator = "UUID")
+  @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+  @Column(name = "channel_id", columnDefinition = "BINARY(16)")
   private UUID channelId;
 
   @Column(name = "name", nullable = false, unique = true, length = 100)

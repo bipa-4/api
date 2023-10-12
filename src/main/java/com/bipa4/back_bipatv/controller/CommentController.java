@@ -65,6 +65,8 @@ public class CommentController {
   @PutMapping("/comment")//update
   public String updateComment(@RequestBody CommentRequest commentRequest,
       @CookieValue(name = "accessToken") String accessToken) {
+    System.out.println(securityService.getSubjectAccount(accessToken));
+    System.out.println(commentRequest.getAccountId());
     if (commentRequest.getAccountId() == securityService.getSubjectAccount(accessToken)
         .getAccountId()) {
       return String.valueOf(commentService.updateComment(commentRequest));

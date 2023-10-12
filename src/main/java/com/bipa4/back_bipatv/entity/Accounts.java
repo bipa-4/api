@@ -3,6 +3,7 @@ package com.bipa4.back_bipatv.entity;
 
 import com.bipa4.back_bipatv.dataType.ELogin_Type;
 import java.sql.Timestamp;
+import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
@@ -21,7 +22,7 @@ public class Accounts {
 
   @Id
   @Column(name = "account_id", length = 36)
-  private String accountId;
+  private UUID accountId;
 
 
   @Column(name = "join_date", nullable = false)

@@ -19,7 +19,7 @@ public class CommentRequest {
   private int parentChild;
   private int groupIndex;
   private Timestamp createAt;
-  private int videoId;
+  private UUID videoId;
   private String accountId;
 
   @Override
