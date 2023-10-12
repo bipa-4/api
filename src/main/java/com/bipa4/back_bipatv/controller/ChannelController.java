@@ -6,6 +6,8 @@ import com.bipa4.back_bipatv.exception.ResourceNotFoundException;
 import com.bipa4.back_bipatv.service.ChannelService;
 import com.bipa4.back_bipatv.service.PresignedUrlService;
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiImplicitParam;
+import io.swagger.annotations.ApiImplicitParams;
 import io.swagger.annotations.ApiOperation;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +34,12 @@ public class ChannelController {
 
 
   @ApiOperation(value = "updateMyChannel", notes = "채널 정보 수정")
+  @ApiImplicitParams({
+      @ApiImplicitParam(name = "channelName", value = "채널 이름", required = true, dataType = "string"),
+      @ApiImplicitParam(name = "content", value = "채널 소개글", required = false, dataType = "string"),
+      @ApiImplicitParam(name = "privateType", value = "공개 여부", required = true, dataType = "boolean", defaultValue = "true"),
+      @ApiImplicitParam(name = "profileUrl", value = "프로필이미지url", required = false, dataType = "string"),
+  })
   @PutMapping("/{channelId}")
   public ResponseEntity<Channels> updateMyChannelInfo(@PathVariable UUID chnnaelId,
       @RequestBody @Validated PutChannelDTO putChannelDTO,

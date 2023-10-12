@@ -55,7 +55,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
             )
         )
         .from(qVideos).leftJoin(qVideos.channelId, qChannels)
-        .where(qVideos.videoId.loe(page))
+        .where(qVideos.videoId.loe(page).and(qVideos.privateType.eq(false)))
         .orderBy(qVideos.videoId.desc())
         .limit(pageSize).fetch();
 
@@ -69,6 +69,17 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QVideos qVideos = QVideos.videos;
 
     return jpaQueryFactory.select(qVideos.videoId).from(qVideos)
+        .where(qVideos.privateType.eq(false))
+        .orderBy(qVideos.videoId.desc()).limit(1)
+        .fetchOne();
+  }
+
+  @Override
+  public UUID lastUUIDInChannel(UUID channelId) {
+    QVideos qVideos = QVideos.videos;
+
+    return jpaQueryFactory.select(qVideos.videoId).from(qVideos)
+        .where(qVideos.channelId.channelId.eq(channelId).and(qVideos.privateType.eq(false)))
         .orderBy(qVideos.videoId.desc()).limit(1)
         .fetchOne();
   }
@@ -80,7 +91,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QVideos qVideos = QVideos.videos;
 
     UUID nextUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
-        .where(qVideos.videoId.lt(uuid))
+        .where(qVideos.videoId.lt(uuid).and(qVideos.privateType.eq(false)))
         .orderBy(qVideos.videoId.desc())
         .limit(1).fetchOne();
 
@@ -118,7 +129,9 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
         .leftJoin(qCategorys.categoryNameId, qCategoryName)
         .where(
             qCategoryName.categoryNameId.eq(category)
-                .and(qVideos.videoId.loe(page)))
+                .and(qVideos.videoId.loe(page))
+                .and(qVideos.privateType.eq(false)
+                    .and(qChannels.privateType.eq(false))))
         .orderBy(qVideos.videoId.desc())
         .limit(pageSize).fetch();
   }
@@ -132,7 +145,10 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     return jpaQueryFactory.select(qVideos.videoId).from(qCategorys)
         .leftJoin(qCategorys.videoId, qVideos)
         .leftJoin(qCategorys.categoryNameId, qCategoryName)
-        .where(qCategoryName.categoryNameId.eq(category))
+        .where(
+            qCategoryName.categoryNameId.eq(category)
+                .and(qVideos.privateType.eq(false))
+        )
         .orderBy(qVideos.videoId.desc()).limit(1)
         .fetchOne();
   }
@@ -421,7 +437,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
   }
 
   @Override
-  public List<GetVideoResponseDto> getVideosInChannel(UUID channelId) {
+  public List<GetVideoResponseDto> getVideosInChannel(UUID channelId, UUID page, int pageSize) {
     Channels channel = new Channels();
     channel.setChannelId(channelId);
     QVideos qVideos = QVideos.videos;
@@ -441,7 +457,9 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
             )
         )
         .from(qVideos).leftJoin(qVideos.channelId, qChannels)
-        .where(qVideos.channelId.eq(channel))
-        .fetch();
+        .where(qVideos.channelId.eq(channel).and(qVideos.videoId.loe(page))
+            .and(qVideos.privateType.eq(false)))
+        .orderBy(qVideos.videoId.desc())
+        .limit(pageSize).fetch();
   }
 }

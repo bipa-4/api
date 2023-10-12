@@ -152,18 +152,33 @@ public class ReadController {
 
   // 전체 채널 조회
   @ApiOperation(value = "전체 채널 조회", notes = "전체 채널에 대한 정보")
-  @GetMapping("/channelAll")
-  public ResponseEntity<List<GetChannelDTO>> getAllChannels() {
-    List<GetChannelDTO> list = channelService.getAllChannels();
+  @GetMapping("/channel/AllChannel")
+  public ResponseEntity<List<GetChannelDTO>> getAllChannels(
+      @RequestParam(value = "page", required = false) String page,
+      @RequestParam("pageSize") int pageSize) {
+    List<GetVideoResponseDto> videos = videoService.getAllVideos(page, pageSize);
+    String nextUUID = videoService.getNextUUID(
+        videos.get(videos.size() - 1).getVideoId()); // 마지막 page의 UUID 호출
+    GetInfiniteScrollRequestDto responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
+
+    List<GetChannelDTO> list = channelService.getAllChannels(page, pageSize);
     list.forEach(System.out::println);
     return new ResponseEntity<>(list, HttpStatus.OK);
   }
 
-  @ApiOperation(value = "채널 내 영상 조회", notes = "채널 내 영상 조회")
+  @ApiOperation(value = "채널 내 영상 조회", notes = "최신순으로 전체 조회 (무한스크롤) / 처음엔 page 안넘겨주면 됨.")
   @GetMapping("/channel/video/{channelId}")
-  public ResponseEntity<List<GetVideoResponseDto>> getVideosInChannel(
+  public ResponseEntity<GetInfiniteScrollRequestDto> getVideosInChannel(
+      @RequestParam(value = "page", required = false) String page,
+      @RequestParam("pageSize") int pageSize,
       @PathVariable("channelId") UUID channelId) {
-    return new ResponseEntity<>(channelService.getVideosInChannel(channelId), HttpStatus.OK);
+    List<GetVideoResponseDto> videos = channelService.getVideosInChannel(channelId, page, pageSize);
+    String nextUUID = videoService.getNextUUID(
+        videos.get(videos.size() - 1).getVideoId()); // 마지막 page의 UUID 호출
+    GetInfiniteScrollRequestDto responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
+
+    return ResponseEntity.ok().body(responseDto);
   }
+
 
 }

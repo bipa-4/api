@@ -26,7 +26,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
   private final EntityManager entityManager;
 
   @Override
-  public List<GetChannelDTO> getNotPrivateChannel() {
+  public List<GetChannelDTO> getNotPrivateChannel(UUID page, int pageSize) {
     QChannels qChannels = QChannels.channels;
     return jpaQueryFactory.select(
             Projections.bean(
@@ -39,8 +39,9 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
             )
         )
         .from(qChannels)
-        .where(qChannels.privateType.eq(false))
-        .fetch();
+        .where(qChannels.privateType.eq(false).and(qChannels.channelId.loe(page)))
+        .orderBy(qChannels.channelId.desc())
+        .limit(pageSize).fetch();
   }
 
   public List<GetChannelTop5DTO> findTop5Channels() {
@@ -84,6 +85,15 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
         )
         .from(qChannels)
         .where(qChannels.channelId.eq(channelId))
+        .fetchOne();
+  }
+
+  @Override
+  public UUID lastUUID() {
+    QChannels qChannels = QChannels.channels;
+    return jpaQueryFactory.select(qChannels.channelId).from(qChannels)
+        .where(qChannels.privateType.eq(false))
+        .orderBy(qChannels.channelId.desc()).limit(1)
         .fetchOne();
   }
 }
