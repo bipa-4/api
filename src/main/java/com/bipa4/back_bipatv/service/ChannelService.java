@@ -1,6 +1,5 @@
 package com.bipa4.back_bipatv.service;
 
-import com.bipa4.back_bipatv.dao.AccountDAO;
 import com.bipa4.back_bipatv.dao.ChannelDAO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
@@ -85,36 +84,40 @@ public class ChannelService {
     return list;
   }
 
+  public String getNextUUID(UUID uuid) {
+    return videoRepository.getNextUUID(uuid);
+  }
 
   public List<GetChannelDTO> getAllChannels(String page, int pageSize) {
     UUID uuid;
     if (page == null) {
       uuid = channelRepository.lastUUID();
+
     } else {
       uuid = UUID.fromString(page);
     }
+    System.out.println("Service getAllChannels Method uuid: " + uuid);
     return channelRepository.getNotPrivateChannel(uuid, pageSize);
   }
 
   @Transactional
-  public Channels updateChannel(UUID chnnaelId, String code, PutChannelDTO putChannelDTO) {
+  public Channels updateChannel(UUID channelId, String code, PutChannelDTO putChannelDTO) {
     Accounts loginAccount = securityService.getSubjectAccount(code);
-    AccountDAO accountDAO = new AccountDAO();
-    Accounts putAccount = accountDAO.selectAccount(putChannelDTO.getAccounts());
+    Accounts putAccount = channelRepository.findByChannelId(channelId).getAccounts();
     if (!Objects.equals(loginAccount.getAccountId(),
         putAccount.getAccountId())) { //로그인한 accountId와 수정할 채널의 accountId가 같은 경우
       throw new ResourceNotFoundException(
           "로그인 유저와 수정할 채널의 유저 정보가 같지 않다.");
     }
-    Channels myChannel = findbyChannelId(chnnaelId);
+    Channels myChannel = findbyChannelId(channelId);
     if (!myChannel.getContent().equals(putChannelDTO.getContent())) {
       myChannel.setContent(putChannelDTO.getContent());
     }
     if (!myChannel.getProfileUrl().equals(putChannelDTO.getProfileUrl())) {
       myChannel.setProfileUrl(putChannelDTO.getProfileUrl());
     }
-    if (!(myChannel.isPrivateType() == putChannelDTO.isPrivateType())) {
-      myChannel.setPrivateType(putChannelDTO.isPrivateType());
+    if (!(myChannel.isPrivateType() == putChannelDTO.getPrivateType())) {
+      myChannel.setPrivateType(putChannelDTO.getPrivateType());
     }
     if (!(myChannel.getChannelName().equals(putChannelDTO.getChannelName()))) {
       myChannel.setChannelName(putChannelDTO.getChannelName());

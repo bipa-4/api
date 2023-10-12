@@ -7,7 +7,10 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.Headers;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+import com.bipa4.back_bipatv.dto.video.GetImageUrlResponseDto;
+import com.bipa4.back_bipatv.dto.video.GetUrlResponseDto;
 import java.io.File;
+import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
@@ -36,10 +39,11 @@ public class PresignedUrlService {
 
   private final AmazonS3 amazonS3;
 
-  public String getPreSignedUrl(String fileName) {
+  public GetImageUrlResponseDto getPreSignedUrl(String imageName) {
 
     // 파일이름
     String fileId = UUID.randomUUID().toString();
+    String imageKey = fileId + imageName;
 
     // 만료 기간 정하기
     Calendar calendar = Calendar.getInstance();
@@ -47,42 +51,56 @@ public class PresignedUrlService {
     calendar.add(Calendar.MINUTE, 10);
 
     // presigned-url 생성
-    GeneratePresignedUrlRequest generateVideoPresignedUrlRequest =
-        new GeneratePresignedUrlRequest(bucket, fileId + fileName)
+    GeneratePresignedUrlRequest generateVideoPresignedUrlImageRequest =
+        new GeneratePresignedUrlRequest(bucket, imageKey)
             .withMethod(HttpMethod.PUT)
             .withExpiration(calendar.getTime());
 
-    generateVideoPresignedUrlRequest.addRequestParameter(
+    generateVideoPresignedUrlImageRequest.addRequestParameter(
         Headers.S3_CANNED_ACL,
         CannedAccessControlList.PublicRead.toString());
 
-    return amazonS3.generatePresignedUrl(generateVideoPresignedUrlRequest).toString();
+    return new GetImageUrlResponseDto(
+        amazonS3.generatePresignedUrl(generateVideoPresignedUrlImageRequest).toString(), imageKey);
   }
 
-  public String getPreSignedUrlCDN(String fileName) {
-    String signedURL = "";
+  public GetUrlResponseDto getPreSignedUrlCDN(String videoName, String imageName) {
+    GetUrlResponseDto requestDto = null;
 
     try {
       SignerUtils.Protocol protocol = SignerUtils.Protocol.http;
       File privateKeyFile = ResourceUtils.getFile(path);
-
-      String s3ObjectKey = fileName;
+      String s3VideoKey =
+          videoName.split("[.]")[0] + LocalDateTime.now() + "." + videoName.split("[.]")[1];
+      String s3ImageKey =
+          imageName.split("[.]")[0] + LocalDateTime.now() + "." + imageName.split("[.]")[1];
 
       Date expirationTime = new Date(System.currentTimeMillis() + 3600000); // 1 hour from now
-      System.out.println(expirationTime);
 
-      signedURL = CloudFrontUrlSigner.getSignedURLWithCannedPolicy(
+      String signedVideoURL = CloudFrontUrlSigner.getSignedURLWithCannedPolicy(
           protocol,
           distributionDomain,
           privateKeyFile,
-          s3ObjectKey,
+          s3VideoKey,
           keyPairId,
           expirationTime
       );
+
+      String signedImageURL = CloudFrontUrlSigner.getSignedURLWithCannedPolicy(
+          protocol,
+          distributionDomain,
+          privateKeyFile,
+          s3ImageKey,
+          keyPairId,
+          expirationTime
+      );
+
+      requestDto = new GetUrlResponseDto(signedVideoURL, signedImageURL, s3VideoKey, s3ImageKey);
+
     } catch (Exception e) {
       e.printStackTrace();
     }
-    System.out.println(signedURL);
-    return signedURL;
+
+    return requestDto;
   }
 }
