@@ -48,7 +48,7 @@ public class Accounts {
   private String profileUrl;
 
   @Column(name = "email")
-  //@Pattern(regexp = "^(|^[A-Za-z0-9_\\.-]+@[A-Za-z0-9-]+\\.[A-Za-z0-9-]{1,50}$)")
+  @Pattern(regexp = "^(|^[A-Za-z0-9_\\.-]+@[A-Za-z0-9-]+\\.[A-Za-z0-9-]{1,50}$)")
   private String eMail;
 
 
