@@ -1,5 +1,6 @@
 package com.bipa4.back_bipatv.controller;
 
+import com.bipa4.back_bipatv.dto.video.GetCDNUrlResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetSearchResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetUrlResponseDto;
 import com.bipa4.back_bipatv.dto.video.PostUploadRequestDto;
@@ -76,17 +77,11 @@ public class VideoController {
 
   @ApiOperation(value = "CDN presigned-url 발급", notes = "비디오 및 이미지 업로드를 위한 임시 url 발급")
   @PostMapping("/presigned-cdn")
-  public ResponseEntity<GetUrlResponseDto> saveFileCDN(@RequestParam("videoName") String videoName,
+  public ResponseEntity<GetCDNUrlResponseDto> saveFileCDN(
+      @RequestParam("videoName") String videoName,
       @RequestParam("imageName") String imageName) {
-    GetUrlResponseDto urls = new GetUrlResponseDto(
-        presignedUrlService.getPreSignedUrlCDN(videoName),
-        presignedUrlService.getPreSignedUrlCDN(imageName));
-
-    if (urls.getVideoUrl() == null || urls.getVideoUrl() == null) {
-      return new ResponseEntity<>(urls, HttpStatus.BAD_REQUEST);
-    }
-
-    return new ResponseEntity<>(urls, HttpStatus.OK);
+    return new ResponseEntity<>(presignedUrlService.getPreSignedUrlCDN(videoName, imageName),
+        HttpStatus.OK);
   }
 
   // 영상 업로드
