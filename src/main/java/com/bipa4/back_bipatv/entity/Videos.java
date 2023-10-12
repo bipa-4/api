@@ -39,9 +39,9 @@ public class Videos {
   @Column(name = "create_at", nullable = true)
   private Timestamp createAt;
   @Column(name = "private_type")
-  private boolean privateType;
+  private Boolean privateType;
   @Column(name = "comment_permission")
-  private boolean commentPermission;
+  private Boolean commentPermission;
   @Column(name = "thumbnail", nullable = true, length = 200)
   private String thumbnail;
   @ManyToOne

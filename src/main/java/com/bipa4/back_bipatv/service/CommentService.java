@@ -72,12 +72,11 @@ public class CommentService {
   private Comments convertDtoToEntityForInsert(CommentRequest commentRequest) {
 
     Comments comments = new Comments();
-    System.out.println("비디오 id:" + commentRequest.getVideoId());
 
     if (commentRequest.getVideoId()!= null) {
       System.out.println(commentRequest.getVideoId());
-      Videos videos = videoRepository.findById((UUID)commentRequest.getVideoId()).orElse(null);
-      System.out.println(videos);
+      Videos videos = videoRepository.findById(commentRequest.getVideoId()).orElse(null);
+      System.out.println("asadasd"+videos);
       comments.setVideos(videos);
     }
 

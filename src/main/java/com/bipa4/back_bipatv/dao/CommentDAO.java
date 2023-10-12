@@ -24,6 +24,7 @@ public class CommentDAO {
 
 
   public List<CommentResponse> findParentComments(UUID videoId) {
+    System.out.println(videoId);
     List<CommentResponse> list = commentRepository.findParentComments(videoId);
     return list;
   }

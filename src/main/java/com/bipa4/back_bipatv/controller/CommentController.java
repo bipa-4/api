@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -27,64 +28,48 @@ public class CommentController {
 
   private final SecurityService securityService;
 
-  @GetMapping("/{videoId}/comment-parent")
-  public List<CommentResponse> findParentComments(@PathVariable UUID videoId) {
-    List<CommentResponse> list = commentService.findParentComments(videoId);
-
-    return list;
-  }
-
-  @GetMapping("/{videoId}/comment-child")
-  public List<CommentResponse> findChildComments(@PathVariable UUID videoId,
-      @RequestParam int groupIndex) {
-    List<CommentResponse> list = commentService.findChildComments(videoId, groupIndex);
-
-    return list;
-  }
 
   @PostMapping("/comment")//insert
-  public String insertComment(@RequestBody CommentRequest commentRequest,
+  public ResponseEntity<String> insertComment(@RequestBody CommentRequest commentRequest,
       @CookieValue(name = "accessToken") String accessToken) {
-    /**
-     * 서비스의 return 값이 boolean이고 Controller의 리턴값이 String이어서
-     * String.valueOf()를 써서 boolean => String 바꿔줌
-     */
-    System.out.println("commentRequest" + commentRequest);
-
     if (securityService.getSubject(accessToken)) {
-
-      return String.valueOf(commentService.saveComment(commentRequest));
-
-
+      boolean saved = commentService.saveComment(commentRequest);
+      if (saved) {
+        return ResponseEntity.ok("댓글 등록 성공");
+      } else {
+        return ResponseEntity.badRequest().body("댓글 등록 실패");
+      }
     } else {
-      return "권한없음";
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body("권한없음");
     }
-
   }
+
 
   @PutMapping("/comment")//update
-  public String updateComment(@RequestBody CommentRequest commentRequest,
+  public ResponseEntity<String> updateComment(@RequestBody CommentRequest commentRequest,
       @CookieValue(name = "accessToken") String accessToken) {
-    System.out.println(securityService.getSubjectAccount(accessToken));
-    System.out.println(commentRequest.getAccountId());
-    if (commentRequest.getAccountId() == securityService.getSubjectAccount(accessToken)
-        .getAccountId()) {
-      return String.valueOf(commentService.updateComment(commentRequest));
-
+    if (commentRequest.getAccountId().equals(securityService.getSubjectAccount(accessToken)
+        .getAccountId())) {
+      boolean updated = commentService.updateComment(commentRequest);
+      if (updated) {
+        return ResponseEntity.ok("댓글 수정 성공");
+      } else {
+        return ResponseEntity.badRequest().body("댓글 수정 실패");
+      }
     } else {
-      return "권한없음";
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body("권한없음");
     }
   }
 
-  @DeleteMapping("/{videoId}/comment/{commentId}")
+  @DeleteMapping("/{videoId}/comment/{commentId}")//delete
   public ResponseEntity<String> deleteComment(@RequestBody CommentRequest commentRequest,
-      @PathVariable Long videoId, @PathVariable UUID commentId,
+      @PathVariable UUID videoId, @PathVariable UUID commentId,
       @CookieValue(name = "accessToken") String accessToken) {
     if (Objects.equals(commentRequest.getAccountId(), securityService.getSubjectAccount(accessToken)
         .getAccountId())) {
       commentService.deleteComment(commentId);
     }
-    return ResponseEntity.ok("댓글이 삭제되었습니다.");
+    return ResponseEntity.ok("댓글 삭제 성공");
   }
 }
 
