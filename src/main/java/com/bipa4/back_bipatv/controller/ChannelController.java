@@ -33,11 +33,11 @@ public class ChannelController {
 
   @ApiOperation(value = "updateMyChannel", notes = "채널 정보 수정")
   @PutMapping("/{channelId}")
-  public ResponseEntity<Channels> updateMyChannelInfo(@PathVariable UUID chnnaelId,
+  public ResponseEntity<Channels> updateMyChannelInfo(@PathVariable UUID channelId,
       @CookieValue(value = "accessToken", required = false) String code,
       @RequestBody PutChannelDTO putChannelDTO) {
     try {
-      Channels updatedChannel = channelService.updateChannel(chnnaelId, code, putChannelDTO);
+      Channels updatedChannel = channelService.updateChannel(channelId, code, putChannelDTO);
       return new ResponseEntity<>(updatedChannel, HttpStatus.OK);
     } catch (ResourceNotFoundException e) {
       // 리소스를 찾지 못한 경우 404 에러를 반환
