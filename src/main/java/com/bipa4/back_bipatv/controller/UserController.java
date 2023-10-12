@@ -1,5 +1,6 @@
 package com.bipa4.back_bipatv.controller;
 
+import com.bipa4.back_bipatv.dto.video.GetImageUrlResponseDto;
 import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.exception.ResourceNotFoundException;
 import com.bipa4.back_bipatv.security.SecurityService;
@@ -87,10 +88,11 @@ public class UserController {
 
   @ApiOperation(value = "I Want S3 URI", notes = "S3 URI요청")
   @PostMapping("/account/presigned")
-  public ResponseEntity<String> saveFile(@RequestParam("imageName") String imageName) {
-    String url = presignedUrlService.getPreSignedUrl(imageName);
-    if (url != null) {
-      return new ResponseEntity<>(url, HttpStatus.OK);
+  public ResponseEntity<GetImageUrlResponseDto> saveFile(
+      @RequestParam("imageName") String imageName) {
+    GetImageUrlResponseDto responseDto = presignedUrlService.getPreSignedUrl(imageName);
+    if (responseDto != null) {
+      return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
     return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
   }
