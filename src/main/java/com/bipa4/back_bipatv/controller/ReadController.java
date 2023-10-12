@@ -84,6 +84,7 @@ public class ReadController {
   @Scheduled(cron = "0 0 0/1 * * *")
   public ResponseEntity<List<GetVideoResponseDto>> getViewsTop10Videos() {
     List<GetVideoResponseDto> videos = videoService.getViewsTop10Videos();
+    int result = videoService.updateViews();
     return new ResponseEntity<List<GetVideoResponseDto>>(videos, HttpStatus.OK);
   }
 
@@ -102,16 +103,6 @@ public class ReadController {
     return new ResponseEntity<GetDetailResponseDto>(video, HttpStatus.OK);
   }
 
-
-  // 부모 댓글 전체 조회
-//  @ApiOperation(value = "부모 댓글 조회", notes = "부모 댓글 조회")
-//  @GetMapping("/comment/{videoId}/comment-parent")
-//  public List<CommentResponse> findParentComments(@PathVariable UUID videoId) {
-//    List<CommentResponse> list = commentService.findParentComments(videoId);
-//
-//
-//    return list;
-//  }
 
   //부모 댓글 조회
   @ApiOperation(value = "부모 댓글 조회", notes = "부모 댓글 조회")
