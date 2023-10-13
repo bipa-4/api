@@ -100,10 +100,11 @@ public class ReadController {
     System.out.println("detail AT:" + accessToken);
 
     if (accessToken != null) {
-      video.setIsLike(videoService.getFavorite(id, accessToken));// 좋아요 버튼 눌렀는지 여부
+      video.setLike(videoService.getFavorite(id, accessToken));// 좋아요 버튼 눌렀는지 여부
     }
-    System.out.println(video.getIsLike());
-    return new ResponseEntity<GetDetailResponseDto>(video, HttpStatus.OK);
+    System.out.println(video.isLike());
+    System.out.println(video);
+    return new ResponseEntity<>(video, HttpStatus.OK);
   }
 
 

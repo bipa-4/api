@@ -21,7 +21,7 @@ public interface GetSearchResponseDto {
 
   Integer getReadCnt();
 
-  Boolean getPrivateType();
+  boolean getPrivateType();
 
   String getChannelProfileUrl();
 

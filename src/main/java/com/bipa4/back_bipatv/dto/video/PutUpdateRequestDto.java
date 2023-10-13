@@ -13,10 +13,10 @@ public class PutUpdateRequestDto {
   private String thumbnailUrl;
   private String title;
   private String content;
-  private Boolean private_type;
+  private boolean private_type;
 
   public PutUpdateRequestDto(String videoUrl, String thumbnailUrl, String title,
-      String content, Boolean private_type) {
+      String content, boolean private_type) {
     this.videoUrl = videoUrl;
     this.thumbnailUrl = thumbnailUrl;
     this.title = title;

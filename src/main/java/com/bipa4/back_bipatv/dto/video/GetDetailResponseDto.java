@@ -23,7 +23,7 @@ public class GetDetailResponseDto {
   private String videoUrl;
   private String videoTitle;
   private String content;
-  private Boolean isLike;
+  private boolean isLike;
   @DateTimeFormat(pattern = "yyyy-MM-dd")
   @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+9")
   private Timestamp createAt;

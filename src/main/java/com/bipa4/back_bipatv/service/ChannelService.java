@@ -126,8 +126,8 @@ public class ChannelService {
         .equals(putChannelDTO.getProfileUrl()))) {
       myChannel.setProfileUrl(putChannelDTO.getProfileUrl());
     }
-    if (!(myChannel.getPrivateType().equals(putChannelDTO.getPrivateType()))) {
-      myChannel.setPrivateType(putChannelDTO.getPrivateType());
+    if (!(myChannel.getPrivateType().equals(putChannelDTO.isPrivateType()))) {
+      myChannel.setPrivateType(putChannelDTO.isPrivateType());
     }
     if (!(myChannel.getChannelName()
         .equals(putChannelDTO.getChannelName()))) {

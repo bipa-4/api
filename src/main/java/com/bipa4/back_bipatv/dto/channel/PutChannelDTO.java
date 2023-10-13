@@ -19,7 +19,7 @@ public class PutChannelDTO {
   @Pattern(regexp = "^[^\\s!@#$%^&*()_+{}\\[\\]:;<>,.?/~\\\\|]{2,99}$")//특수문자와 공백을 제외한 문자)
   private String channelName;
 
-  private Boolean privateType;
+  private boolean privateType;
   private String profileUrl;
 
 }

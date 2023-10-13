@@ -292,7 +292,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     if (video != null) {
       video.setContent(videoResponseDto.getContent());
       video.setCreateAt(new Timestamp(System.currentTimeMillis()));
-      video.setPrivateType(videoResponseDto.getPrivate_type());
+      video.setPrivateType(videoResponseDto.isPrivate_type());
       video.setThumbnail(videoResponseDto.getThumbnailUrl());
       video.setTitle(videoResponseDto.getTitle());
       video.setVideoUrl(videoResponseDto.getVideoUrl());
@@ -345,7 +345,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
         .setParameter(2, videoResponseDto.getThumbnailUrl())
         .setParameter(3, videoResponseDto.getTitle())
         .setParameter(4, videoResponseDto.getContent())
-        .setParameter(5, videoResponseDto.getPrivateType())
+        .setParameter(5, videoResponseDto.isPrivateType())
         .setParameter(6, new Timestamp(System.currentTimeMillis()))
         .setParameter(7, channel)
         .setParameter(8, 0)

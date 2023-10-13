@@ -39,7 +39,7 @@ public class Videos {
   @Column(name = "create_at", nullable = true)
   private Timestamp createAt;
   @Column(name = "private_type")
-  private Boolean privateType;
+  private boolean privateType;
   @Column(name = "thumbnail", nullable = true, length = 200)
   private String thumbnail;
   @ManyToOne
