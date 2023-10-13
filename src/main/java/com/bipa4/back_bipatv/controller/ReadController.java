@@ -130,6 +130,7 @@ public class ReadController {
   public ResponseEntity<SelectChannelDTO> getMyChannelInfo(
       @CookieValue(value = "accessToken", required = false) String code,
       @PathVariable("channelId") UUID channelId) {
+    System.out.println(code);
     if (code == null) {
       return new ResponseEntity<>(channelService.findChannel(channelId), HttpStatus.OK);
     }
@@ -137,7 +138,7 @@ public class ReadController {
       return new ResponseEntity<>(channelService.findChannel(code, channelId),
           HttpStatus.OK);
     } else {
-      return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+      return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
     }
   }
 
