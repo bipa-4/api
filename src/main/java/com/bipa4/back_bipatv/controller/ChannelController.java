@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,9 +35,10 @@ public class ChannelController {
   @PutMapping("/{channelId}")
   public ResponseEntity<Channels> updateMyChannelInfo(@PathVariable UUID channelId,
       @CookieValue(value = "accessToken", required = false) String code,
-      PutChannelDTO putChannelDTO) {
+      @RequestBody PutChannelDTO putChannelDTO) {
     try {
       Channels updatedChannel = channelService.updateChannel(channelId, code, putChannelDTO);
+      System.out.println(updatedChannel);
       return new ResponseEntity<>(updatedChannel, HttpStatus.OK);
     } catch (ResourceNotFoundException e) {
       // 리소스를 찾지 못한 경우 404 에러를 반환

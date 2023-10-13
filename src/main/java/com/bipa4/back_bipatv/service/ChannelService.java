@@ -106,26 +106,30 @@ public class ChannelService {
     Accounts loginAccount = securityService.getSubjectAccount(code);
 
     Accounts putAccount = channelRepository.findByChannelId(channelId).getAccounts();
-    System.out.println(putChannelDTO);
+
+    System.out.println("loginAccount:" + loginAccount.getAccountId());
+    System.out.println("putAccount:" + putAccount.getAccountId());
+
     if (!Objects.equals(loginAccount.getAccountId(),
         putAccount.getAccountId())) { //로그인한 accountId와 수정할 채널의 accountId가 같은 경우
       throw new ResourceNotFoundException(
           "로그인 유저와 수정할 채널의 유저 정보가 같지 않다.");
     }
     Channels myChannel = findbyChannelId(channelId);
-    if (putChannelDTO.getContent() != null && !myChannel.getContent()
-        .equals(putChannelDTO.getContent())) {
+    System.out.println(myChannel);
+    System.out.println(putChannelDTO);
+    if (!(myChannel.getContent()
+        .equals(putChannelDTO.getContent()))) {
       myChannel.setContent(putChannelDTO.getContent());
     }
-    if (putChannelDTO.getProfileUrl() != null && !myChannel.getProfileUrl()
-        .equals(putChannelDTO.getProfileUrl())) {
+    if (!(myChannel.getProfileUrl()
+        .equals(putChannelDTO.getProfileUrl()))) {
       myChannel.setProfileUrl(putChannelDTO.getProfileUrl());
     }
-    if (putChannelDTO.getPrivateType() != null && !(myChannel.getPrivateType()
-        .equals(putChannelDTO.getPrivateType()))) {
+    if (!(myChannel.getPrivateType().equals(putChannelDTO.getPrivateType()))) {
       myChannel.setPrivateType(putChannelDTO.getPrivateType());
     }
-    if (putChannelDTO.getChannelName() != null && !(myChannel.getChannelName()
+    if (!(myChannel.getChannelName()
         .equals(putChannelDTO.getChannelName()))) {
       myChannel.setChannelName(putChannelDTO.getChannelName());
     }
