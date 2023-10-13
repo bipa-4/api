@@ -64,3 +64,4 @@ cloud:
     cloudFront:
       keyPairId: ${KEY_PAIR_ID}
       distributionDomain: ${DISTRIBUTION_DOMAIN}
+
