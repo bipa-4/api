@@ -36,7 +36,7 @@ public class Channels {
   private String content;
 
   @Column(name = "private_type", nullable = true)
-  private boolean privateType;
+  private Boolean privateType;
 
   @Column(name = "profile_url", nullable = true)
   private String profileUrl;
