@@ -108,7 +108,7 @@ public class UserController {
     if (accessToken == null) {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-    System.out.println("accessToken:" + accessToken);
+    System.out.println("CheckUser AT:" + accessToken);
     Accounts findAccount = securityService.getSubjectAccount(accessToken);
     return findAccount == null ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
         : new ResponseEntity<>(findAccount, HttpStatus.OK);

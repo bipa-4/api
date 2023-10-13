@@ -62,6 +62,7 @@ public class UserService {
     UUID uuid = UUID.randomUUID();
     channels.setChannelId(uuid);
     channels.setChannelName(accounts.getLoginId() + "_Channel");
+    channels.setPrivateType(false);
     channels.setAccounts(accounts);
     channels.setProfileUrl(accounts.getProfileUrl());
     channels.setContent(accounts.getName() + "의 채널");
