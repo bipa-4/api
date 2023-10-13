@@ -97,13 +97,9 @@ public class ReadController {
       @CookieValue(name = "accessToken", required = false) String accessToken) {
     int viewsResult = videoService.plusViews(id); //  조회수 상승
     GetDetailResponseDto video = videoService.getVideoDetail(id);
-    System.out.println("detail AT:" + accessToken);
-
     if (accessToken != null) {
-      video.setLike(videoService.getFavorite(id, accessToken));// 좋아요 버튼 눌렀는지 여부
+      video.setIsLike(videoService.getFavorite(id, accessToken));// 좋아요 버튼 눌렀는지 여부
     }
-    System.out.println(video.isLike());
-    System.out.println(video);
     return new ResponseEntity<>(video, HttpStatus.OK);
   }
 
