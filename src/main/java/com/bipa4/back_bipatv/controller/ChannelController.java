@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -35,7 +34,7 @@ public class ChannelController {
   @PutMapping("/{channelId}")
   public ResponseEntity<Channels> updateMyChannelInfo(@PathVariable UUID channelId,
       @CookieValue(value = "accessToken", required = false) String code,
-      @RequestBody PutChannelDTO putChannelDTO) {
+      PutChannelDTO putChannelDTO) {
     try {
       Channels updatedChannel = channelService.updateChannel(channelId, code, putChannelDTO);
       return new ResponseEntity<>(updatedChannel, HttpStatus.OK);

@@ -31,6 +31,7 @@ public class ChannelService {
 
   public SelectChannelDTO findChannel(String accessToken, UUID channelId) {
     Accounts loginAccount = securityService.getSubjectAccount(accessToken);
+
     Channels selectChannel = channelRepository.findByChannelId(channelId);
     SelectChannelDTO selectChannelDTO = channelRepository.selectChannel(channelId);
     System.out.println(selectChannelDTO);
@@ -103,7 +104,9 @@ public class ChannelService {
   @Transactional
   public Channels updateChannel(UUID channelId, String code, PutChannelDTO putChannelDTO) {
     Accounts loginAccount = securityService.getSubjectAccount(code);
+
     Accounts putAccount = channelRepository.findByChannelId(channelId).getAccounts();
+    System.out.println(putChannelDTO);
     if (!Objects.equals(loginAccount.getAccountId(),
         putAccount.getAccountId())) { //로그인한 accountId와 수정할 채널의 accountId가 같은 경우
       throw new ResourceNotFoundException(
@@ -116,11 +119,12 @@ public class ChannelService {
     if (!myChannel.getProfileUrl().equals(putChannelDTO.getProfileUrl())) {
       myChannel.setProfileUrl(putChannelDTO.getProfileUrl());
     }
-    if (!(myChannel.isPrivateType() == putChannelDTO.getPrivateType())) {
+    if (!(myChannel.getPrivateType().equals(putChannelDTO.getPrivateType()))) {
       myChannel.setPrivateType(putChannelDTO.getPrivateType());
     }
     if (!(myChannel.getChannelName().equals(putChannelDTO.getChannelName()))) {
-      myChannel.setChannelName(putChannelDTO.getChannelName());
+      String name = putChannelDTO.getChannelName() == null ? "박준호" : putChannelDTO.getChannelName();
+      myChannel.setChannelName(name);
     }
     return channelRepository.save(myChannel);
   }
