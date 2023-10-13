@@ -3,11 +3,11 @@ package com.bipa4.back_bipatv.dto.channel;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
-import lombok.Getter;
+import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
-@Getter
+@Data
 @NoArgsConstructor
 @ToString
 public class PutChannelDTO {
