@@ -113,18 +113,21 @@ public class ChannelService {
           "로그인 유저와 수정할 채널의 유저 정보가 같지 않다.");
     }
     Channels myChannel = findbyChannelId(channelId);
-    if (!myChannel.getContent().equals(putChannelDTO.getContent())) {
+    if (putChannelDTO.getContent() != null && !myChannel.getContent()
+        .equals(putChannelDTO.getContent())) {
       myChannel.setContent(putChannelDTO.getContent());
     }
-    if (!myChannel.getProfileUrl().equals(putChannelDTO.getProfileUrl())) {
+    if (putChannelDTO.getProfileUrl() != null && !myChannel.getProfileUrl()
+        .equals(putChannelDTO.getProfileUrl())) {
       myChannel.setProfileUrl(putChannelDTO.getProfileUrl());
     }
-    if (!(myChannel.getPrivateType().equals(putChannelDTO.getPrivateType()))) {
+    if (putChannelDTO.getPrivateType() != null && !(myChannel.getPrivateType()
+        .equals(putChannelDTO.getPrivateType()))) {
       myChannel.setPrivateType(putChannelDTO.getPrivateType());
     }
-    if (!(myChannel.getChannelName().equals(putChannelDTO.getChannelName()))) {
-      String name = putChannelDTO.getChannelName() == null ? "박준호" : putChannelDTO.getChannelName();
-      myChannel.setChannelName(name);
+    if (putChannelDTO.getChannelName() != null && !(myChannel.getChannelName()
+        .equals(putChannelDTO.getChannelName()))) {
+      myChannel.setChannelName(putChannelDTO.getChannelName());
     }
     return channelRepository.save(myChannel);
   }
