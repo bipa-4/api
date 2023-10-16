@@ -31,4 +31,5 @@ public class GetDetailResponseDto {
   private String thumbnail;
   private List<GetVideoResponseDto> recommendedList;
   private Long likeCount;
+  private List<UUID> categoryId;
 }
