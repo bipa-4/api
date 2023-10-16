@@ -13,5 +13,5 @@ public class SelectChannelDTO {
   private String content;
   private boolean privateType;
   private String profileUrl;
-  private boolean updateFlag;
+  
 }

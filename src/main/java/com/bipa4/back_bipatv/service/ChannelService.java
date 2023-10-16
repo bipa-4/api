@@ -29,29 +29,20 @@ public class ChannelService {
   private final ChannelRepository channelRepository;
   private final VideoRepository videoRepository;
 
-  public SelectChannelDTO findChannel(String accessToken, UUID channelId) {
+  public boolean getUpdateFlag(String accessToken, UUID channelId) {
     Accounts loginAccount = securityService.getSubjectAccount(accessToken);
-
     Channels selectChannel = channelRepository.findByChannelId(channelId);
-    SelectChannelDTO selectChannelDTO = channelRepository.selectChannel(channelId);
-    System.out.println(selectChannelDTO);
+
     if (Objects.equals(selectChannel.getAccounts().getAccountId(),
         loginAccount.getAccountId())) {//수정 가능
-      selectChannelDTO.setUpdateFlag(true);
-      return selectChannelDTO;
+      return true;
     } else {//수정 불가
-      selectChannelDTO.setUpdateFlag(false);
-      return selectChannelDTO;
+      return false;
     }
   }
 
   public SelectChannelDTO findChannel(UUID channelId) {
-
-    SelectChannelDTO selectChannelDTO = channelRepository.selectChannel(channelId);
-
-    selectChannelDTO.setUpdateFlag(false);
-    return selectChannelDTO;
-
+    return channelRepository.selectChannel(channelId);
   }
 
   public Channels findbyChannelId(UUID channelId) {

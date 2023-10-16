@@ -5,7 +5,8 @@ import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface AccountRepository extends JpaRepository<Accounts, UUID> { //<entity명,pk자료형>
+public interface AccountRepository extends JpaRepository<Accounts, UUID>,
+    AccountRepositoryCustom { //<entity명,pk자료형>
 
   Optional<Accounts> findByLoginId(String loginId);
 
