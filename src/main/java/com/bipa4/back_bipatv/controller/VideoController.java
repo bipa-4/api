@@ -44,16 +44,17 @@ public class VideoController {
     if (owner > 0) {
       return new ResponseEntity<>(true, HttpStatus.OK);
     }
-    return new ResponseEntity<>(false, HttpStatus.BAD_REQUEST);
+    return new ResponseEntity<>(false, HttpStatus.OK);
   }
 
 
   // 영상  삭제
   @ApiOperation(value = "영상 삭제", notes = "영상 삭제 진행")
   @DeleteMapping("/{id}")
-  public ResponseEntity<String> ResponseEntity(@PathVariable("id") UUID id) {
+  public ResponseEntity<String> ResponseEntity(@PathVariable("id") UUID id,
+      @CookieValue("accessToken") String accessToken) {
 
-    return videoService.removeVideo(id) == 1 ? new ResponseEntity<>("success",
+    return videoService.removeVideo(id, accessToken) == 1 ? new ResponseEntity<>("success",
         HttpStatus.OK)
         : new ResponseEntity<>("fail", HttpStatus.INTERNAL_SERVER_ERROR);
   }
@@ -102,8 +103,8 @@ public class VideoController {
   @ApiOperation(value = "영상 수정", notes = "영상 수정 진행")
   @PutMapping("/{id}")
   public ResponseEntity<Long> update(@PathVariable UUID id,
-      @RequestBody PutUpdateRequestDto requestDto) {
-    if (videoService.updateVideo(id, requestDto) == 0) {
+      @RequestBody PutUpdateRequestDto requestDto, @CookieValue("accessToken") String accessToken) {
+    if (videoService.updateVideo(id, requestDto, accessToken) == 0) {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
     return new ResponseEntity<>(HttpStatus.OK);
