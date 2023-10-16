@@ -61,8 +61,12 @@ public class ReadController {
       @RequestParam(value = "page", required = false) String page,
       @RequestParam("pageSize") int pageSize) {
     List<GetVideoResponseDto> videos = videoService.getCategoryVideos(category, page, pageSize);
+
+    System.out.println(videos);
     String nextUUID = videoService.getNextUUID(
         videos.get(videos.size() - 1).getVideoId()); // 마지막 page의 UUID 호출
+
+    System.out.println(nextUUID);
     GetInfiniteScrollRequestDto responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
 
     return ResponseEntity.ok().body(responseDto);
@@ -93,7 +97,7 @@ public class ReadController {
   @ApiOperation(value = "영상 상세 조회 및 추천 영상 조회", notes = "영상 클릭시 상세 정보 + 추천 영상 추출")
   @GetMapping("/video/detail/{videoId}")
   public ResponseEntity<GetDetailResponseDto> getVideoDetail(
-      @PathVariable("videoId") String id) {
+      @PathVariable("videoId") UUID id) {
     int viewsResult = videoService.plusViews(id); //  조회수 상승
     GetDetailResponseDto video = videoService.getVideoDetail(id);
 
@@ -105,7 +109,7 @@ public class ReadController {
   @ApiOperation(value = "영상 상세 조회 및 추천 영상 조회", notes = "영상 클릭시 상세 정보 + 추천 영상 추출")
   @GetMapping("/video/like/{videoId}")
   public ResponseEntity<Boolean> getVideoLike(
-      @PathVariable("videoId") String id,
+      @PathVariable("videoId") UUID id,
       @CookieValue(name = "accessToken", required = false) String accessToken) {
     return new ResponseEntity<>(videoService.getLike(id, accessToken), HttpStatus.OK);
   }
