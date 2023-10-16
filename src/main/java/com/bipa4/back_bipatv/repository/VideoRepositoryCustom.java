@@ -5,6 +5,7 @@ import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.dto.video.PostUploadRequestDto;
 import com.bipa4.back_bipatv.dto.video.PutUpdateRequestDto;
+import com.bipa4.back_bipatv.entity.Accounts;
 import java.util.List;
 import java.util.UUID;
 
@@ -28,15 +29,15 @@ public interface VideoRepositoryCustom {
 
   GetDetailResponseDto getDetail(UUID id);
 
-  Long remove(UUID id);
+  Long remove(UUID id, Accounts account);
 
   int insert(PostUploadRequestDto videoResponseDto, String token, UUID uuid);
 
-  int update(UUID id, PutUpdateRequestDto videoResponseDto);
+  int update(UUID id, PutUpdateRequestDto videoResponseDto, Accounts account);
 
   List<GetCategoryNameRequestDto> getCategoryNames();
 
-  Long checkOwner(String token, UUID videoId);
+  Long checkOwner(Accounts account, UUID videoId);
 
   int plusViews(UUID videoId);
 

@@ -8,8 +8,10 @@ import com.bipa4.back_bipatv.dto.video.GetSearchResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.dto.video.PostUploadRequestDto;
 import com.bipa4.back_bipatv.dto.video.PutUpdateRequestDto;
+import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.repository.VideoChannelRepository;
 import com.bipa4.back_bipatv.repository.VideoRepository;
+import com.bipa4.back_bipatv.security.SecurityService;
 import java.util.List;
 import java.util.UUID;
 import javax.transaction.Transactional;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 public class VideoService {
 
   private final VideoRepository videoRepository;
+  private final SecurityService securityService;
   private final VideoChannelRepository videoChannelRepository;
 
   @Transactional
@@ -32,13 +35,15 @@ public class VideoService {
     return dto;
   }
 
-  public Long check(String token, UUID videoId) {
-    return videoRepository.checkOwner(token, videoId);
+  public Long check(String accessToken, UUID videoId) {
+    Accounts account = securityService.getSubjectAccount(accessToken);
+    return videoRepository.checkOwner(account, videoId);
   }
 
   @Transactional
-  public Long removeVideo(UUID videoId) {
-    return videoRepository.remove(videoId);
+  public Long removeVideo(UUID videoId, String accessToken) {
+    Accounts account = securityService.getSubjectAccount(accessToken);
+    return videoRepository.remove(videoId, account);
   }
 
   @Transactional
@@ -48,8 +53,9 @@ public class VideoService {
   }
 
   @Transactional
-  public int updateVideo(UUID id, PutUpdateRequestDto requestDto) {
-    return videoRepository.update(id, requestDto);
+  public int updateVideo(UUID id, PutUpdateRequestDto requestDto, String accessToken) {
+    Accounts account = securityService.getSubjectAccount(accessToken);
+    return videoRepository.update(id, requestDto, account);
   }
 
   public List<GetVideoResponseDto> getAllVideos(String page, int pageSize) {

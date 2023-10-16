@@ -271,12 +271,15 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 영상 삭제
   @Override
-  public Long remove(UUID id) {
-    QVideos qVideos = QVideos.videos;
+  public Long remove(UUID id, Accounts account) {
+    QChannels qChannels = QChannels.channels;
 
     Videos video = entityManager.find(Videos.class, id);
 
-    if (video != null) {
+    UUID channelId = jpaQueryFactory.select(qChannels.channelId).from(qChannels)
+        .where(qChannels.accounts.eq(account)).fetchOne();
+
+    if (video != null && video.getChannelId().getChannelId().equals(channelId)) {
       entityManager.remove(video);
       return 1L;
     } else {
@@ -286,10 +289,15 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 영상 수정
   @Override
-  public int update(UUID id, PutUpdateRequestDto videoResponseDto) {
+  public int update(UUID id, PutUpdateRequestDto videoResponseDto, Accounts account) {
+    QChannels qChannels = QChannels.channels;
+
     Videos video = entityManager.find(Videos.class, id);
 
-    if (video != null) {
+    UUID channelId = jpaQueryFactory.select(qChannels.channelId).from(qChannels)
+        .where(qChannels.accounts.eq(account)).fetchOne();
+
+    if (video != null && video.getChannelId().getChannelId().equals(channelId)) {
       video.setContent(videoResponseDto.getContent());
       video.setCreateAt(new Timestamp(System.currentTimeMillis()));
       video.setPrivateType(videoResponseDto.isPrivate_type());
@@ -305,16 +313,12 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 영상 본인 글인지 확인하기
   @Override
-  public Long checkOwner(String token, UUID videoId) {
+  public Long checkOwner(Accounts account, UUID videoId) {
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
 
-    Accounts account = securityService.getSubjectAccount(token);
     Channels channel = jpaQueryFactory.selectFrom(qChannels)
         .where(qChannels.accounts.eq(account)).fetchOne();
-
-    System.out.println(videoId);
-    System.out.println(channel.getChannelId());
 
     Long result = jpaQueryFactory.select(qVideos.count()).from(qVideos)
         .where(qVideos.channelId.eq(channel).and(qVideos.videoId.eq(videoId))).fetchFirst();
