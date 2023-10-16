@@ -260,7 +260,7 @@ public class UserService {
   }
 
   public GetAccountCheckDTO getAccountCheck(String accessToken) {
-
-    return null;
+    Accounts loginAccount = securityService.getSubjectAccount(accessToken);
+    return accountRepository.getAccountCheckDto(loginAccount.getAccountId());
   }
 }

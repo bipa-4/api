@@ -1,7 +1,7 @@
 package com.bipa4.back_bipatv.controller;
 
 import com.bipa4.back_bipatv.dto.channel.PutChannelDTO;
-import com.bipa4.back_bipatv.dto.video.GetImageUrlResponseDto;
+import com.bipa4.back_bipatv.dto.video.GetFileUrlResponseDto;
 import com.bipa4.back_bipatv.entity.Channels;
 import com.bipa4.back_bipatv.exception.ResourceNotFoundException;
 import com.bipa4.back_bipatv.service.ChannelService;
@@ -48,9 +48,9 @@ public class ChannelController {
 
   @ApiOperation(value = "I Want S3 URI", notes = "S3 URI요청")
   @PostMapping("/presigned")
-  public ResponseEntity<GetImageUrlResponseDto> saveFile(
+  public ResponseEntity<GetFileUrlResponseDto> saveFile(
       @RequestParam("imageName") String imageName) {
-    GetImageUrlResponseDto responseDto = presignedUrlService.getPreSignedUrl(imageName);
+    GetFileUrlResponseDto responseDto = presignedUrlService.getPreSignedUrl(imageName);
     if (responseDto != null) {
       return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }

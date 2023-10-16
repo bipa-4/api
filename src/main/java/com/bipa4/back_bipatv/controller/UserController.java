@@ -1,7 +1,8 @@
 package com.bipa4.back_bipatv.controller;
 
+
 import com.bipa4.back_bipatv.dto.user.GetAccountCheckDTO;
-import com.bipa4.back_bipatv.dto.video.GetImageUrlResponseDto;
+import com.bipa4.back_bipatv.dto.video.GetFileUrlResponseDto;
 import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.exception.ResourceNotFoundException;
 import com.bipa4.back_bipatv.security.SecurityService;
@@ -93,9 +94,9 @@ public class UserController {
 
   @ApiOperation(value = "I Want S3 URI", notes = "S3 URI요청")
   @PostMapping("/account/presigned")
-  public ResponseEntity<GetImageUrlResponseDto> saveFile(
+  public ResponseEntity<GetFileUrlResponseDto> saveFile(
       @RequestParam("imageName") String imageName) {
-    GetImageUrlResponseDto responseDto = presignedUrlService.getPreSignedUrl(imageName);
+    GetFileUrlResponseDto responseDto = presignedUrlService.getPreSignedUrl(imageName);
     if (responseDto != null) {
       return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
@@ -104,7 +105,7 @@ public class UserController {
 
   @ApiOperation(value = "CheckAccount", notes = "accessToken에 맞는 Account반환")
   @GetMapping("/account/check")
-  public ResponseEntity<Accounts> checkAccessTokenToAccount(
+  public ResponseEntity<GetAccountCheckDTO> getAccountCheck(
       @CookieValue(name = "accessToken", required = false) String accessToken) {
     System.out.println("CheckUser AT:" + accessToken);
     if (accessToken == null) {
@@ -112,10 +113,9 @@ public class UserController {
     }
 
     GetAccountCheckDTO getAccountCheckDTO = userService.getAccountCheck(accessToken);
-    Accounts findAccount = securityService.getSubjectAccount(accessToken);
 
-    return findAccount == null ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
-        : new ResponseEntity<>(findAccount, HttpStatus.OK);
+    return getAccountCheckDTO == null ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
+        : new ResponseEntity<>(getAccountCheckDTO, HttpStatus.OK);
   }
 
   @ApiOperation(value = "Logout", notes = "로그아웃기능")

@@ -93,18 +93,21 @@ public class ReadController {
   @ApiOperation(value = "영상 상세 조회 및 추천 영상 조회", notes = "영상 클릭시 상세 정보 + 추천 영상 추출")
   @GetMapping("/video/detail/{videoId}")
   public ResponseEntity<GetDetailResponseDto> getVideoDetail(
-      @PathVariable("videoId") String id,
-      @CookieValue(name = "accessToken", required = false) String accessToken) {
+      @PathVariable("videoId") String id) {
     int viewsResult = videoService.plusViews(id); //  조회수 상승
     GetDetailResponseDto video = videoService.getVideoDetail(id);
-    System.out.println("detail AT:" + accessToken);
 
-    if (accessToken != null) {
-      video.setIsLike(videoService.getFavorite(id, accessToken));// 좋아요 버튼 눌렀는지 여부
-    }
-    System.out.println(video.getIsLike());
-    System.out.println(video);
     return new ResponseEntity<>(video, HttpStatus.OK);
+  }
+
+
+  // 영상 좋아요 여부
+  @ApiOperation(value = "영상 상세 조회 및 추천 영상 조회", notes = "영상 클릭시 상세 정보 + 추천 영상 추출")
+  @GetMapping("/video/like/{videoId}")
+  public ResponseEntity<Boolean> getVideoLike(
+      @PathVariable("videoId") String id,
+      @CookieValue(name = "accessToken", required = false) String accessToken) {
+    return new ResponseEntity<>(videoService.getLike(id, accessToken), HttpStatus.OK);
   }
 
 
