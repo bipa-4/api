@@ -10,7 +10,6 @@ import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.Pattern;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
@@ -47,7 +46,7 @@ public class Accounts {
   private String profileUrl;
 
   @Column(name = "email")
-  @Pattern(regexp = "^(|^[A-Za-z0-9_\\.-]+@[A-Za-z0-9-]+\\.[A-Za-z0-9-]{1,50}$)")
+  //@Pattern(regexp = "^(|^[A-Za-z0-9_\\.-]+@[A-Za-z0-9-]+\\.[A-Za-z0-9-]{1,50}$)")
   private String eMail;
 
   @Column(name = "dalete_at")
