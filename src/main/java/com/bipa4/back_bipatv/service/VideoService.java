@@ -102,7 +102,7 @@ public class VideoService {
     return videoRepository.plusViews(uuid);
   }
 
-  public boolean getFavorite(String videoId, String token) {
+  public boolean getLike(String videoId, String token) {
     UUID uuid = UUID.fromString(videoId);
     if (videoRepository.getFavorite(uuid, token) == 1) {
       return true;

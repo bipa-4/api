@@ -1,5 +1,6 @@
 package com.bipa4.back_bipatv.controller;
 
+import com.bipa4.back_bipatv.dto.video.GetFileUrlResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetSearchResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetUrlResponseDto;
 import com.bipa4.back_bipatv.dto.video.PostUploadRequestDto;
@@ -63,8 +64,13 @@ public class VideoController {
   @PostMapping("/presigned")
   public ResponseEntity<GetUrlResponseDto> saveFile(@RequestParam("videoName") String videoName,
       @RequestParam("imageName") String imageName) {
-    return new ResponseEntity<>(presignedUrlService.getPreSignedUrlCDN(videoName, imageName),
-        HttpStatus.OK);
+    GetFileUrlResponseDto videoDto = presignedUrlService.getPreSignedUrl(videoName);
+    GetFileUrlResponseDto imageDto = presignedUrlService.getPreSignedUrl(imageName);
+
+    GetUrlResponseDto responseDto = new GetUrlResponseDto(videoDto.getFileUrl(),
+        imageDto.getFileUrl(), videoDto.getFileName(), imageDto.getFileName());
+
+    return new ResponseEntity<>(responseDto, HttpStatus.OK);
   }
 
 

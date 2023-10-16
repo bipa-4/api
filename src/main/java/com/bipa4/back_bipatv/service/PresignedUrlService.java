@@ -7,7 +7,7 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.Headers;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
-import com.bipa4.back_bipatv.dto.video.GetImageUrlResponseDto;
+import com.bipa4.back_bipatv.dto.video.GetFileUrlResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetUrlResponseDto;
 import java.io.File;
 import java.time.LocalDateTime;
@@ -39,11 +39,11 @@ public class PresignedUrlService {
 
   private final AmazonS3 amazonS3;
 
-  public GetImageUrlResponseDto getPreSignedUrl(String imageName) {
+  public GetFileUrlResponseDto getPreSignedUrl(String fileName) {
 
     // 파일이름
     String fileId = UUID.randomUUID().toString();
-    String imageKey = fileId + imageName;
+    String fileKey = fileId + fileName;
 
     // 만료 기간 정하기
     Calendar calendar = Calendar.getInstance();
@@ -52,7 +52,7 @@ public class PresignedUrlService {
 
     // presigned-url 생성
     GeneratePresignedUrlRequest generateVideoPresignedUrlImageRequest =
-        new GeneratePresignedUrlRequest(bucket, imageKey)
+        new GeneratePresignedUrlRequest(bucket, fileKey)
             .withMethod(HttpMethod.PUT)
             .withExpiration(calendar.getTime());
 
@@ -60,9 +60,10 @@ public class PresignedUrlService {
         Headers.S3_CANNED_ACL,
         CannedAccessControlList.PublicRead.toString());
 
-    return new GetImageUrlResponseDto(
-        amazonS3.generatePresignedUrl(generateVideoPresignedUrlImageRequest).toString(), imageKey);
+    return new GetFileUrlResponseDto(
+        amazonS3.generatePresignedUrl(generateVideoPresignedUrlImageRequest).toString(), fileKey);
   }
+
 
   public GetUrlResponseDto getPreSignedUrlCDN(String videoName, String imageName) {
     GetUrlResponseDto requestDto = null;
