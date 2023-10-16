@@ -100,9 +100,9 @@ public class ReadController {
     System.out.println("detail AT:" + accessToken);
 
     if (accessToken != null) {
-      video.setLike(videoService.getFavorite(id, accessToken));// 좋아요 버튼 눌렀는지 여부
+      video.setIsLike(videoService.getFavorite(id, accessToken));// 좋아요 버튼 눌렀는지 여부
     }
-    System.out.println(video.isLike());
+    System.out.println(video.getIsLike());
     System.out.println(video);
     return new ResponseEntity<>(video, HttpStatus.OK);
   }
@@ -132,20 +132,27 @@ public class ReadController {
   @ApiOperation(value = "채널 상세 조회", notes = "채널 상세 조회")
   @GetMapping("/channel/{channelId}")
   public ResponseEntity<SelectChannelDTO> getMyChannelInfo(
-      @CookieValue(name = "accessToken", required = false) String accessToken,
       @PathVariable("channelId") UUID channelId) {
-    System.out.println("채널 상세 조회 AT:" + accessToken);
-    if (accessToken == null) {
-      return new ResponseEntity<>(channelService.findChannel(channelId), HttpStatus.OK);
-    }
-    if (channelService.findChannel(accessToken, channelId) != null) {
-      return new ResponseEntity<>(channelService.findChannel(accessToken, channelId),
-          HttpStatus.OK);
+    SelectChannelDTO selectChannelDTO = channelService.findChannel(channelId);
+    if (selectChannelDTO != null) {
+      return new ResponseEntity<>(selectChannelDTO, HttpStatus.OK);
     } else {
       return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
     }
   }
 
+  @ApiOperation(value = "getUpdateFlag", notes = "업데이트 플레그 얻기")
+  @GetMapping("/channel/flag/{channelId}")
+  public ResponseEntity<Boolean> getUpdateFlag(
+      @CookieValue(value = "accessToken", required = false) String accessToken,
+      @PathVariable("channelId") UUID channelId) {
+    if (accessToken == null) {//비회원 채널 조회
+      return new ResponseEntity<>(false, HttpStatus.OK);
+    } else {
+      return new ResponseEntity<>(channelService.getUpdateFlag(accessToken, channelId),
+          HttpStatus.OK);
+    }
+  }
 
   // 인기 채널 top 10 조회
   @ApiOperation(value = "실시간 인기 채널 5", notes = "가장 인기 있는 채널 TOP5을 들고온다")

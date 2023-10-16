@@ -1,5 +1,6 @@
 package com.bipa4.back_bipatv.controller;
 
+import com.bipa4.back_bipatv.dto.user.GetAccountCheckDTO;
 import com.bipa4.back_bipatv.dto.video.GetImageUrlResponseDto;
 import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.exception.ResourceNotFoundException;
@@ -105,11 +106,14 @@ public class UserController {
   @GetMapping("/account/check")
   public ResponseEntity<Accounts> checkAccessTokenToAccount(
       @CookieValue(name = "accessToken", required = false) String accessToken) {
+    System.out.println("CheckUser AT:" + accessToken);
     if (accessToken == null) {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-    System.out.println("CheckUser AT:" + accessToken);
+
+    GetAccountCheckDTO getAccountCheckDTO = userService.getAccountCheck(accessToken);
     Accounts findAccount = securityService.getSubjectAccount(accessToken);
+
     return findAccount == null ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
         : new ResponseEntity<>(findAccount, HttpStatus.OK);
   }
