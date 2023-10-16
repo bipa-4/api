@@ -215,6 +215,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
     QFavorite qFavorite = QFavorite.favorite;
+    QCategorys qCategorys = QCategorys.categorys;
 
     GetDetailResponseDto dto = jpaQueryFactory.select(
             Projections.bean(
@@ -265,6 +266,12 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
         .where(qFavorite.favoritePK.videos.eq(videos)).fetchFirst();
 
     dto.setLikeCount(favoriteCnt);
+
+    // 영상의 카테고리 저장
+    List<UUID> uuid = jpaQueryFactory.select(qCategorys.categoryNameId.categoryNameId)
+        .from(qCategorys)
+        .where(qCategorys.videoId.videoId.eq(dto.getVideoId())).fetch();
+    dto.setCategoryId(uuid);
 
     return dto;
   }
