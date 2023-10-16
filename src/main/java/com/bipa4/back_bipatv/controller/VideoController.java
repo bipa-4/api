@@ -51,7 +51,7 @@ public class VideoController {
   // 영상  삭제
   @ApiOperation(value = "영상 삭제", notes = "영상 삭제 진행")
   @DeleteMapping("/{id}")
-  public ResponseEntity<String> ResponseEntity(@PathVariable("id") Long id) {
+  public ResponseEntity<String> ResponseEntity(@PathVariable("id") UUID id) {
 
     return videoService.removeVideo(id) == 1 ? new ResponseEntity<>("success",
         HttpStatus.OK)
@@ -101,7 +101,7 @@ public class VideoController {
   // 영상 수정
   @ApiOperation(value = "영상 수정", notes = "영상 수정 진행")
   @PutMapping("/{id}")
-  public ResponseEntity<Long> update(@PathVariable Long id,
+  public ResponseEntity<Long> update(@PathVariable UUID id,
       @RequestBody PutUpdateRequestDto requestDto) {
     if (videoService.updateVideo(id, requestDto) == 0) {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);

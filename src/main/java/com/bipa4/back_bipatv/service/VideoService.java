@@ -37,7 +37,7 @@ public class VideoService {
   }
 
   @Transactional
-  public Long removeVideo(Long videoId) {
+  public Long removeVideo(UUID videoId) {
     return videoRepository.remove(videoId);
   }
 
@@ -48,7 +48,7 @@ public class VideoService {
   }
 
   @Transactional
-  public int updateVideo(Long id, PutUpdateRequestDto requestDto) {
+  public int updateVideo(UUID id, PutUpdateRequestDto requestDto) {
     return videoRepository.update(id, requestDto);
   }
 
@@ -82,8 +82,7 @@ public class VideoService {
 
 
   public List<GetVideoResponseDto> getViewsTop10Videos() {
-    List<GetVideoResponseDto> videos = videoRepository.findByViews();
-    return videos;
+    return videoRepository.findByViews();
   }
 
   @Transactional
@@ -91,20 +90,17 @@ public class VideoService {
     return videoRepository.updateViews();
   }
 
-  public GetDetailResponseDto getVideoDetail(String id) {
-    UUID uuid = UUID.fromString(id);
-    return videoRepository.getDetail(uuid);
+  public GetDetailResponseDto getVideoDetail(UUID id) {
+    return videoRepository.getDetail(id);
   }
 
   @Transactional
-  public int plusViews(String videoId) {
-    UUID uuid = UUID.fromString(videoId);
-    return videoRepository.plusViews(uuid);
+  public int plusViews(UUID videoId) {
+    return videoRepository.plusViews(videoId);
   }
 
-  public boolean getLike(String videoId, String token) {
-    UUID uuid = UUID.fromString(videoId);
-    if (videoRepository.getFavorite(uuid, token) == 1) {
+  public boolean getLike(UUID videoId, String token) {
+    if (videoRepository.getFavorite(videoId, token) == 1) {
       return true;
     }
     return false;

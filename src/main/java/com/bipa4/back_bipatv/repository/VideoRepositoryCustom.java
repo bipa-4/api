@@ -28,11 +28,11 @@ public interface VideoRepositoryCustom {
 
   GetDetailResponseDto getDetail(UUID id);
 
-  Long remove(Long id);
+  Long remove(UUID id);
 
   int insert(PostUploadRequestDto videoResponseDto, String token, UUID uuid);
 
-  int update(Long id, PutUpdateRequestDto videoResponseDto);
+  int update(UUID id, PutUpdateRequestDto videoResponseDto);
 
   List<GetCategoryNameRequestDto> getCategoryNames();
 

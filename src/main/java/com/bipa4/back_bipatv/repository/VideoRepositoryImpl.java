@@ -271,7 +271,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 영상 삭제
   @Override
-  public Long remove(Long id) {
+  public Long remove(UUID id) {
     QVideos qVideos = QVideos.videos;
 
     Videos video = entityManager.find(Videos.class, id);
@@ -286,7 +286,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 영상 수정
   @Override
-  public int update(Long id, PutUpdateRequestDto videoResponseDto) {
+  public int update(UUID id, PutUpdateRequestDto videoResponseDto) {
     Videos video = entityManager.find(Videos.class, id);
 
     if (video != null) {
@@ -313,13 +313,11 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     Channels channel = jpaQueryFactory.selectFrom(qChannels)
         .where(qChannels.accounts.eq(account)).fetchOne();
 
-    System.out.println(account);
-    System.out.println(channel);
+    System.out.println(videoId);
+    System.out.println(channel.getChannelId());
 
     Long result = jpaQueryFactory.select(qVideos.count()).from(qVideos)
-        .where(qVideos.channelId.eq(channel)).fetchFirst();
-
-    System.out.println(result);
+        .where(qVideos.channelId.eq(channel).and(qVideos.videoId.eq(videoId))).fetchFirst();
 
     return result;
   }
