@@ -17,7 +17,7 @@ public interface VideoChannelRepository extends JpaRepository<Videos, Long> {
       "SELECT BIN_TO_UUID(video_id) as videoId, v.content, create_at as createAt, v.private_type as privateType, read_cnt as readCnt, thumbnail, title as videoTitle, profile_url as channelProfileUrl, name as channelName FROM videos v\n"
           + "    left outer join channels c on v.channel_id = c.channel_id\n"
           + "    WHERE MATCH (v.title, v.content)\n"
-          + "    AGAINST (:searchQuery WITH QUERY EXPANSION)", nativeQuery = true)
+          + "    AGAINST (:searchQuery IN NATURAL LANGUAGE MODE)", nativeQuery = true)
   List<GetSearchResponseDto> findBySearchQuery(@Param("searchQuery") String searchQuery);
 
 }
