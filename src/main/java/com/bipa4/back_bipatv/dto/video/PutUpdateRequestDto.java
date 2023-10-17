@@ -1,11 +1,15 @@
 package com.bipa4.back_bipatv.dto.video;
 
+import java.util.List;
+import java.util.UUID;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Getter
 @NoArgsConstructor
+@AllArgsConstructor
 @ToString
 public class PutUpdateRequestDto {
 
@@ -14,13 +18,5 @@ public class PutUpdateRequestDto {
   private String title;
   private String content;
   private boolean private_type;
-
-  public PutUpdateRequestDto(String videoUrl, String thumbnailUrl, String title,
-      String content, boolean private_type) {
-    this.videoUrl = videoUrl;
-    this.thumbnailUrl = thumbnailUrl;
-    this.title = title;
-    this.content = content;
-    this.private_type = private_type;
-  }
+  private List<UUID> category;
 }
