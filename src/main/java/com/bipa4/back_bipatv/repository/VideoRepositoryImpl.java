@@ -294,6 +294,18 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
         .where(qChannels.accounts.eq(account)).fetchOne();
 
     if (video != null && video.getChannelId().getChannelId().equals(channelId)) {
+
+      // S3 삭제
+      try {
+        String videoName = video.getVideoUrl().replace("https://du30t7lolw1uk.cloudfront.net/", "");
+        String thumbnailName = video.getThumbnail()
+            .replace("https://du30t7lolw1uk.cloudfront.net/", "");
+        amazonS3.deleteObject(bucketName, (videoName).replace(File.separatorChar, '/'));
+        amazonS3.deleteObject(bucketName, (thumbnailName).replace(File.separatorChar, '/'));
+      } catch (Exception e) {
+        System.out.println(e);
+      }
+
       entityManager.remove(video);
       return 1L;
     } else {
