@@ -28,8 +28,7 @@ public class VideoService {
 
   @Transactional
   public List<GetSearchResponseDto> search(String searchQuery) {
-    List<GetSearchResponseDto> dto = videoChannelRepository.findBySearchQuery(searchQuery);
-    return dto;
+    return videoChannelRepository.findBySearchQuery(searchQuery);
   }
 
   public Long check(String accessToken, UUID videoId) {
