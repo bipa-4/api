@@ -2,6 +2,7 @@ package com.bipa4.back_bipatv.repository;
 
 import static com.querydsl.core.types.dsl.Expressions.asNumber;
 
+import com.amazonaws.services.s3.AmazonS3;
 import com.bipa4.back_bipatv.dto.video.GetCategoryNameRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
@@ -21,20 +22,26 @@ import com.bipa4.back_bipatv.entity.Videos;
 import com.bipa4.back_bipatv.security.SecurityService;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.io.File;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
 import javax.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 @RequiredArgsConstructor
 @Repository
 public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
+  @Value("${cloud.aws.s3.bucket}")
+  private String bucketName;
+
   private final JPAQueryFactory jpaQueryFactory;
   private final SecurityService securityService;
   private final EntityManager entityManager;
+  private final AmazonS3 amazonS3;
 
   // 전체보기 (무한 스크롤)
   @Override
@@ -305,6 +312,27 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
         .where(qChannels.accounts.eq(account)).fetchOne();
 
     if (video != null && video.getChannelId().getChannelId().equals(channelId)) {
+
+      // S3 삭제
+      if (video.getVideoUrl() != videoResponseDto.getVideoUrl()) {
+        String videoName = video.getVideoUrl().replace("https://du30t7lolw1uk.cloudfront.net/", "");
+        try {
+          amazonS3.deleteObject(bucketName, (videoName).replace(File.separatorChar, '/'));
+        } catch (Exception e) {
+          System.out.println(e);
+        }
+      }
+
+      if (video.getThumbnail() != videoResponseDto.getThumbnailUrl()) {
+        String thumbnailName = video.getThumbnail()
+            .replace("https://du30t7lolw1uk.cloudfront.net/", "");
+        try {
+          amazonS3.deleteObject(bucketName, (thumbnailName).replace(File.separatorChar, '/'));
+        } catch (Exception e) {
+          System.out.println(e);
+        }
+      }
+
       video.setContent(videoResponseDto.getContent());
       video.setCreateAt(new Timestamp(System.currentTimeMillis()));
       video.setPrivateType(videoResponseDto.isPrivate_type());
