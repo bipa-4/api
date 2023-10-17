@@ -82,14 +82,20 @@ public class ReadController {
   }
 
 
-  // 조회수 급상승 TOP 10 + 디비 1시간 전 정보 저장
+  // 조회수 급상승 TOP 10
   @ApiOperation(value = "조회수 급상승 TOP 10", notes = "1시간마다 조회수가 급상승된 영상 10개 추출")
   @GetMapping("/video/top10")
-  @Scheduled(cron = "0 0 0/1 * * *")
   public ResponseEntity<List<GetVideoResponseDto>> getViewsTop10Videos() {
     List<GetVideoResponseDto> videos = videoService.getViewsTop10Videos();
-    int result = videoService.updateViews();
     return new ResponseEntity<List<GetVideoResponseDto>>(videos, HttpStatus.OK);
+  }
+
+
+  // 디비 1시간 전 정보 저장
+  @ApiOperation(value = "조회수 급상승 TOP 10", notes = "1시간마다 조회수가 급상승된 영상 10개 추출")
+  @Scheduled(cron = "0 0 0/1 * * *")
+  public ResponseEntity<Integer> getViewsUpdate() {
+    return new ResponseEntity<Integer>(videoService.updateViews(), HttpStatus.OK);
   }
 
 

@@ -1,7 +1,7 @@
 package com.bipa4.back_bipatv.service;
 
-//import com.amazonaws.services.s3.AmazonS3Client;
-
+import com.amazonaws.AmazonServiceException;
+import com.amazonaws.services.s3.AmazonS3;
 import com.bipa4.back_bipatv.dto.video.GetCategoryNameRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetSearchResponseDto;
@@ -12,26 +12,29 @@ import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.repository.VideoChannelRepository;
 import com.bipa4.back_bipatv.repository.VideoRepository;
 import com.bipa4.back_bipatv.security.SecurityService;
+import java.io.File;
 import java.util.List;
 import java.util.UUID;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Service
 public class VideoService {
 
+  @Value("${cloud.aws.s3.bucket}")
+  private String bucketName;
+
   private final VideoRepository videoRepository;
   private final SecurityService securityService;
   private final VideoChannelRepository videoChannelRepository;
+  private final AmazonS3 amazonS3;
 
   @Transactional
   public List<GetSearchResponseDto> search(String searchQuery) {
     List<GetSearchResponseDto> dto = videoChannelRepository.findBySearchQuery(searchQuery);
-    for (int i = 0; i < dto.size(); i++) {
-      System.out.println(dto.get(i));
-    }
     return dto;
   }
 
@@ -134,6 +137,16 @@ public class VideoService {
     long leastSigBits = (customNode << 16) | 0x800000000000L;
 
     return new UUID(mostSigBits, leastSigBits);
+  }
+
+  public boolean deleteS3File(String fileName) {
+    try {
+      amazonS3.deleteObject(bucketName, (fileName).replace(File.separatorChar, '/'));
+      return true;
+    } catch (AmazonServiceException e) {
+      System.out.println(e);
+      return false;
+    }
   }
 
   // Upload to storage.

@@ -76,6 +76,7 @@ public class VideoController {
   }
 
 
+  // CDN presigned-url 발급
   @ApiOperation(value = "CDN presigned-url 발급", notes = "비디오 및 이미지 업로드를 위한 임시 url 발급")
   @PostMapping("/presigned-cdn")
   public ResponseEntity<GetUrlResponseDto> saveFileCDN(
@@ -83,6 +84,14 @@ public class VideoController {
       @RequestParam("imageName") String imageName) {
     return new ResponseEntity<>(presignedUrlService.getPreSignedUrlCDN(videoName, imageName),
         HttpStatus.OK);
+  }
+
+  // S3 파일 삭제
+  @ApiOperation(value = "S3 파일 삭제", notes = "비디오 및 이미지 삭제")
+  @DeleteMapping("/file/{fileName}")
+  public ResponseEntity<Boolean> deleteFile(
+      @PathVariable("fileName") String fileName) {
+    return new ResponseEntity<>(videoService.deleteS3File(fileName), HttpStatus.OK);
   }
 
   // 영상 업로드
