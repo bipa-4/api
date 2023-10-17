@@ -22,20 +22,19 @@ public class CorsFilter implements Filter {
     HttpServletRequest request = (HttpServletRequest) req;
     HttpServletResponse response = (HttpServletResponse) res;
     String origin = request.getHeader("origin");
-    System.out.println("origin값:" + origin);
+
     String host = request.getHeader("Host");
-    System.out.println("host값 : " + host);
+
     if ("http://localhost:3000".equals(origin) ||
         "https://bipa-streamwave.vercel.app".equals(origin) ||
         "https://port-0-api1-iciy2almriucc9.sel5.cloudtype.app".equals(origin)) {
-      System.out.println("들어옴");
       response.setHeader("Access-Control-Allow-Origin", origin);
     } else if ("http://localhost:8080".equals(host)) {
       response.setHeader("Access-Control-Allow-Origin", host);
     }
 
     response.setHeader("Access-Control-Allow-Credentials", "true");
-    response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE");
+    response.setHeader("Access-Control-Allow-Methods", "POST, GET, OPTIONS, DELETE, PUT");
     response.setHeader("Access-Control-Max-Age", "3600");
     response.setHeader("Access-Control-Allow-Headers",
         "Origin, X-Requested-With, Content-Type, Accept, Authorization");
