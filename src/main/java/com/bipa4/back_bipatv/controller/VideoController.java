@@ -86,14 +86,6 @@ public class VideoController {
         HttpStatus.OK);
   }
 
-  // S3 파일 삭제
-  @ApiOperation(value = "S3 파일 삭제", notes = "비디오 및 이미지 삭제")
-  @DeleteMapping("/file/{fileName}")
-  public ResponseEntity<Boolean> deleteFile(
-      @PathVariable("fileName") String fileName) {
-    return new ResponseEntity<>(videoService.deleteS3File(fileName), HttpStatus.OK);
-  }
-
   // 영상 업로드
   @ApiOperation(value = "영상 업로드", notes = "영상 업로드 진행")
   @PostMapping("/upload")
