@@ -9,6 +9,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.PositiveOrZero;
+import javax.validation.constraints.Size;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
@@ -30,10 +32,13 @@ public class Videos {
   private UUID videoId;
   @Column(name = "video_url", nullable = true, length = 200)
   private String videoUrl;
-  @Column(name = "title", nullable = true, length = 100)
+  @Size(min = 1, max = 500)
+  @Column(name = "title", nullable = true, length = 500)
   private String title;
-  @Column(name = "content", nullable = true, length = 400)
+  @Size(min = 0, max = 1500)
+  @Column(name = "content", nullable = true, length = 1500)
   private String content;
+  @PositiveOrZero
   @Column(name = "read_cnt", nullable = true)
   private int readCnt;
   @Column(name = "create_at", nullable = true)
