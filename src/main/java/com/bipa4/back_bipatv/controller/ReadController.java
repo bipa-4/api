@@ -18,7 +18,6 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.util.List;
 import java.util.UUID;
-import javax.xml.stream.events.Comment;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -127,9 +126,8 @@ public class ReadController {
   @ApiOperation(value = "부모 댓글 조회", notes = "부모 댓글 조회")
   @GetMapping("/comment/{videoId}/comment-parent")
   public ResponseEntity<List<CommentResponse>> findParentComments(@PathVariable UUID videoId,
-     CommentResponse commentResponse) {
+      CommentResponse commentResponse) {
     List<CommentResponse> list = commentService.findParentComments(videoId);
-
 
     return ResponseEntity.ok(list);
   }
@@ -138,7 +136,7 @@ public class ReadController {
   @ApiOperation(value = "자식 댓글 조회", notes = "자식 댓글 조회")
   @GetMapping("/comment/{videoId}/{groupIndex}/comment-child")
   public ResponseEntity<List<ChildCommentResponse>> findChildComments(@PathVariable UUID videoId,
-                                                                      @PathVariable int groupIndex) {
+      @PathVariable int groupIndex) {
     List<ChildCommentResponse> list = commentService.findChildComments(videoId, groupIndex);
 
     return ResponseEntity.ok(list);
@@ -201,10 +199,12 @@ public class ReadController {
   @ApiOperation(value = "채널 내 영상 조회", notes = "최신순으로 전체 조회 (무한스크롤) / 처음엔 page 안넘겨주면 됨.")
   @GetMapping("/channel/video/{channelId}")
   public ResponseEntity<GetInfiniteScrollRequestDto> getVideosInChannel(
+      @CookieValue(value = "accessToken", required = false) String accessToken,
       @RequestParam(value = "page", required = false) String page,
       @RequestParam("pageSize") int pageSize,
       @PathVariable("channelId") UUID channelId) {
-    List<GetVideoResponseDto> videos = channelService.getVideosInChannel(channelId, page, pageSize);
+    List<GetVideoResponseDto> videos = channelService.getVideosInChannel(accessToken, channelId,
+        page, pageSize);
     String nextUUID = videoService.getNextUUID(
         videos.get(videos.size() - 1).getVideoId()); // 마지막 page의 UUID 호출
     GetInfiniteScrollRequestDto responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
@@ -212,5 +212,7 @@ public class ReadController {
     return ResponseEntity.ok().body(responseDto);
   }
 
+//  @ApiOperation(value = "채널 내 영상 검색", notes = "채널 내 영상 검색")
+//  @GetMapping("/channel/{channelId}/video/{videoId}")
 
 }

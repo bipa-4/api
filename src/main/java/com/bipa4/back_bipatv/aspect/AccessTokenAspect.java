@@ -56,7 +56,7 @@ public class AccessTokenAspect {
           ResponseCookie newAccessTokenCookie = ResponseCookie.from("accessToken",
                   newAccessToken)
               .path("/")
-              .maxAge(ETokenTime.ACCESSTOKEN_EXP_TIME_TEST.getTime())
+              .maxAge(ETokenTime.ACCESSTOKEN_EXP_TIME.getTime())
               .httpOnly(true)
               .secure(true)
               .sameSite("None")

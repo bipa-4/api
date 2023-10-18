@@ -57,8 +57,8 @@ public class SecurityService {
     return Jwts.builder()//지금은 subject값고 만료시간만 넣어줌 but 다양한 값 넣을 수 있음 확인해보기
         .setSubject("RefreshToken" + accounts.getLoginId())
         .signWith(singingKey, signatureAlgorithm)
-//        .setExpiration(new Date(System.currentTimeMillis() + 6 * 1000 * 60 * 60))//만료시간
-        .setExpiration(new Date(System.currentTimeMillis() + 5 * 1000 * 60))//만료시간 5분
+        .setExpiration(new Date(System.currentTimeMillis() + 6 * 1000 * 60 * 60))//만료시간
+//        .setExpiration(new Date(System.currentTimeMillis() + 5 * 1000 * 60))//만료시간 5분 테스트
         .compact();
   }
 
