@@ -13,7 +13,7 @@ import org.springframework.stereotype.Repository;
 public class RedisRepository {
 
   private static final long REFRESH_TOKEN_EXPIRATION_SECONDS = ETokenTime.REFRESHTOKEN_EXP_TIME.getTime(); // 토큰 만료 시간 (6시간)
-  private static final long REFRESH_TOKEN_EXPIRATION_SECONDS_TEST = ETokenTime.REFRESHTOKEN_EXP_TIME_TEST.getTime(); // 토큰 만료 시간 (6시간)
+
 
   private final RedisTemplate<String, String> redisTemplate;
   private final RedisTemplate<String, String> redisBlackListTemplate;
@@ -29,7 +29,7 @@ public class RedisRepository {
   public void save(RefreshToken refreshToken) {
     ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
     valueOperations.set(refreshToken.getRefreshToken(), refreshToken.getMemberId(),
-        REFRESH_TOKEN_EXPIRATION_SECONDS_TEST, TimeUnit.SECONDS);
+        REFRESH_TOKEN_EXPIRATION_SECONDS, TimeUnit.SECONDS);
   }
 
   // Refresh Token을 Redis에서 검색합니다.

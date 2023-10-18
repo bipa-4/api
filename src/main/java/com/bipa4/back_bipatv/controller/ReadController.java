@@ -1,7 +1,5 @@
 package com.bipa4.back_bipatv.controller;
 
-import com.bipa4.back_bipatv.dataType.ErrorCode;
-import com.bipa4.back_bipatv.dto.CustomApiException;
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
 import com.bipa4.back_bipatv.dto.channel.GetInfiniteScrollRequestChannelDto;
@@ -92,11 +90,8 @@ public class ReadController {
   // 디비 1시간 전 정보 저장
   @ApiOperation(value = "조회수 급상승 TOP 10", notes = "1시간마다 조회수가 급상승된 영상 10개 추출")
   @Scheduled(cron = "0 0 0/1 * * *")
-  public ResponseEntity<Boolean> getViewsUpdate() {
-    if (videoService.updateViews() == 0) {
-      throw new CustomApiException(ErrorCode.UPDATE_ERROR);
-    }
-    return new ResponseEntity<>(true, HttpStatus.OK);
+  public ResponseEntity<Integer> getViewsUpdate() {
+    return new ResponseEntity<Integer>(videoService.updateViews(), HttpStatus.OK);
   }
 
 
@@ -127,17 +122,20 @@ public class ReadController {
   //부모 댓글 조회
   @ApiOperation(value = "부모 댓글 조회", notes = "부모 댓글 조회")
   @GetMapping("/comment/{videoId}/comment-parent")
-  public ResponseEntity<List<CommentResponse>> findParentComments(@PathVariable UUID videoId) {
+  public ResponseEntity<List<CommentResponse>> findParentComments(@PathVariable UUID videoId,
+      CommentResponse commentResponse) {
     List<CommentResponse> list = commentService.findParentComments(videoId);
+
     return ResponseEntity.ok(list);
   }
 
   //자식 댓글 조회
   @ApiOperation(value = "자식 댓글 조회", notes = "자식 댓글 조회")
-  @GetMapping("/comment/{videoId}/comment-child")
+  @GetMapping("/comment/{videoId}/{groupIndex}/comment-child")
   public ResponseEntity<List<ChildCommentResponse>> findChildComments(@PathVariable UUID videoId,
-      @RequestParam int groupIndex) {
+      @PathVariable int groupIndex) {
     List<ChildCommentResponse> list = commentService.findChildComments(videoId, groupIndex);
+
     return ResponseEntity.ok(list);
   }
 
@@ -182,7 +180,7 @@ public class ReadController {
       @RequestParam("pageSize") int pageSize) {
 
     List<GetChannelDTO> list = channelService.getAllChannels(page, pageSize);
-    String nextUUID = channelService.getNextUUID(list.get(list.size() - 1).getChannelId());
+    String nextUUID = channelService.getChannelNextUUID(list.get(list.size() - 1).getChannelId());
 
     GetInfiniteScrollRequestChannelDto channelList = new GetInfiniteScrollRequestChannelDto(list,
         nextUUID);
@@ -194,14 +192,20 @@ public class ReadController {
   @ApiOperation(value = "채널 내 영상 조회", notes = "최신순으로 전체 조회 (무한스크롤) / 처음엔 page 안넘겨주면 됨.")
   @GetMapping("/channel/video/{channelId}")
   public ResponseEntity<GetInfiniteScrollRequestDto> getVideosInChannel(
+      @CookieValue(value = "accessToken", required = false) String accessToken,
       @RequestParam(value = "page", required = false) String page,
       @RequestParam("pageSize") int pageSize,
       @PathVariable("channelId") UUID channelId) {
-    List<GetVideoResponseDto> videos = channelService.getVideosInChannel(channelId, page, pageSize);
+    List<GetVideoResponseDto> videos = channelService.getVideosInChannel(accessToken, channelId,
+        page, pageSize);
     String nextUUID = videoService.getNextUUID(
         videos.get(videos.size() - 1).getVideoId()); // 마지막 page의 UUID 호출
     GetInfiniteScrollRequestDto responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
 
     return ResponseEntity.ok().body(responseDto);
   }
+
+//  @ApiOperation(value = "채널 내 영상 검색", notes = "채널 내 영상 검색")
+//  @GetMapping("/channel/{channelId}/video/{videoId}")
+
 }

@@ -106,4 +106,20 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
         .orderBy(qChannels.channelId.desc()).limit(1)
         .fetchOne();
   }
+
+  @Override
+  public String getChannelNextUUID(UUID uuid) {
+    QChannels qChannels = QChannels.channels;
+
+    UUID nextUUID = jpaQueryFactory.select(qChannels.channelId).from(qChannels)
+        .where(qChannels.channelId.lt(uuid).and(qChannels.privateType.eq(false)))
+        .orderBy(qChannels.channelId.desc())
+        .limit(1).fetchOne();
+
+    if (nextUUID == null) {
+      return "";
+    }
+
+    return nextUUID.toString();
+  }
 }

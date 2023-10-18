@@ -53,7 +53,7 @@ public class UserController {
       ResponseCookie refreshCookie = ResponseCookie.from("refreshToken",
               cookieMap.get("refreshToken").getValue())
           .path("/")
-          .maxAge(ETokenTime.REFRESHTOKEN_EXP_TIME_TEST.getTime())// refreshToken도 6시간
+          .maxAge(ETokenTime.REFRESHTOKEN_EXP_TIME.getTime())// refreshToken도 6시간
           .httpOnly(true)
           .secure(true)
           .sameSite("None")
@@ -63,7 +63,7 @@ public class UserController {
       ResponseCookie accessCookie = ResponseCookie.from("accessToken",
               cookieMap.get("accessToken").getValue())
           .path("/")
-          .maxAge(ETokenTime.ACCESSTOKEN_EXP_TIME_TEST.getTime())//기간 2시간
+          .maxAge(ETokenTime.ACCESSTOKEN_EXP_TIME.getTime())//기간 2시간
           .httpOnly(true)
           .secure(true)
           .sameSite("None")
