@@ -97,8 +97,13 @@ public class CommentService {
       comments.setParentChild(commentRequest.getParentChild());
     }
 
-    if (Objects.nonNull(commentRequest.getGroupIndex())) {
+    if (Objects.nonNull(commentRequest.getGroupIndex())) {// 대댓글
       comments.setGroupIndex(commentRequest.getGroupIndex());
+    }
+    else { // 댓글
+      int parentLastIndex = findParentComments(comments.getVideos().getVideoId()).size()+1;
+      System.out.println("parentLastIndex1111111111 : " +parentLastIndex);
+      comments.setGroupIndex(parentLastIndex+1);
     }
 
     LocalDateTime now = LocalDateTime.now();
