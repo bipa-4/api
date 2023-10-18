@@ -1,5 +1,7 @@
 package com.bipa4.back_bipatv.controller;
 
+import com.bipa4.back_bipatv.dataType.ErrorCode;
+import com.bipa4.back_bipatv.dto.CustomApiException;
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
 import com.bipa4.back_bipatv.dto.channel.GetInfiniteScrollRequestChannelDto;
@@ -62,14 +64,9 @@ public class ReadController {
       @RequestParam(value = "page", required = false) String page,
       @RequestParam("pageSize") int pageSize) {
     List<GetVideoResponseDto> videos = videoService.getCategoryVideos(category, page, pageSize);
-
-    System.out.println(videos);
     String nextUUID = videoService.getNextUUID(
         videos.get(videos.size() - 1).getVideoId()); // 마지막 page의 UUID 호출
-
-    System.out.println(nextUUID);
     GetInfiniteScrollRequestDto responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
-
     return ResponseEntity.ok().body(responseDto);
   }
 
@@ -107,7 +104,9 @@ public class ReadController {
       @PathVariable("videoId") UUID id) {
     int viewsResult = videoService.plusViews(id); //  조회수 상승
     GetDetailResponseDto video = videoService.getVideoDetail(id);
-
+    if (viewsResult == 0) {
+      throw new CustomApiException(ErrorCode.UPDATE_ERROR);
+    }
     return new ResponseEntity<>(video, HttpStatus.OK);
   }
 
@@ -149,11 +148,7 @@ public class ReadController {
   public ResponseEntity<SelectChannelDTO> getMyChannelInfo(
       @PathVariable("channelId") UUID channelId) {
     SelectChannelDTO selectChannelDTO = channelService.findChannel(channelId);
-    if (selectChannelDTO != null) {
-      return new ResponseEntity<>(selectChannelDTO, HttpStatus.OK);
-    } else {
-      return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
-    }
+    return new ResponseEntity<>(selectChannelDTO, HttpStatus.OK);
   }
 
   @ApiOperation(value = "getUpdateFlag", notes = "업데이트 플레그 얻기")
@@ -211,8 +206,4 @@ public class ReadController {
 
     return ResponseEntity.ok().body(responseDto);
   }
-
-//  @ApiOperation(value = "채널 내 영상 검색", notes = "채널 내 영상 검색")
-//  @GetMapping("/channel/{channelId}/video/{videoId}")
-
 }

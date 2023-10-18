@@ -2,7 +2,6 @@ package com.bipa4.back_bipatv.controller;
 
 import com.bipa4.back_bipatv.dto.channel.PutChannelDTO;
 import com.bipa4.back_bipatv.entity.Channels;
-import com.bipa4.back_bipatv.exception.ResourceNotFoundException;
 import com.bipa4.back_bipatv.service.ChannelService;
 import com.bipa4.back_bipatv.service.PresignedUrlService;
 import io.swagger.annotations.Api;
@@ -33,13 +32,7 @@ public class ChannelController {
   public ResponseEntity<Channels> updateMyChannelInfo(@PathVariable UUID channelId,
       @CookieValue(value = "accessToken", required = false) String code,
       @RequestBody PutChannelDTO putChannelDTO) {
-    try {
-      Channels updatedChannel = channelService.updateChannel(channelId, code, putChannelDTO);
-      System.out.println(updatedChannel);
-      return new ResponseEntity<>(updatedChannel, HttpStatus.OK);
-    } catch (ResourceNotFoundException e) {
-      // 리소스를 찾지 못한 경우 404 에러를 반환
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
+    Channels updatedChannel = channelService.updateChannel(channelId, code, putChannelDTO);
+    return new ResponseEntity<>(updatedChannel, HttpStatus.OK);
   }
 }

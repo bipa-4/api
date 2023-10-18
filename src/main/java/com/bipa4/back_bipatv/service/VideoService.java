@@ -1,6 +1,5 @@
 package com.bipa4.back_bipatv.service;
 
-import com.amazonaws.services.s3.AmazonS3;
 import com.bipa4.back_bipatv.dto.video.GetCategoryNameRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetSearchResponseDto;
@@ -24,7 +23,6 @@ public class VideoService {
   private final VideoRepository videoRepository;
   private final SecurityService securityService;
   private final VideoChannelRepository videoChannelRepository;
-  private final AmazonS3 amazonS3;
 
   @Transactional
   public List<GetSearchResponseDto> search(String searchQuery) {
