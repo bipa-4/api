@@ -44,4 +44,8 @@ public class Comments {
   @OnDelete(action = OnDeleteAction.CASCADE)
   private Accounts accounts;
 
+  public String getComment_id() {
+    return commentId != null ? commentId.toString() : null;
+  }
+
 }

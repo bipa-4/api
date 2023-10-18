@@ -5,6 +5,7 @@ import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.exception.JwtNotFoundException;
 import com.bipa4.back_bipatv.repository.RedisRepository;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import java.security.Key;
@@ -56,7 +57,8 @@ public class SecurityService {
     return Jwts.builder()//지금은 subject값고 만료시간만 넣어줌 but 다양한 값 넣을 수 있음 확인해보기
         .setSubject("RefreshToken" + accounts.getLoginId())
         .signWith(singingKey, signatureAlgorithm)
-        .setExpiration(new Date(System.currentTimeMillis() + 6 * 1000 * 60 * 60))//만료시간
+//        .setExpiration(new Date(System.currentTimeMillis() + 6 * 1000 * 60 * 60))//만료시간
+        .setExpiration(new Date(System.currentTimeMillis() + 5 * 1000 * 60))//만료시간 5분
         .compact();
   }
 
@@ -105,16 +107,32 @@ public class SecurityService {
   }
 
   public boolean isTokenValid(String token) {
-    Claims claims = Jwts.parserBuilder()
-        .setSigningKey(DatatypeConverter.parseBase64Binary(SECRET_KEY))
-        .build()
-        .parseClaimsJws(token)
-        .getBody();
+    return validateToken(token);
+  }
+
+  public boolean validateToken(String token) {
+    Claims claims;
+    try {
+      claims = Jwts.parserBuilder()
+          .setSigningKey(DatatypeConverter.parseBase64Binary(SECRET_KEY))
+          .build()
+          .parseClaimsJws(token)
+          .getBody();
+    } catch (ExpiredJwtException e) {
+      // 토큰이 만료되었을 때 예외 처리
+      return false;
+    } catch (Exception e) {
+      // 다른 예외 처리
+      e.printStackTrace();
+      throw e;
+    }
 
     Date expirationDate = claims.getExpiration();
     Date now = new Date();
-    return expirationDate != null && expirationDate.after(now);
+    return expirationDate != null && expirationDate.after(now)
+        && redisRepository.getBlackList(token) == null;
   }
+
 
   public Long getExpiration(String accessToken) {
     Claims claims = Jwts.parserBuilder()

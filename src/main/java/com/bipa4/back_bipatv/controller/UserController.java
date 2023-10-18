@@ -1,6 +1,8 @@
 package com.bipa4.back_bipatv.controller;
 
 
+import com.bipa4.back_bipatv.aspect.AccessTokenValid;
+import com.bipa4.back_bipatv.dataType.ETokenTime;
 import com.bipa4.back_bipatv.dto.user.GetAccountCheckDTO;
 import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.exception.ResourceNotFoundException;
@@ -11,6 +13,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.util.Map;
 import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -38,9 +41,6 @@ public class UserController {
   private final UserService userService;
   private final SecurityService securityService;
   private final PresignedUrlService presignedUrlService;
-  private final int ACCESSTOKEN_EXP_TIME = 60 * 60 * 2;//2시간
-  private final int REFRESHTOKEN_EXP_TIME = 60 * 60 * 6;//6시간
-
 
   @ApiOperation(value = "Social_Login", notes = "소셜 로그인")
   @GetMapping("/auth/{registrationId}/callback")
@@ -53,7 +53,7 @@ public class UserController {
       ResponseCookie refreshCookie = ResponseCookie.from("refreshToken",
               cookieMap.get("refreshToken").getValue())
           .path("/")
-          .maxAge(REFRESHTOKEN_EXP_TIME)// refreshToken도 6시간
+          .maxAge(ETokenTime.REFRESHTOKEN_EXP_TIME_TEST.getTime())// refreshToken도 6시간
           .httpOnly(true)
           .secure(true)
           .sameSite("None")
@@ -63,7 +63,7 @@ public class UserController {
       ResponseCookie accessCookie = ResponseCookie.from("accessToken",
               cookieMap.get("accessToken").getValue())
           .path("/")
-          .maxAge(ACCESSTOKEN_EXP_TIME)//기간 2시간
+          .maxAge(ETokenTime.ACCESSTOKEN_EXP_TIME_TEST.getTime())//기간 2시간
           .httpOnly(true)
           .secure(true)
           .sameSite("None")
@@ -91,9 +91,17 @@ public class UserController {
   }
 
   @ApiOperation(value = "CheckAccount", notes = "accessToken에 맞는 Account반환")
+  @AccessTokenValid
   @GetMapping("/account/check")
   public ResponseEntity<GetAccountCheckDTO> getAccountCheck(
-      @CookieValue(name = "accessToken", required = false) String accessToken) {
+      @CookieValue(name = "accessToken", required = false) String accessToken,
+      HttpServletRequest request) {
+    String nat = (String) request.getAttribute("newAccessToken");
+    System.out.println(nat);
+    if (nat != null) {
+      accessToken = nat;
+    }
+
     System.out.println("CheckUser AT:" + accessToken);
     if (accessToken == null) {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -143,18 +151,18 @@ public class UserController {
     userService.deleteAccount(accessToken);
   }
 
-  @ApiOperation(value = "ReCreateAcessToken", notes = "액세스 토큰 재발급")
-  @GetMapping("/account/reAcessToken")
-  public void reCreateAcessToken(@CookieValue("refreshToken") String refreshToken,
-      HttpServletResponse httpresponse) {
-    ResponseCookie accessCokkie = ResponseCookie.from("accessToken",
-            userService.createAccessTokenToRefreshToken(refreshToken))
-        .path("/")
-        .maxAge(ACCESSTOKEN_EXP_TIME)// refreshToken도 6시간
-        .httpOnly(true)
-        .secure(true)
-        .sameSite("None")
-        .build();
-    httpresponse.addHeader("Set-Cookie", accessCokkie.toString());
-  }
+//  @ApiOperation(value = "ReCreateAcessToken", notes = "액세스 토큰 재발급")
+//  @GetMapping("/account/reAcessToken")
+//  public void reCreateAcessToken(@CookieValue("refreshToken") String refreshToken,
+//      HttpServletResponse httpresponse) {
+//    ResponseCookie accessCokkie = ResponseCookie.from("accessToken",
+//            userService.createAccessTokenToRefreshToken(refreshToken))
+//        .path("/")
+//        .maxAge(ACCESSTOKEN_EXP_TIME)// refreshToken도 6시간
+//        .httpOnly(true)
+//        .secure(true)
+//        .sameSite("None")
+//        .build();
+//    httpresponse.addHeader("Set-Cookie", accessCokkie.toString());
+//  }
 }
