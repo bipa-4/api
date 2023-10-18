@@ -1,5 +1,7 @@
 package com.bipa4.back_bipatv.controller;
 
+import com.bipa4.back_bipatv.dataType.ErrorCode;
+import com.bipa4.back_bipatv.dto.CustomApiException;
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
 import com.bipa4.back_bipatv.dto.channel.GetInfiniteScrollRequestChannelDto;
@@ -204,8 +206,4 @@ public class ReadController {
 
     return ResponseEntity.ok().body(responseDto);
   }
-
-//  @ApiOperation(value = "채널 내 영상 검색", notes = "채널 내 영상 검색")
-//  @GetMapping("/channel/{channelId}/video/{videoId}")
-
 }
