@@ -1,5 +1,6 @@
 package com.bipa4.back_bipatv.dao;
 
+import com.bipa4.back_bipatv.dto.comment.ChildCommentResponse;
 import com.bipa4.back_bipatv.dto.comment.CommentResponse;
 import com.bipa4.back_bipatv.entity.Comments;
 import com.bipa4.back_bipatv.repository.CommentRepository;
@@ -28,8 +29,8 @@ public class CommentDAO {
     return list;
   }
 
-  public List<CommentResponse> findChildComments(UUID videoId, int groupIndex) {
-    List<CommentResponse> list = commentRepository.findChildComments(videoId, groupIndex);
+  public List<ChildCommentResponse> findChildComments(UUID videoId, int groupIndex) {
+    List<ChildCommentResponse> list = commentRepository.findChildComments(videoId, groupIndex);
     return list;
   }
 

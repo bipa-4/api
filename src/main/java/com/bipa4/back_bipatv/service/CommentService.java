@@ -2,6 +2,7 @@ package com.bipa4.back_bipatv.service;
 
 import com.bipa4.back_bipatv.dao.AccountDAO;
 import com.bipa4.back_bipatv.dao.CommentDAO;
+import com.bipa4.back_bipatv.dto.comment.ChildCommentResponse;
 import com.bipa4.back_bipatv.dto.comment.CommentRequest;
 import com.bipa4.back_bipatv.dto.comment.CommentResponse;
 import com.bipa4.back_bipatv.entity.Accounts;
@@ -28,6 +29,7 @@ public class CommentService {
   private final VideoRepository videoRepository;
   private final SecurityService securityService;
 
+
   public List<CommentResponse> findParentComments(UUID videoId) {
     List<CommentResponse> list = commentDAO.findParentComments(videoId);
 
@@ -36,8 +38,8 @@ public class CommentService {
   }
 
 
-  public List<CommentResponse> findChildComments(UUID videoId, int groupIndex) {
-    List<CommentResponse> list = commentDAO.findChildComments(videoId, groupIndex);
+  public List<ChildCommentResponse> findChildComments(UUID videoId, int groupIndex) {
+    List<ChildCommentResponse> list = commentDAO.findChildComments(videoId, groupIndex);
 
     return list;
   }

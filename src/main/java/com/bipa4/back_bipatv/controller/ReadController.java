@@ -4,6 +4,7 @@ import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
 import com.bipa4.back_bipatv.dto.channel.GetInfiniteScrollRequestChannelDto;
 import com.bipa4.back_bipatv.dto.channel.SelectChannelDTO;
+import com.bipa4.back_bipatv.dto.comment.ChildCommentResponse;
 import com.bipa4.back_bipatv.dto.comment.CommentResponse;
 import com.bipa4.back_bipatv.dto.video.GetCategoryNameRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
@@ -17,6 +18,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.util.List;
 import java.util.UUID;
+import javax.xml.stream.events.Comment;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -124,18 +126,20 @@ public class ReadController {
   //부모 댓글 조회
   @ApiOperation(value = "부모 댓글 조회", notes = "부모 댓글 조회")
   @GetMapping("/comment/{videoId}/comment-parent")
-  public ResponseEntity<List<CommentResponse>> findParentComments(@PathVariable UUID videoId) {
+  public ResponseEntity<List<CommentResponse>> findParentComments(@PathVariable UUID videoId,
+     CommentResponse commentResponse) {
     List<CommentResponse> list = commentService.findParentComments(videoId);
+
 
     return ResponseEntity.ok(list);
   }
 
   //자식 댓글 조회
   @ApiOperation(value = "자식 댓글 조회", notes = "자식 댓글 조회")
-  @GetMapping("/comment/{videoId}/comment-child")
-  public ResponseEntity<List<CommentResponse>> findChildComments(@PathVariable UUID videoId,
-      @RequestParam int groupIndex) {
-    List<CommentResponse> list = commentService.findChildComments(videoId, groupIndex);
+  @GetMapping("/comment/{videoId}/{groupIndex}/comment-child")
+  public ResponseEntity<List<ChildCommentResponse>> findChildComments(@PathVariable UUID videoId,
+                                                                      @PathVariable int groupIndex) {
+    List<ChildCommentResponse> list = commentService.findChildComments(videoId, groupIndex);
 
     return ResponseEntity.ok(list);
   }
