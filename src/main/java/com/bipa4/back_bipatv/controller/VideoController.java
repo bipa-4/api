@@ -1,5 +1,6 @@
 package com.bipa4.back_bipatv.controller;
 
+import com.bipa4.back_bipatv.dto.video.GetFileUrlResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetSearchResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetUrlResponseDto;
 import com.bipa4.back_bipatv.dto.video.PostUploadRequestDto;
@@ -43,31 +44,39 @@ public class VideoController {
     if (owner > 0) {
       return new ResponseEntity<>(true, HttpStatus.OK);
     }
-    return new ResponseEntity<>(false, HttpStatus.BAD_REQUEST);
+    return new ResponseEntity<>(false, HttpStatus.OK);
   }
 
 
   // 영상  삭제
   @ApiOperation(value = "영상 삭제", notes = "영상 삭제 진행")
   @DeleteMapping("/{id}")
-  public ResponseEntity<String> ResponseEntity(@PathVariable("id") Long id) {
+  public ResponseEntity<String> ResponseEntity(@PathVariable("id") UUID id,
+      @CookieValue("accessToken") String accessToken) {
 
-    return videoService.removeVideo(id) == 1 ? new ResponseEntity<>("success",
+    return videoService.removeVideo(id, accessToken) == 1 ? new ResponseEntity<>("success",
         HttpStatus.OK)
         : new ResponseEntity<>("fail", HttpStatus.INTERNAL_SERVER_ERROR);
   }
 
 
   // S3 presigned-url 발급
-  @ApiOperation(value = "S3 presigned-url 발급", notes = "비디오 및 이미지 업로드를 위한 임시 url 발급")
-  @PostMapping("/presigned")
-  public ResponseEntity<GetUrlResponseDto> saveFile(@RequestParam("videoName") String videoName,
+  @ApiOperation(value = "S3 presigned-image-url 발급", notes = "비디오 및 이미지 업로드를 위한 임시 url 발급")
+  @PostMapping("/presigned/image")
+  public ResponseEntity<GetFileUrlResponseDto> saveImage(
       @RequestParam("imageName") String imageName) {
-    return new ResponseEntity<>(presignedUrlService.getPreSignedUrlCDN(videoName, imageName),
-        HttpStatus.OK);
+    return new ResponseEntity<>(presignedUrlService.getPreSignedUrl(imageName), HttpStatus.OK);
+  }
+
+  @ApiOperation(value = "S3 presigned-video-url 발급", notes = "비디오 및 이미지 업로드를 위한 임시 url 발급")
+  @PostMapping("/presigned/video")
+  public ResponseEntity<GetFileUrlResponseDto> saveVideo(
+      @RequestParam("videoName") String videoName) {
+    return new ResponseEntity<>(presignedUrlService.getPreSignedUrl(videoName), HttpStatus.OK);
   }
 
 
+  // CDN presigned-url 발급
   @ApiOperation(value = "CDN presigned-url 발급", notes = "비디오 및 이미지 업로드를 위한 임시 url 발급")
   @PostMapping("/presigned-cdn")
   public ResponseEntity<GetUrlResponseDto> saveFileCDN(
@@ -95,9 +104,9 @@ public class VideoController {
   // 영상 수정
   @ApiOperation(value = "영상 수정", notes = "영상 수정 진행")
   @PutMapping("/{id}")
-  public ResponseEntity<Long> update(@PathVariable Long id,
-      @RequestBody PutUpdateRequestDto requestDto) {
-    if (videoService.updateVideo(id, requestDto) == 0) {
+  public ResponseEntity<Long> update(@PathVariable UUID id,
+      @RequestBody PutUpdateRequestDto requestDto, @CookieValue("accessToken") String accessToken) {
+    if (videoService.updateVideo(id, requestDto, accessToken) == 0) {
       return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
     }
     return new ResponseEntity<>(HttpStatus.OK);

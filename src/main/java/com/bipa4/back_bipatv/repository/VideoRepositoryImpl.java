@@ -2,6 +2,7 @@ package com.bipa4.back_bipatv.repository;
 
 import static com.querydsl.core.types.dsl.Expressions.asNumber;
 
+import com.amazonaws.services.s3.AmazonS3;
 import com.bipa4.back_bipatv.dto.video.GetCategoryNameRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
@@ -21,20 +22,26 @@ import com.bipa4.back_bipatv.entity.Videos;
 import com.bipa4.back_bipatv.security.SecurityService;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import java.io.File;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.UUID;
 import javax.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
 @RequiredArgsConstructor
 @Repository
 public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
+  @Value("${cloud.aws.s3.bucket}")
+  private String bucketName;
+
   private final JPAQueryFactory jpaQueryFactory;
   private final SecurityService securityService;
   private final EntityManager entityManager;
+  private final AmazonS3 amazonS3;
 
   // 전체보기 (무한 스크롤)
   @Override
@@ -215,6 +222,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
     QFavorite qFavorite = QFavorite.favorite;
+    QCategorys qCategorys = QCategorys.categorys;
 
     GetDetailResponseDto dto = jpaQueryFactory.select(
             Projections.bean(
@@ -266,17 +274,38 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
     dto.setLikeCount(favoriteCnt);
 
+    // 영상의 카테고리 저장
+    List<UUID> uuid = jpaQueryFactory.select(qCategorys.categoryNameId.categoryNameId)
+        .from(qCategorys)
+        .where(qCategorys.videoId.videoId.eq(dto.getVideoId())).fetch();
+    dto.setCategoryId(uuid);
+
     return dto;
   }
 
   // 영상 삭제
   @Override
-  public Long remove(Long id) {
-    QVideos qVideos = QVideos.videos;
+  public Long remove(UUID id, Accounts account) {
+    QChannels qChannels = QChannels.channels;
 
     Videos video = entityManager.find(Videos.class, id);
 
-    if (video != null) {
+    UUID channelId = jpaQueryFactory.select(qChannels.channelId).from(qChannels)
+        .where(qChannels.accounts.eq(account)).fetchOne();
+
+    if (video != null && video.getChannelId().getChannelId().equals(channelId)) {
+
+      // S3 삭제
+      try {
+        String videoName = video.getVideoUrl().replace("https://du30t7lolw1uk.cloudfront.net/", "");
+        String thumbnailName = video.getThumbnail()
+            .replace("https://du30t7lolw1uk.cloudfront.net/", "");
+        amazonS3.deleteObject(bucketName, (videoName).replace(File.separatorChar, '/'));
+        amazonS3.deleteObject(bucketName, (thumbnailName).replace(File.separatorChar, '/'));
+      } catch (Exception e) {
+        System.out.println(e);
+      }
+
       entityManager.remove(video);
       return 1L;
     } else {
@@ -286,13 +315,39 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 영상 수정
   @Override
-  public int update(Long id, PutUpdateRequestDto videoResponseDto) {
+  public int update(UUID id, PutUpdateRequestDto videoResponseDto, Accounts account) {
+    QChannels qChannels = QChannels.channels;
+
     Videos video = entityManager.find(Videos.class, id);
 
-    if (video != null) {
+    UUID channelId = jpaQueryFactory.select(qChannels.channelId).from(qChannels)
+        .where(qChannels.accounts.eq(account)).fetchOne();
+
+    if (video != null && video.getChannelId().getChannelId().equals(channelId)) {
+
+      // S3 삭제
+      if (video.getVideoUrl() != videoResponseDto.getVideoUrl()) {
+        String videoName = video.getVideoUrl().replace("https://du30t7lolw1uk.cloudfront.net/", "");
+        try {
+          amazonS3.deleteObject(bucketName, (videoName).replace(File.separatorChar, '/'));
+        } catch (Exception e) {
+          System.out.println(e);
+        }
+      }
+
+      if (video.getThumbnail() != videoResponseDto.getThumbnailUrl()) {
+        String thumbnailName = video.getThumbnail()
+            .replace("https://du30t7lolw1uk.cloudfront.net/", "");
+        try {
+          amazonS3.deleteObject(bucketName, (thumbnailName).replace(File.separatorChar, '/'));
+        } catch (Exception e) {
+          System.out.println(e);
+        }
+      }
+
       video.setContent(videoResponseDto.getContent());
       video.setCreateAt(new Timestamp(System.currentTimeMillis()));
-      video.setPrivateType(videoResponseDto.getPrivate_type());
+      video.setPrivateType(videoResponseDto.isPrivate_type());
       video.setThumbnail(videoResponseDto.getThumbnailUrl());
       video.setTitle(videoResponseDto.getTitle());
       video.setVideoUrl(videoResponseDto.getVideoUrl());
@@ -305,21 +360,15 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 영상 본인 글인지 확인하기
   @Override
-  public Long checkOwner(String token, UUID videoId) {
+  public Long checkOwner(Accounts account, UUID videoId) {
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
 
-    Accounts account = securityService.getSubjectAccount(token);
     Channels channel = jpaQueryFactory.selectFrom(qChannels)
         .where(qChannels.accounts.eq(account)).fetchOne();
 
-    System.out.println(account);
-    System.out.println(channel);
-
     Long result = jpaQueryFactory.select(qVideos.count()).from(qVideos)
-        .where(qVideos.channelId.eq(channel)).fetchFirst();
-
-    System.out.println(result);
+        .where(qVideos.channelId.eq(channel).and(qVideos.videoId.eq(videoId))).fetchFirst();
 
     return result;
   }
@@ -345,7 +394,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
         .setParameter(2, videoResponseDto.getThumbnailUrl())
         .setParameter(3, videoResponseDto.getTitle())
         .setParameter(4, videoResponseDto.getContent())
-        .setParameter(5, videoResponseDto.getPrivateType())
+        .setParameter(5, videoResponseDto.isPrivateType())
         .setParameter(6, new Timestamp(System.currentTimeMillis()))
         .setParameter(7, channel)
         .setParameter(8, 0)

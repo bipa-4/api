@@ -10,6 +10,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.PositiveOrZero;
 import lombok.Data;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -29,6 +30,7 @@ public class ViewLog {
   @OnDelete(action = OnDeleteAction.CASCADE)
   private Videos videoId;
 
+  @PositiveOrZero
   @Column(name = "view_cnt")
   private int viewCnt;
 }

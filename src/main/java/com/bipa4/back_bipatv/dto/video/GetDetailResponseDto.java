@@ -23,7 +23,6 @@ public class GetDetailResponseDto {
   private String videoUrl;
   private String videoTitle;
   private String content;
-  private Boolean isLike;
   @DateTimeFormat(pattern = "yyyy-MM-dd")
   @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+9")
   private Timestamp createAt;
@@ -32,4 +31,5 @@ public class GetDetailResponseDto {
   private String thumbnail;
   private List<GetVideoResponseDto> recommendedList;
   private Long likeCount;
+  private List<UUID> categoryId;
 }

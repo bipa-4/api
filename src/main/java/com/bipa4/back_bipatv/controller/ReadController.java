@@ -63,8 +63,12 @@ public class ReadController {
       @RequestParam(value = "page", required = false) String page,
       @RequestParam("pageSize") int pageSize) {
     List<GetVideoResponseDto> videos = videoService.getCategoryVideos(category, page, pageSize);
+
+    System.out.println(videos);
     String nextUUID = videoService.getNextUUID(
         videos.get(videos.size() - 1).getVideoId()); // 마지막 page의 UUID 호출
+
+    System.out.println(nextUUID);
     GetInfiniteScrollRequestDto responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
 
     return ResponseEntity.ok().body(responseDto);
@@ -80,14 +84,20 @@ public class ReadController {
   }
 
 
-  // 조회수 급상승 TOP 10 + 디비 1시간 전 정보 저장
+  // 조회수 급상승 TOP 10
   @ApiOperation(value = "조회수 급상승 TOP 10", notes = "1시간마다 조회수가 급상승된 영상 10개 추출")
   @GetMapping("/video/top10")
-  @Scheduled(cron = "0 0 0/1 * * *")
   public ResponseEntity<List<GetVideoResponseDto>> getViewsTop10Videos() {
     List<GetVideoResponseDto> videos = videoService.getViewsTop10Videos();
-    int result = videoService.updateViews();
     return new ResponseEntity<List<GetVideoResponseDto>>(videos, HttpStatus.OK);
+  }
+
+
+  // 디비 1시간 전 정보 저장
+  @ApiOperation(value = "조회수 급상승 TOP 10", notes = "1시간마다 조회수가 급상승된 영상 10개 추출")
+  @Scheduled(cron = "0 0 0/1 * * *")
+  public ResponseEntity<Integer> getViewsUpdate() {
+    return new ResponseEntity<Integer>(videoService.updateViews(), HttpStatus.OK);
   }
 
 
@@ -95,14 +105,21 @@ public class ReadController {
   @ApiOperation(value = "영상 상세 조회 및 추천 영상 조회", notes = "영상 클릭시 상세 정보 + 추천 영상 추출")
   @GetMapping("/video/detail/{videoId}")
   public ResponseEntity<GetDetailResponseDto> getVideoDetail(
-      @PathVariable("videoId") String id,
-      @CookieValue(name = "accessToken", required = false) String accessToken) {
+      @PathVariable("videoId") UUID id) {
     int viewsResult = videoService.plusViews(id); //  조회수 상승
     GetDetailResponseDto video = videoService.getVideoDetail(id);
-    if (accessToken != null) {
-      video.setIsLike(videoService.getFavorite(id, accessToken));// 좋아요 버튼 눌렀는지 여부
-    }
-    return new ResponseEntity<GetDetailResponseDto>(video, HttpStatus.OK);
+
+    return new ResponseEntity<>(video, HttpStatus.OK);
+  }
+
+
+  // 영상 좋아요 여부
+  @ApiOperation(value = "영상 상세 조회 및 추천 영상 조회", notes = "영상 클릭시 상세 정보 + 추천 영상 추출")
+  @GetMapping("/video/like/{videoId}")
+  public ResponseEntity<Boolean> getVideoLike(
+      @PathVariable("videoId") UUID id,
+      @CookieValue(name = "accessToken", required = false) String accessToken) {
+    return new ResponseEntity<>(videoService.getLike(id, accessToken), HttpStatus.OK);
   }
 
 
@@ -132,19 +149,27 @@ public class ReadController {
   @ApiOperation(value = "채널 상세 조회", notes = "채널 상세 조회")
   @GetMapping("/channel/{channelId}")
   public ResponseEntity<SelectChannelDTO> getMyChannelInfo(
-      @CookieValue(value = "accessToken", required = false) String code,
       @PathVariable("channelId") UUID channelId) {
-    if (code == null) {
-      return new ResponseEntity<>(channelService.findChannel(channelId), HttpStatus.OK);
-    }
-    if (channelService.findChannel(code, channelId) != null) {
-      return new ResponseEntity<>(channelService.findChannel(code, channelId),
-          HttpStatus.OK);
+    SelectChannelDTO selectChannelDTO = channelService.findChannel(channelId);
+    if (selectChannelDTO != null) {
+      return new ResponseEntity<>(selectChannelDTO, HttpStatus.OK);
     } else {
-      return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+      return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
     }
   }
 
+  @ApiOperation(value = "getUpdateFlag", notes = "업데이트 플레그 얻기")
+  @GetMapping("/channel/flag/{channelId}")
+  public ResponseEntity<Boolean> getUpdateFlag(
+      @CookieValue(value = "accessToken", required = false) String accessToken,
+      @PathVariable("channelId") UUID channelId) {
+    if (accessToken == null) {//비회원 채널 조회
+      return new ResponseEntity<>(false, HttpStatus.OK);
+    } else {
+      return new ResponseEntity<>(channelService.getUpdateFlag(accessToken, channelId),
+          HttpStatus.OK);
+    }
+  }
 
   // 인기 채널 top 10 조회
   @ApiOperation(value = "실시간 인기 채널 5", notes = "가장 인기 있는 채널 TOP5을 들고온다")

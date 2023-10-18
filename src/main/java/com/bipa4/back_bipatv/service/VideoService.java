@@ -1,15 +1,16 @@
 package com.bipa4.back_bipatv.service;
 
-//import com.amazonaws.services.s3.AmazonS3Client;
-
+import com.amazonaws.services.s3.AmazonS3;
 import com.bipa4.back_bipatv.dto.video.GetCategoryNameRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetSearchResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.dto.video.PostUploadRequestDto;
 import com.bipa4.back_bipatv.dto.video.PutUpdateRequestDto;
+import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.repository.VideoChannelRepository;
 import com.bipa4.back_bipatv.repository.VideoRepository;
+import com.bipa4.back_bipatv.security.SecurityService;
 import java.util.List;
 import java.util.UUID;
 import javax.transaction.Transactional;
@@ -21,24 +22,24 @@ import org.springframework.stereotype.Service;
 public class VideoService {
 
   private final VideoRepository videoRepository;
+  private final SecurityService securityService;
   private final VideoChannelRepository videoChannelRepository;
+  private final AmazonS3 amazonS3;
 
   @Transactional
   public List<GetSearchResponseDto> search(String searchQuery) {
-    List<GetSearchResponseDto> dto = videoChannelRepository.findBySearchQuery(searchQuery);
-    for (int i = 0; i < dto.size(); i++) {
-      System.out.println(dto.get(i));
-    }
-    return dto;
+    return videoChannelRepository.findBySearchQuery(searchQuery);
   }
 
-  public Long check(String token, UUID videoId) {
-    return videoRepository.checkOwner(token, videoId);
+  public Long check(String accessToken, UUID videoId) {
+    Accounts account = securityService.getSubjectAccount(accessToken);
+    return videoRepository.checkOwner(account, videoId);
   }
 
   @Transactional
-  public Long removeVideo(Long videoId) {
-    return videoRepository.remove(videoId);
+  public Long removeVideo(UUID videoId, String accessToken) {
+    Accounts account = securityService.getSubjectAccount(accessToken);
+    return videoRepository.remove(videoId, account);
   }
 
   @Transactional
@@ -48,8 +49,9 @@ public class VideoService {
   }
 
   @Transactional
-  public int updateVideo(Long id, PutUpdateRequestDto requestDto) {
-    return videoRepository.update(id, requestDto);
+  public int updateVideo(UUID id, PutUpdateRequestDto requestDto, String accessToken) {
+    Accounts account = securityService.getSubjectAccount(accessToken);
+    return videoRepository.update(id, requestDto, account);
   }
 
   public List<GetVideoResponseDto> getAllVideos(String page, int pageSize) {
@@ -82,8 +84,7 @@ public class VideoService {
 
 
   public List<GetVideoResponseDto> getViewsTop10Videos() {
-    List<GetVideoResponseDto> videos = videoRepository.findByViews();
-    return videos;
+    return videoRepository.findByViews();
   }
 
   @Transactional
@@ -91,20 +92,17 @@ public class VideoService {
     return videoRepository.updateViews();
   }
 
-  public GetDetailResponseDto getVideoDetail(String id) {
-    UUID uuid = UUID.fromString(id);
-    return videoRepository.getDetail(uuid);
+  public GetDetailResponseDto getVideoDetail(UUID id) {
+    return videoRepository.getDetail(id);
   }
 
   @Transactional
-  public int plusViews(String videoId) {
-    UUID uuid = UUID.fromString(videoId);
-    return videoRepository.plusViews(uuid);
+  public int plusViews(UUID videoId) {
+    return videoRepository.plusViews(videoId);
   }
 
-  public boolean getFavorite(String videoId, String token) {
-    UUID uuid = UUID.fromString(videoId);
-    if (videoRepository.getFavorite(uuid, token) == 1) {
+  public boolean getLike(UUID videoId, String token) {
+    if (videoRepository.getFavorite(videoId, token) == 1) {
       return true;
     }
     return false;

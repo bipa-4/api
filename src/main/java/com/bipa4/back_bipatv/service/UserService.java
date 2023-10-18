@@ -3,6 +3,7 @@ package com.bipa4.back_bipatv.service;
 import com.bipa4.back_bipatv.dao.AccountDAO;
 import com.bipa4.back_bipatv.dao.ChannelDAO;
 import com.bipa4.back_bipatv.dataType.ELogin_Type;
+import com.bipa4.back_bipatv.dto.user.GetAccountCheckDTO;
 import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.entity.Channels;
 import com.bipa4.back_bipatv.entity.RefreshToken;
@@ -62,6 +63,7 @@ public class UserService {
     UUID uuid = UUID.randomUUID();
     channels.setChannelId(uuid);
     channels.setChannelName(accounts.getLoginId() + "_Channel");
+    channels.setPrivateType(false);
     channels.setAccounts(accounts);
     channels.setProfileUrl(accounts.getProfileUrl());
     channels.setContent(accounts.getName() + "의 채널");
@@ -255,5 +257,10 @@ public class UserService {
     loginAccount.setDeleteAt(Timestamp.valueOf(
         now.plusHours(9).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
     accountRepository.save(loginAccount);
+  }
+
+  public GetAccountCheckDTO getAccountCheck(String accessToken) {
+    Accounts loginAccount = securityService.getSubjectAccount(accessToken);
+    return accountRepository.getAccountCheckDto(loginAccount.getAccountId());
   }
 }

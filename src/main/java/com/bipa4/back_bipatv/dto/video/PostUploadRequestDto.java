@@ -30,7 +30,7 @@ public class PostUploadRequestDto {
   private String content;
 
   @ApiModelProperty(example = "영상 공개 여부")
-  private Boolean privateType;
+  private boolean privateType;
 
   @ApiModelProperty(example = "카테고리")
   private List<String> category;

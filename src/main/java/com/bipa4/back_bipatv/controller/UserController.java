@@ -1,6 +1,7 @@
 package com.bipa4.back_bipatv.controller;
 
-import com.bipa4.back_bipatv.dto.video.GetImageUrlResponseDto;
+
+import com.bipa4.back_bipatv.dto.user.GetAccountCheckDTO;
 import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.exception.ResourceNotFoundException;
 import com.bipa4.back_bipatv.security.SecurityService;
@@ -87,31 +88,21 @@ public class UserController {
       // 리소스를 찾지 못한 경우 404 에러를 반환
       return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
-
-  }
-
-  @ApiOperation(value = "I Want S3 URI", notes = "S3 URI요청")
-  @PostMapping("/account/presigned")
-  public ResponseEntity<GetImageUrlResponseDto> saveFile(
-      @RequestParam("imageName") String imageName) {
-    GetImageUrlResponseDto responseDto = presignedUrlService.getPreSignedUrl(imageName);
-    if (responseDto != null) {
-      return new ResponseEntity<>(responseDto, HttpStatus.OK);
-    }
-    return new ResponseEntity<>(null, HttpStatus.BAD_REQUEST);
   }
 
   @ApiOperation(value = "CheckAccount", notes = "accessToken에 맞는 Account반환")
   @GetMapping("/account/check")
-  public ResponseEntity<Accounts> checkAccessTokenToAccount(
+  public ResponseEntity<GetAccountCheckDTO> getAccountCheck(
       @CookieValue(name = "accessToken", required = false) String accessToken) {
+    System.out.println("CheckUser AT:" + accessToken);
     if (accessToken == null) {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
-    System.out.println("accessToken:" + accessToken);
-    Accounts findAccount = securityService.getSubjectAccount(accessToken);
-    return findAccount == null ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
-        : new ResponseEntity<>(findAccount, HttpStatus.OK);
+
+    GetAccountCheckDTO getAccountCheckDTO = userService.getAccountCheck(accessToken);
+
+    return getAccountCheckDTO == null ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
+        : new ResponseEntity<>(getAccountCheckDTO, HttpStatus.OK);
   }
 
   @ApiOperation(value = "Logout", notes = "로그아웃기능")

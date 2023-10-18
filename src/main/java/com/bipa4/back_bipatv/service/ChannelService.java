@@ -29,28 +29,20 @@ public class ChannelService {
   private final ChannelRepository channelRepository;
   private final VideoRepository videoRepository;
 
-  public SelectChannelDTO findChannel(String accessToken, UUID channelId) {
+  public boolean getUpdateFlag(String accessToken, UUID channelId) {
     Accounts loginAccount = securityService.getSubjectAccount(accessToken);
     Channels selectChannel = channelRepository.findByChannelId(channelId);
-    SelectChannelDTO selectChannelDTO = channelRepository.selectChannel(channelId);
-    System.out.println(selectChannelDTO);
+
     if (Objects.equals(selectChannel.getAccounts().getAccountId(),
         loginAccount.getAccountId())) {//수정 가능
-      selectChannelDTO.setUpdateFlag(true);
-      return selectChannelDTO;
+      return true;
     } else {//수정 불가
-      selectChannelDTO.setUpdateFlag(false);
-      return selectChannelDTO;
+      return false;
     }
   }
 
   public SelectChannelDTO findChannel(UUID channelId) {
-
-    SelectChannelDTO selectChannelDTO = channelRepository.selectChannel(channelId);
-
-    selectChannelDTO.setUpdateFlag(false);
-    return selectChannelDTO;
-
+    return channelRepository.selectChannel(channelId);
   }
 
   public Channels findbyChannelId(UUID channelId) {
@@ -103,23 +95,33 @@ public class ChannelService {
   @Transactional
   public Channels updateChannel(UUID channelId, String code, PutChannelDTO putChannelDTO) {
     Accounts loginAccount = securityService.getSubjectAccount(code);
+
     Accounts putAccount = channelRepository.findByChannelId(channelId).getAccounts();
+
+    System.out.println("loginAccount:" + loginAccount.getAccountId());
+    System.out.println("putAccount:" + putAccount.getAccountId());
+
     if (!Objects.equals(loginAccount.getAccountId(),
         putAccount.getAccountId())) { //로그인한 accountId와 수정할 채널의 accountId가 같은 경우
       throw new ResourceNotFoundException(
           "로그인 유저와 수정할 채널의 유저 정보가 같지 않다.");
     }
     Channels myChannel = findbyChannelId(channelId);
-    if (!myChannel.getContent().equals(putChannelDTO.getContent())) {
+    System.out.println(myChannel);
+    System.out.println(putChannelDTO);
+    if (!(myChannel.getContent()
+        .equals(putChannelDTO.getContent()))) {
       myChannel.setContent(putChannelDTO.getContent());
     }
-    if (!myChannel.getProfileUrl().equals(putChannelDTO.getProfileUrl())) {
+    if (!(myChannel.getProfileUrl()
+        .equals(putChannelDTO.getProfileUrl()))) {
       myChannel.setProfileUrl(putChannelDTO.getProfileUrl());
     }
-    if (!(myChannel.isPrivateType() == putChannelDTO.getPrivateType())) {
-      myChannel.setPrivateType(putChannelDTO.getPrivateType());
+    if (!(myChannel.getPrivateType().equals(putChannelDTO.isPrivateType()))) {
+      myChannel.setPrivateType(putChannelDTO.isPrivateType());
     }
-    if (!(myChannel.getChannelName().equals(putChannelDTO.getChannelName()))) {
+    if (!(myChannel.getChannelName()
+        .equals(putChannelDTO.getChannelName()))) {
       myChannel.setChannelName(putChannelDTO.getChannelName());
     }
     return channelRepository.save(myChannel);

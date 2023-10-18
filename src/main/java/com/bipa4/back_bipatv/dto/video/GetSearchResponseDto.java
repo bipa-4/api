@@ -2,12 +2,13 @@ package com.bipa4.back_bipatv.dto.video;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.util.Date;
+import java.util.UUID;
 import org.springframework.format.annotation.DateTimeFormat;
 
 
 public interface GetSearchResponseDto {
 
-  String getVideoId();
+  UUID getVideoId();
 
   String getThumbnail();
 
@@ -21,7 +22,7 @@ public interface GetSearchResponseDto {
 
   Integer getReadCnt();
 
-  Boolean getPrivateType();
+  boolean getPrivateType();
 
   String getChannelProfileUrl();
 
