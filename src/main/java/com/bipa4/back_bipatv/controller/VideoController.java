@@ -1,5 +1,7 @@
 package com.bipa4.back_bipatv.controller;
 
+import com.bipa4.back_bipatv.dataType.ErrorCode;
+import com.bipa4.back_bipatv.dto.CustomApiException;
 import com.bipa4.back_bipatv.dto.video.GetFileUrlResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetSearchResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetUrlResponseDto;
@@ -13,6 +15,7 @@ import io.swagger.annotations.ApiParam;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -28,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 @Api(tags = {"VideoController"})
 @RequestMapping("/video")
+@Slf4j
 @RequiredArgsConstructor
 @Controller
 public class VideoController {
@@ -53,10 +57,10 @@ public class VideoController {
   @DeleteMapping("/{id}")
   public ResponseEntity<String> ResponseEntity(@PathVariable("id") UUID id,
       @CookieValue("accessToken") String accessToken) {
-
-    return videoService.removeVideo(id, accessToken) == 1 ? new ResponseEntity<>("success",
-        HttpStatus.OK)
-        : new ResponseEntity<>("fail", HttpStatus.INTERNAL_SERVER_ERROR);
+    if (videoService.removeVideo(id, accessToken) != 1) {
+      throw new CustomApiException(ErrorCode.DELETE_ERROR);
+    }
+    return new ResponseEntity<>("success", HttpStatus.OK);
   }
 
 
@@ -65,14 +69,22 @@ public class VideoController {
   @PostMapping("/presigned/image")
   public ResponseEntity<GetFileUrlResponseDto> saveImage(
       @RequestParam("imageName") String imageName) {
-    return new ResponseEntity<>(presignedUrlService.getPreSignedUrl(imageName), HttpStatus.OK);
+    GetFileUrlResponseDto responseDto = presignedUrlService.getPreSignedUrl(imageName);
+    if (responseDto == null) {
+      throw new CustomApiException(ErrorCode.PRESIGNED_URL_ERROR);
+    }
+    return new ResponseEntity<>(responseDto, HttpStatus.OK);
   }
 
   @ApiOperation(value = "S3 presigned-video-url 발급", notes = "비디오 및 이미지 업로드를 위한 임시 url 발급")
   @PostMapping("/presigned/video")
   public ResponseEntity<GetFileUrlResponseDto> saveVideo(
       @RequestParam("videoName") String videoName) {
-    return new ResponseEntity<>(presignedUrlService.getPreSignedUrl(videoName), HttpStatus.OK);
+    GetFileUrlResponseDto responseDto = presignedUrlService.getPreSignedUrl(videoName);
+    if (responseDto == null) {
+      throw new CustomApiException(ErrorCode.PRESIGNED_URL_ERROR);
+    }
+    return new ResponseEntity<>(responseDto, HttpStatus.OK);
   }
 
 
@@ -82,8 +94,11 @@ public class VideoController {
   public ResponseEntity<GetUrlResponseDto> saveFileCDN(
       @RequestParam("videoName") String videoName,
       @RequestParam("imageName") String imageName) {
-    return new ResponseEntity<>(presignedUrlService.getPreSignedUrlCDN(videoName, imageName),
-        HttpStatus.OK);
+    GetUrlResponseDto responseDto = presignedUrlService.getPreSignedUrlCDN(videoName, imageName);
+    if (responseDto == null) {
+      throw new CustomApiException(ErrorCode.PRESIGNED_URL_ERROR);
+    }
+    return new ResponseEntity<>(responseDto, HttpStatus.OK);
   }
 
   // 영상 업로드
@@ -92,11 +107,9 @@ public class VideoController {
   public ResponseEntity<Long> upload(
       @RequestBody @ApiParam(value = "수정할 회원 정보", required = true) PostUploadRequestDto responseDto,
       @CookieValue(name = "accessToken") String accessToken) {
-    System.out.println(accessToken);
     if (videoService.uploadVideo(responseDto, accessToken) == 0) {
-      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+      throw new CustomApiException(ErrorCode.UPLOAD_ERROR);
     }
-
     return new ResponseEntity<>(HttpStatus.OK);
   }
 
@@ -107,7 +120,7 @@ public class VideoController {
   public ResponseEntity<Long> update(@PathVariable UUID id,
       @RequestBody PutUpdateRequestDto requestDto, @CookieValue("accessToken") String accessToken) {
     if (videoService.updateVideo(id, requestDto, accessToken) == 0) {
-      return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+      throw new CustomApiException(ErrorCode.UPDATE_ERROR);
     }
     return new ResponseEntity<>(HttpStatus.OK);
   }
@@ -128,9 +141,10 @@ public class VideoController {
   @GetMapping("/detail/{videoId}/like")
   public ResponseEntity<Boolean> like(@PathVariable("videoId") UUID videoId,
       @CookieValue(name = "accessToken") String accessToken) {
-    return videoService.like(videoId, accessToken) == 1 ? new ResponseEntity<>(true,
-        HttpStatus.OK)
-        : new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR);
+    if (videoService.like(videoId, accessToken) == 0) {
+      throw new CustomApiException(ErrorCode.LIKE_ERROR);
+    }
+    return new ResponseEntity<>(true, HttpStatus.OK);
   }
 
 
@@ -140,34 +154,9 @@ public class VideoController {
   public ResponseEntity<Boolean> cancelLike(
       @ApiParam(value = "좋아요를 취소할 영상 아이디") @PathVariable("videoId") UUID videoId,
       @ApiParam(value = "좋아요를 취소할 유저의 토큰값") @CookieValue(name = "accessToken") String accessTokenn) {
-    return videoService.cancelLike(videoId, accessTokenn) == 1 ? new ResponseEntity<>(true,
-        HttpStatus.OK)
-        : new ResponseEntity<>(false, HttpStatus.INTERNAL_SERVER_ERROR);
+    if (videoService.cancelLike(videoId, accessTokenn) == 0) {
+      throw new CustomApiException(ErrorCode.UNLIKE_ERROR);
+    }
+    return new ResponseEntity<>(true, HttpStatus.OK);
   }
-
-  // 영상 업로드(S3) + 영상 정보 업로드(DB) [기존 방식 - 백엔드에서 영상 올리기]
-//  @PostMapping("/upload")
-//  public ResponseEntity uploadVideo(@RequestPart(value = "dto") PostSaveRequestDto requestDto,
-//      @RequestParam(value = "file") MultipartFile multipartFile) {
-//
-//    try {
-//
-//      // Upload multipartFile to storage and return url.
-//      String url = videoService.uploadFile(multipartFile, String.valueOf(requestDto.getChannelId()),
-//          LocalTime.now() + " ");
-//
-//      // Create a Dto to upload info to db.
-//      PostSaveRequestDto processedRequestDto = PostSaveRequestDto.builder()
-//          .title(requestDto.getTitle()).content(requestDto.getContent()).videoUrl(url)
-//          .privateType(requestDto.isPrivateType())
-//          .commentPermission(requestDto.isCommentPermission()).thumbnail(requestDto.getThumbnail())
-//          .channelId(requestDto.getChannelId()).build();
-//
-//      // Upload to db.
-//      videoService.upload(processedRequestDto);
-//      return new ResponseEntity(HttpStatus.OK);
-//    } catch (IOException e) {
-//      return new ResponseEntity(HttpStatus.BAD_REQUEST);
-//    }
-//  }
 }

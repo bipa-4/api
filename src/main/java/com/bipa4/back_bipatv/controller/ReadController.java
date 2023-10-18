@@ -1,5 +1,7 @@
 package com.bipa4.back_bipatv.controller;
 
+import com.bipa4.back_bipatv.dataType.ErrorCode;
+import com.bipa4.back_bipatv.dto.CustomApiException;
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
 import com.bipa4.back_bipatv.dto.channel.GetInfiniteScrollRequestChannelDto;
@@ -45,6 +47,9 @@ public class ReadController {
       @RequestParam(value = "page", required = false) String page,
       @RequestParam("pageSize") int pageSize) {
     List<GetVideoResponseDto> videos = videoService.getAllVideos(page, pageSize);
+    if (videos == null) {
+      throw new CustomApiException(ErrorCode.READ_ERROR);
+    }
     String nextUUID = videoService.getNextUUID(
         videos.get(videos.size() - 1).getVideoId()); // 마지막 page의 UUID 호출
     GetInfiniteScrollRequestDto responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
@@ -61,14 +66,12 @@ public class ReadController {
       @RequestParam(value = "page", required = false) String page,
       @RequestParam("pageSize") int pageSize) {
     List<GetVideoResponseDto> videos = videoService.getCategoryVideos(category, page, pageSize);
-
-    System.out.println(videos);
+    if (videos == null) {
+      throw new CustomApiException(ErrorCode.READ_ERROR);
+    }
     String nextUUID = videoService.getNextUUID(
         videos.get(videos.size() - 1).getVideoId()); // 마지막 page의 UUID 호출
-
-    System.out.println(nextUUID);
     GetInfiniteScrollRequestDto responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
-
     return ResponseEntity.ok().body(responseDto);
   }
 
@@ -78,6 +81,9 @@ public class ReadController {
   @GetMapping("/video/category")
   public ResponseEntity<List<GetCategoryNameRequestDto>> getCategoryNames() {
     List<GetCategoryNameRequestDto> categorys = videoService.getCategoryNames();
+    if (categorys == null) {
+      throw new CustomApiException(ErrorCode.READ_ERROR);
+    }
     return new ResponseEntity<List<GetCategoryNameRequestDto>>(categorys, HttpStatus.OK);
   }
 
@@ -87,6 +93,9 @@ public class ReadController {
   @GetMapping("/video/top10")
   public ResponseEntity<List<GetVideoResponseDto>> getViewsTop10Videos() {
     List<GetVideoResponseDto> videos = videoService.getViewsTop10Videos();
+    if (videos == null) {
+      throw new CustomApiException(ErrorCode.READ_ERROR);
+    }
     return new ResponseEntity<List<GetVideoResponseDto>>(videos, HttpStatus.OK);
   }
 
@@ -94,8 +103,11 @@ public class ReadController {
   // 디비 1시간 전 정보 저장
   @ApiOperation(value = "조회수 급상승 TOP 10", notes = "1시간마다 조회수가 급상승된 영상 10개 추출")
   @Scheduled(cron = "0 0 0/1 * * *")
-  public ResponseEntity<Integer> getViewsUpdate() {
-    return new ResponseEntity<Integer>(videoService.updateViews(), HttpStatus.OK);
+  public ResponseEntity<Boolean> getViewsUpdate() {
+    if (videoService.updateViews() == 0) {
+      throw new CustomApiException(ErrorCode.UPDATE_ERROR);
+    }
+    return new ResponseEntity<>(true, HttpStatus.OK);
   }
 
 
@@ -107,6 +119,12 @@ public class ReadController {
     int viewsResult = videoService.plusViews(id); //  조회수 상승
     GetDetailResponseDto video = videoService.getVideoDetail(id);
 
+    if (video == null) {
+      throw new CustomApiException(ErrorCode.READ_ERROR);
+    }
+    if (viewsResult == 0) {
+      throw new CustomApiException(ErrorCode.UPDATE_ERROR);
+    }
     return new ResponseEntity<>(video, HttpStatus.OK);
   }
 
@@ -126,7 +144,6 @@ public class ReadController {
   @GetMapping("/comment/{videoId}/comment-parent")
   public ResponseEntity<List<CommentResponse>> findParentComments(@PathVariable UUID videoId) {
     List<CommentResponse> list = commentService.findParentComments(videoId);
-
     return ResponseEntity.ok(list);
   }
 
