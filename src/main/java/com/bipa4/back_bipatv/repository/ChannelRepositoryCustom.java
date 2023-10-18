@@ -17,4 +17,6 @@ public interface ChannelRepositoryCustom {
   UUID lastUUID();
 
   String getChannelNextUUID(UUID uuid);
+
+  String getNextChannelVideoUUID(UUID videoId, UUID channelId);
 }
