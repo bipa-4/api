@@ -187,7 +187,7 @@ public class ReadController {
       @RequestParam("pageSize") int pageSize) {
 
     List<GetChannelDTO> list = channelService.getAllChannels(page, pageSize);
-    String nextUUID = channelService.getNextUUID(list.get(list.size() - 1).getChannelId());
+    String nextUUID = channelService.getChannelNextUUID(list.get(list.size() - 1).getChannelId());
 
     GetInfiniteScrollRequestChannelDto channelList = new GetInfiniteScrollRequestChannelDto(list,
         nextUUID);

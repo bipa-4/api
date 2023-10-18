@@ -52,4 +52,5 @@ public interface VideoRepositoryCustom {
   List<GetVideoResponseDto> getVideosInChannel(UUID channelId, UUID uuid, int pageSize);
 
   List<GetVideoResponseDto> getVideosInMyChannel(UUID channelId, UUID uuid, int pageSize);
+
 }
