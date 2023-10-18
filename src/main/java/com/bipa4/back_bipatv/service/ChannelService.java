@@ -150,4 +150,8 @@ public class ChannelService {
       return videoRepository.getVideosInChannel(channelId, uuid, pageSize);
     }
   }
+
+  public String getNextChannelVideoUUID(UUID videoId, UUID channelId) {
+    return channelRepository.getNextChannelVideoUUID(videoId, channelId);
+  }
 }

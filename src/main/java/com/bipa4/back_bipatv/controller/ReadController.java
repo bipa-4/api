@@ -205,8 +205,8 @@ public class ReadController {
       @PathVariable("channelId") UUID channelId) {
     List<GetVideoResponseDto> videos = channelService.getVideosInChannel(accessToken, channelId,
         page, pageSize);
-    String nextUUID = videoService.getNextUUID(
-        videos.get(videos.size() - 1).getVideoId()); // 마지막 page의 UUID 호출
+    String nextUUID = channelService.getNextChannelVideoUUID(
+        videos.get(videos.size() - 1).getVideoId(), channelId); // 마지막 page의 UUID 호출
     GetInfiniteScrollRequestDto responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
 
     return ResponseEntity.ok().body(responseDto);
