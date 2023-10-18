@@ -6,6 +6,7 @@ import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
 import com.bipa4.back_bipatv.dto.channel.GetInfiniteScrollRequestChannelDto;
 import com.bipa4.back_bipatv.dto.channel.SelectChannelDTO;
+import com.bipa4.back_bipatv.dto.comment.ChildCommentResponse;
 import com.bipa4.back_bipatv.dto.comment.CommentResponse;
 import com.bipa4.back_bipatv.dto.video.GetCategoryNameRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
@@ -47,9 +48,6 @@ public class ReadController {
       @RequestParam(value = "page", required = false) String page,
       @RequestParam("pageSize") int pageSize) {
     List<GetVideoResponseDto> videos = videoService.getAllVideos(page, pageSize);
-    if (videos == null) {
-      throw new CustomApiException(ErrorCode.READ_ERROR);
-    }
     String nextUUID = videoService.getNextUUID(
         videos.get(videos.size() - 1).getVideoId()); // 마지막 page의 UUID 호출
     GetInfiniteScrollRequestDto responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
@@ -66,9 +64,6 @@ public class ReadController {
       @RequestParam(value = "page", required = false) String page,
       @RequestParam("pageSize") int pageSize) {
     List<GetVideoResponseDto> videos = videoService.getCategoryVideos(category, page, pageSize);
-    if (videos == null) {
-      throw new CustomApiException(ErrorCode.READ_ERROR);
-    }
     String nextUUID = videoService.getNextUUID(
         videos.get(videos.size() - 1).getVideoId()); // 마지막 page의 UUID 호출
     GetInfiniteScrollRequestDto responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
@@ -81,9 +76,6 @@ public class ReadController {
   @GetMapping("/video/category")
   public ResponseEntity<List<GetCategoryNameRequestDto>> getCategoryNames() {
     List<GetCategoryNameRequestDto> categorys = videoService.getCategoryNames();
-    if (categorys == null) {
-      throw new CustomApiException(ErrorCode.READ_ERROR);
-    }
     return new ResponseEntity<List<GetCategoryNameRequestDto>>(categorys, HttpStatus.OK);
   }
 
@@ -93,9 +85,6 @@ public class ReadController {
   @GetMapping("/video/top10")
   public ResponseEntity<List<GetVideoResponseDto>> getViewsTop10Videos() {
     List<GetVideoResponseDto> videos = videoService.getViewsTop10Videos();
-    if (videos == null) {
-      throw new CustomApiException(ErrorCode.READ_ERROR);
-    }
     return new ResponseEntity<List<GetVideoResponseDto>>(videos, HttpStatus.OK);
   }
 
@@ -118,10 +107,6 @@ public class ReadController {
       @PathVariable("videoId") UUID id) {
     int viewsResult = videoService.plusViews(id); //  조회수 상승
     GetDetailResponseDto video = videoService.getVideoDetail(id);
-
-    if (video == null) {
-      throw new CustomApiException(ErrorCode.READ_ERROR);
-    }
     if (viewsResult == 0) {
       throw new CustomApiException(ErrorCode.UPDATE_ERROR);
     }
@@ -150,10 +135,9 @@ public class ReadController {
   //자식 댓글 조회
   @ApiOperation(value = "자식 댓글 조회", notes = "자식 댓글 조회")
   @GetMapping("/comment/{videoId}/comment-child")
-  public ResponseEntity<List<CommentResponse>> findChildComments(@PathVariable UUID videoId,
+  public ResponseEntity<List<ChildCommentResponse>> findChildComments(@PathVariable UUID videoId,
       @RequestParam int groupIndex) {
-    List<CommentResponse> list = commentService.findChildComments(videoId, groupIndex);
-
+    List<ChildCommentResponse> list = commentService.findChildComments(videoId, groupIndex);
     return ResponseEntity.ok(list);
   }
 
@@ -164,11 +148,7 @@ public class ReadController {
   public ResponseEntity<SelectChannelDTO> getMyChannelInfo(
       @PathVariable("channelId") UUID channelId) {
     SelectChannelDTO selectChannelDTO = channelService.findChannel(channelId);
-    if (selectChannelDTO != null) {
-      return new ResponseEntity<>(selectChannelDTO, HttpStatus.OK);
-    } else {
-      return new ResponseEntity<>(null, HttpStatus.NO_CONTENT);
-    }
+    return new ResponseEntity<>(selectChannelDTO, HttpStatus.OK);
   }
 
   @ApiOperation(value = "getUpdateFlag", notes = "업데이트 플레그 얻기")
@@ -224,6 +204,4 @@ public class ReadController {
 
     return ResponseEntity.ok().body(responseDto);
   }
-
-
 }

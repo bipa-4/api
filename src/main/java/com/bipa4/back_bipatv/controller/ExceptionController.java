@@ -20,7 +20,7 @@ import org.springframework.web.client.HttpServerErrorException;
 
 @Slf4j
 @RestControllerAdvice()
-public class ExceptionControler {
+public class ExceptionController {
 
   @ResponseStatus(HttpStatus.ACCEPTED)
   @ExceptionHandler(CustomApiException.class)

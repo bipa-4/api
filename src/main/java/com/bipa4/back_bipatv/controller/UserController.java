@@ -3,9 +3,10 @@ package com.bipa4.back_bipatv.controller;
 
 import com.bipa4.back_bipatv.aspect.AccessTokenValid;
 import com.bipa4.back_bipatv.dataType.ETokenTime;
+import com.bipa4.back_bipatv.dataType.ErrorCode;
+import com.bipa4.back_bipatv.dto.CustomApiException;
 import com.bipa4.back_bipatv.dto.user.GetAccountCheckDTO;
 import com.bipa4.back_bipatv.entity.Accounts;
-import com.bipa4.back_bipatv.exception.ResourceNotFoundException;
 import com.bipa4.back_bipatv.security.SecurityService;
 import com.bipa4.back_bipatv.service.PresignedUrlService;
 import com.bipa4.back_bipatv.service.UserService;
@@ -36,7 +37,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(produces = "application/json")
 @RequiredArgsConstructor
 public class UserController {
-
 
   private final UserService userService;
   private final SecurityService securityService;
@@ -71,7 +71,7 @@ public class UserController {
       httpresponse.addHeader("Set-Cookie", accessCookie.toString());
       return new ResponseEntity<>("로그인 성공", HttpStatus.OK);
     }
-    return new ResponseEntity<>("로그인 실패", HttpStatus.NO_CONTENT);
+    throw new CustomApiException(ErrorCode.LOGIN_ERROR);
   }
 
   @ApiOperation(value = "userUpdate", notes = "유저 정보 수정")
@@ -80,14 +80,8 @@ public class UserController {
       @RequestBody @Validated Accounts accounts) {
 
     Accounts loginAccount = securityService.getSubjectAccount(code);
-    System.out.println(accounts);
-    try {
-      Accounts updatedAccount = userService.updateAccount(loginAccount.getAccountId(), accounts);
-      return new ResponseEntity<>(updatedAccount, HttpStatus.OK);
-    } catch (ResourceNotFoundException e) {
-      // 리소스를 찾지 못한 경우 404 에러를 반환
-      return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
+    Accounts updatedAccount = userService.updateAccount(loginAccount.getAccountId(), accounts);
+    return new ResponseEntity<>(updatedAccount, HttpStatus.OK);
   }
 
   @ApiOperation(value = "CheckAccount", notes = "accessToken에 맞는 Account반환")
@@ -97,20 +91,16 @@ public class UserController {
       @CookieValue(name = "accessToken", required = false) String accessToken,
       HttpServletRequest request) {
     String nat = (String) request.getAttribute("newAccessToken");
-    System.out.println(nat);
     if (nat != null) {
       accessToken = nat;
     }
-
-    System.out.println("CheckUser AT:" + accessToken);
     if (accessToken == null) {
-      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+      throw new CustomApiException(ErrorCode.ACCESSTOKEN_ERROR);
     }
 
     GetAccountCheckDTO getAccountCheckDTO = userService.getAccountCheck(accessToken);
 
-    return getAccountCheckDTO == null ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
-        : new ResponseEntity<>(getAccountCheckDTO, HttpStatus.OK);
+    return new ResponseEntity<>(getAccountCheckDTO, HttpStatus.OK);
   }
 
   @ApiOperation(value = "Logout", notes = "로그아웃기능")
@@ -140,8 +130,10 @@ public class UserController {
         .sameSite("None")
         .build();
     httpresponse.addHeader("Set-Cookie", accessCookie.toString());
-    return result ? new ResponseEntity<>(true, HttpStatus.OK)
-        : new ResponseEntity<>(false, HttpStatus.BAD_REQUEST);
+    if (!result) {
+      throw new CustomApiException(ErrorCode.LOGOUT_ERROR);
+    }
+    return new ResponseEntity<>(true, HttpStatus.OK);
   }
 
   @ApiOperation(value = "Delete Account", notes = "회원 탈퇴")
