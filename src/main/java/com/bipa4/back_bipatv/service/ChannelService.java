@@ -127,13 +127,25 @@ public class ChannelService {
     return channelRepository.save(myChannel);
   }
 
-  public List<GetVideoResponseDto> getVideosInChannel(UUID channelId, String page, int pageSize) {
+  public List<GetVideoResponseDto> getVideosInChannel(String accessToken, UUID channelId,
+      String page, int pageSize) {
+    Accounts loginUser = securityService.getSubjectAccount(accessToken);
     UUID uuid = null;
-    if (page == null) {
-      uuid = videoRepository.lastUUIDInChannel(channelId);
+    if (loginUser.getAccountId() == (channelRepository.findByChannelId(channelId).getAccounts()
+        .getAccountId())) {//채널 주인이 로그인한 사람이면 채널 내 비공개 영상도 조회 가능해야 함
+      if (page == null) {
+        uuid = videoRepository.lastUUIDInMyChannel(channelId);
+      } else {
+        uuid = UUID.fromString(page);
+      }
+      return videoRepository.getVideosInMyChannel(channelId, uuid, pageSize);
     } else {
-      uuid = UUID.fromString(page);
+      if (page == null) {
+        uuid = videoRepository.lastUUIDInChannel(channelId);
+      } else {
+        uuid = UUID.fromString(page);
+      }
+      return videoRepository.getVideosInChannel(channelId, uuid, pageSize);
     }
-    return videoRepository.getVideosInChannel(channelId, uuid, pageSize);
   }
 }

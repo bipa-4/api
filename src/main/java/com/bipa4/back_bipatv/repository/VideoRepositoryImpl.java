@@ -91,6 +91,16 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
         .fetchOne();
   }
 
+  @Override
+  public UUID lastUUIDInMyChannel(UUID channelId) {
+    QVideos qVideos = QVideos.videos;
+
+    return jpaQueryFactory.select(qVideos.videoId).from(qVideos)
+        .where(qVideos.channelId.channelId.eq(channelId))
+        .orderBy(qVideos.videoId.desc()).limit(1)
+        .fetchOne();
+  }
+
 
   // 다음 페이지의 UUID 찾기
   @Override
@@ -508,6 +518,32 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
         .from(qVideos).leftJoin(qVideos.channelId, qChannels)
         .where(qVideos.channelId.eq(channel).and(qVideos.videoId.loe(page))
             .and(qVideos.privateType.eq(false)))
+        .orderBy(qVideos.videoId.desc())
+        .limit(pageSize).fetch();
+  }
+
+  @Override
+  public List<GetVideoResponseDto> getVideosInMyChannel(UUID channelId, UUID uuid, int pageSize) {
+    Channels channel = new Channels();
+    channel.setChannelId(channelId);
+    QVideos qVideos = QVideos.videos;
+    QChannels qChannels = QChannels.channels;
+
+    // 추천 영상 리스트 추출
+    return jpaQueryFactory.select(
+            Projections.bean(
+                GetVideoResponseDto.class,
+                qChannels.channelName.as("channelName"),
+                qChannels.profileUrl.as("channelProfileUrl"),
+                qVideos.thumbnail,
+                qVideos.title.as("videoTitle"),
+                qVideos.createAt,
+                qVideos.readCnt.as("readCount"),
+                qVideos.videoId
+            )
+        )
+        .from(qVideos).leftJoin(qVideos.channelId, qChannels)
+        .where(qVideos.channelId.eq(channel).and(qVideos.videoId.loe(uuid)))
         .orderBy(qVideos.videoId.desc())
         .limit(pageSize).fetch();
   }
