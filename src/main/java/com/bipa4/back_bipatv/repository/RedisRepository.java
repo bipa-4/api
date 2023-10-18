@@ -1,5 +1,6 @@
 package com.bipa4.back_bipatv.repository;
 
+import com.bipa4.back_bipatv.dataType.ETokenTime;
 import com.bipa4.back_bipatv.entity.RefreshToken;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
@@ -11,7 +12,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class RedisRepository {
 
-  private static final long REFRESH_TOKEN_EXPIRATION_SECONDS = 60 * 60 * 6L; // 토큰 만료 시간 (6시간)
+  private static final long REFRESH_TOKEN_EXPIRATION_SECONDS = ETokenTime.REFRESHTOKEN_EXP_TIME.getTime(); // 토큰 만료 시간 (6시간)
+  private static final long REFRESH_TOKEN_EXPIRATION_SECONDS_TEST = ETokenTime.REFRESHTOKEN_EXP_TIME_TEST.getTime(); // 토큰 만료 시간 (6시간)
 
   private final RedisTemplate<String, String> redisTemplate;
   private final RedisTemplate<String, String> redisBlackListTemplate;
@@ -27,7 +29,7 @@ public class RedisRepository {
   public void save(RefreshToken refreshToken) {
     ValueOperations<String, String> valueOperations = redisTemplate.opsForValue();
     valueOperations.set(refreshToken.getRefreshToken(), refreshToken.getMemberId(),
-        REFRESH_TOKEN_EXPIRATION_SECONDS, TimeUnit.SECONDS);
+        REFRESH_TOKEN_EXPIRATION_SECONDS_TEST, TimeUnit.SECONDS);
   }
 
   // Refresh Token을 Redis에서 검색합니다.
