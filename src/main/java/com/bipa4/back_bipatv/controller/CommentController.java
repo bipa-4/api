@@ -28,11 +28,26 @@ public class CommentController {
 
   private final SecurityService securityService;
 
-  @PostMapping("/comment")//insert
-  public ResponseEntity<String> insertComment(@RequestBody CommentRequest commentRequest,
+  @PostMapping("/commentParent")//insert
+  public ResponseEntity<String> insertParentComment(@RequestBody CommentRequest commentRequest,
       @CookieValue(name = "accessToken") String accessToken) {
     if (securityService.getSubject(accessToken)) {
-      boolean saved = commentService.saveComment(commentRequest);
+      boolean saved = commentService.saveParentComment(commentRequest);
+      if (saved) {
+        return ResponseEntity.ok("댓글 등록 성공");
+      } else {
+        return ResponseEntity.badRequest().body("댓글 등록 실패");
+      }
+    } else {
+      return ResponseEntity.status(HttpStatus.FORBIDDEN).body("권한없음");
+    }
+  }
+
+  @PostMapping("/commentChild")//insert
+  public ResponseEntity<String> insertChildComment(@RequestBody CommentRequest commentRequest,
+      @RequestParam("groupIndex") Integer groupIndex, @CookieValue(name = "accessToken") String accessToken) {
+    if (securityService.getSubject(accessToken)) {
+      boolean saved = commentService.saveChildComment(commentRequest,groupIndex);
       if (saved) {
         return ResponseEntity.ok("댓글 등록 성공");
       } else {

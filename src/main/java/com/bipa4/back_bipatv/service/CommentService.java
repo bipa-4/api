@@ -44,11 +44,22 @@ public class CommentService {
     return list;
   }
 
-  public boolean saveComment(CommentRequest commentRequest) {
+  public boolean saveParentComment(CommentRequest commentRequest) {
 
     if (Objects.nonNull(commentRequest.getAccountId())) {
-      Comments comments = convertDtoToEntityForInsert(commentRequest);
-      return commentDAO.saveComment(comments);
+      Comments comments = convertDtoToEntityForInsert(commentRequest,null);
+      return commentDAO.saveParentComment(comments);
+    } else {
+      return false;
+    }
+
+  }
+
+  public boolean saveChildComment(CommentRequest commentRequest, Integer groupIndex) {
+
+    if (Objects.nonNull(commentRequest.getAccountId())) {
+      Comments comments = convertDtoToEntityForInsert(commentRequest,groupIndex);
+      return commentDAO.saveChildComment(comments,groupIndex);
     } else {
       return false;
     }
@@ -59,7 +70,7 @@ public class CommentService {
 
     if (Objects.nonNull(commentRequest.getAccountId())) {
       Comments comments = convertDtoToEntityForUpdate(commentRequest);
-      return commentDAO.saveComment(comments);
+      return commentDAO.saveParentComment(comments);
     } else {
       return false;
     }
@@ -71,13 +82,22 @@ public class CommentService {
   }
 
 
-  private Comments convertDtoToEntityForInsert(CommentRequest commentRequest) {
+  private Comments convertDtoToEntityForInsert(CommentRequest commentRequest,Integer groupIndex) {
 
     Comments comments = new Comments();
 
     if (commentRequest.getVideoId()!= null) {
       Videos videos = videoRepository.findById(commentRequest.getVideoId()).orElse(null);
       comments.setVideos(videos);
+
+      if(commentRequest.getParentChild() == 0){
+        int parentLastIndex = findParentComments(commentRequest.getVideoId()).size();
+        System.out.println("parentLast11111 : " + parentLastIndex);
+        comments.setGroupIndex(parentLastIndex+1);
+      }
+      else{
+        comments.setGroupIndex(groupIndex);
+      }
     }
 
     if (Objects.nonNull(commentRequest.getAccountId())) {
@@ -95,15 +115,6 @@ public class CommentService {
 
     if (Objects.nonNull(commentRequest.getParentChild())) {
       comments.setParentChild(commentRequest.getParentChild());
-    }
-
-    if (Objects.nonNull(commentRequest.getGroupIndex())) {// 대댓글
-      comments.setGroupIndex(commentRequest.getGroupIndex());
-    }
-    else { // 댓글
-      int parentLastIndex = findParentComments(comments.getVideos().getVideoId()).size()+1;
-      System.out.println("parentLastIndex1111111111 : " +parentLastIndex);
-      comments.setGroupIndex(parentLastIndex+1);
     }
 
     LocalDateTime now = LocalDateTime.now();

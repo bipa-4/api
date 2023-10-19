@@ -17,7 +17,7 @@ public class CommentRequest {
   private UUID commentId;
   private String content;
   private int parentChild;
-  private int groupIndex;
+  private Integer groupIndex;
   private Timestamp createAt;
   private UUID videoId;
   private UUID accountId;
