@@ -123,13 +123,14 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
     return nextUUID.toString();
   }
 
+
   @Override
-  public String getNextChannelVideoUUID(UUID videoId, UUID channelId) {
+  public String getNextChannelVideoUUID(UUID videoId, UUID channelId, boolean flag) {
     QVideos qVideos = QVideos.videos;
 
     UUID nextUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
         .where(qVideos.videoId.lt(videoId).and(qVideos.channelId.channelId.eq(channelId))
-            .and(qVideos.privateType.eq(false)))
+            .and(qVideos.privateType.eq(flag)))
         .orderBy(qVideos.videoId.desc())
         .limit(1).fetchOne();
 
@@ -138,5 +139,26 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
     }
 
     return nextUUID.toString();
+  }
+
+  @Override
+  public List<String> getSearchNextChannelVideoUUID(UUID videoId, UUID channelId,
+      String searchQuery,
+      boolean flag) {
+    List<String> list = entityManager.createNativeQuery(
+            "select BIN_TO_UUID(videos.video_id) as videoId \n"
+                + "from videos \n"
+                + "where videos.video_id < ? \n"
+                + "and videos.channel_id = ? \n"
+                + "and MATCH (videos.title, videos.content) AGAINST ( ? IN NATURAL LANGUAGE MODE) \n"
+                + "and videos.private_type = ? \n"
+                + "order by videos.video_id desc \n"
+                + "limit 1 \n"
+        ).setParameter(1, videoId)
+        .setParameter(2, channelId)
+        .setParameter(3, searchQuery)
+        .setParameter(4, flag).getResultList();
+    System.out.println("asdsad");
+    return list;
   }
 }

@@ -5,6 +5,7 @@ import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
 import com.bipa4.back_bipatv.dto.channel.PutChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.SelectChannelDTO;
+import com.bipa4.back_bipatv.dto.video.GetSearchVideoINChannelDTO;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.entity.Channels;
@@ -151,7 +152,64 @@ public class ChannelService {
     }
   }
 
-  public String getNextChannelVideoUUID(UUID videoId, UUID channelId) {
-    return channelRepository.getNextChannelVideoUUID(videoId, channelId);
+  public String getNextChannelVideoUUID(UUID videoId, UUID channelId, String accessToken) {
+    Accounts loginUser = securityService.getSubjectAccount(accessToken);
+    if (loginUser.getAccountId() == (channelRepository.findByChannelId(channelId).getAccounts()
+        .getAccountId())) {//채널 주인이 로그인한 사람이면 채널 내 비공개 영상도 조회 가능해야 함
+      return channelRepository.getNextChannelVideoUUID(videoId, channelId, true);
+    } else {
+      return channelRepository.getNextChannelVideoUUID(videoId, channelId, false);
+    }
+  }
+
+  public String getSearchNextChannelVideoUUID(UUID videoId, UUID channelId,
+      String searchQuery,
+      String accessToken) {
+    Accounts loginUser = securityService.getSubjectAccount(accessToken);
+    if (loginUser.getAccountId() == (channelRepository.findByChannelId(channelId).getAccounts()
+        .getAccountId())) {//채널 주인이 로그인한 사람이면 채널 내 비공개 영상도 조회 가능해야 함
+      List<String> nextChannelUUID = channelRepository.getSearchNextChannelVideoUUID(videoId,
+          channelId, searchQuery, true);
+      if (nextChannelUUID.isEmpty()) {
+        return null;//null로 바꾸기
+      } else {
+        return nextChannelUUID.get(0);
+      }
+    } else {
+      List<String> nextChannelUUID = channelRepository.getSearchNextChannelVideoUUID(videoId,
+          channelId, searchQuery, false);
+      if (nextChannelUUID.isEmpty()) {
+        return null;//null로 바꾸기
+      } else {
+        return nextChannelUUID.get(0);
+      }
+    }
+  }
+
+  public List<GetSearchVideoINChannelDTO> searchVideoInChannel(String accessToken, UUID channelId,
+      String page, int pageSize, String searchQuery) {
+    Accounts loginUser = securityService.getSubjectAccount(accessToken);
+    UUID uuid = null;
+    System.out.println("page값 " + page);
+    if (loginUser.getAccountId() == (channelRepository.findByChannelId(channelId).getAccounts()
+        .getAccountId())) {
+      if (page == null) {
+        uuid = videoRepository.lastUUIDSearchVideoInMyChannel(channelId, searchQuery).get(0);
+      } else {
+        uuid = UUID.fromString(page);
+      }
+      System.out.println("채널내 영상 검색 UUID 값:" + uuid);
+
+      return videoRepository.getSearchVideoInMyChannel(channelId, uuid, pageSize, searchQuery);
+    } else {
+      if (page == null) {
+        uuid = videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0);
+      } else {
+        uuid = UUID.fromString(page);
+      }
+      System.out.println("채널내 영상 검색 UUID 값:" + uuid);
+
+      return videoRepository.getSearchVideoInChannel(channelId, uuid, pageSize, searchQuery);
+    }
   }
 }
