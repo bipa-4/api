@@ -76,8 +76,8 @@ public class ChannelService {
     return list;
   }
 
-  public String getNextUUID(UUID uuid) {
-    return videoRepository.getNextUUID(uuid);
+  public String getChannelNextUUID(UUID uuid) {
+    return channelRepository.getChannelNextUUID(uuid);
   }
 
   public List<GetChannelDTO> getAllChannels(String page, int pageSize) {
@@ -138,6 +138,7 @@ public class ChannelService {
       } else {
         uuid = UUID.fromString(page);
       }
+      videoRepository.getVideosInMyChannel(channelId, uuid, pageSize).forEach(System.out::println);
       return videoRepository.getVideosInMyChannel(channelId, uuid, pageSize);
     } else {
       if (page == null) {
@@ -145,7 +146,12 @@ public class ChannelService {
       } else {
         uuid = UUID.fromString(page);
       }
+      videoRepository.getVideosInChannel(channelId, uuid, pageSize).forEach(System.out::println);
       return videoRepository.getVideosInChannel(channelId, uuid, pageSize);
     }
+  }
+
+  public String getNextChannelVideoUUID(UUID videoId, UUID channelId) {
+    return channelRepository.getNextChannelVideoUUID(videoId, channelId);
   }
 }

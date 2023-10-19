@@ -35,8 +35,8 @@ public class Videos {
   @Size(min = 1, max = 500)
   @Column(name = "title", nullable = true, length = 500)
   private String title;
-  @Size(min = 0, max = 1500)
-  @Column(name = "content", nullable = true, length = 1500)
+  @Size(min = 0, max = 3000)
+  @Column(name = "content", nullable = true, length = 3000)
   private String content;
   @PositiveOrZero
   @Column(name = "read_cnt", nullable = true)

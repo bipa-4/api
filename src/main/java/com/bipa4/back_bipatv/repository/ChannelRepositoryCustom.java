@@ -15,4 +15,8 @@ public interface ChannelRepositoryCustom {
   SelectChannelDTO selectChannel(UUID channelId);
 
   UUID lastUUID();
+
+  String getChannelNextUUID(UUID uuid);
+
+  String getNextChannelVideoUUID(UUID videoId, UUID channelId);
 }
