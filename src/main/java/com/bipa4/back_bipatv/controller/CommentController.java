@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -26,11 +27,26 @@ public class CommentController {
   private final SecurityService securityService;
 
   //insert
-  @PostMapping("/comment")
-  public ResponseEntity<String> insertComment(@RequestBody CommentRequest commentRequest,
+  @PostMapping("/commentParent")
+  public ResponseEntity<String> insertParentComment(@RequestBody CommentRequest commentRequest,
       @CookieValue(name = "accessToken") String accessToken) {
     if (securityService.getSubject(accessToken)) {
-      boolean saved = commentService.saveComment(commentRequest);
+      boolean saved = commentService.saveParentComment(commentRequest);
+      if (!saved) {
+        throw new CustomApiException(ErrorCode.UPLOAD_ERROR);
+      }
+      return ResponseEntity.ok("댓글 등록 성공");
+    } else {
+      throw new CustomApiException(ErrorCode.AUTHORITY_ERROR);
+    }
+  }
+
+  //insert
+  @PostMapping("/commentChild")
+  public ResponseEntity<String> insertChildComment(@RequestBody CommentRequest commentRequest,
+      @RequestParam("groupIndex") Integer groupIndex, @CookieValue(name = "accessToken") String accessToken) {
+    if (securityService.getSubject(accessToken)) {
+      boolean saved = commentService.saveChildComment(commentRequest,groupIndex);
       if (!saved) {
         throw new CustomApiException(ErrorCode.UPLOAD_ERROR);
       }
