@@ -34,7 +34,15 @@ public class CommentDAO {
     return list;
   }
 
-  public boolean saveComment(Comments comments) {
+  public boolean saveParentComment(Comments comments) {
+    Comments comments1 = commentRepository.save(comments);
+    if (comments1 != null) {
+      return true;
+    }
+    return false;
+  }
+
+  public boolean saveChildComment(Comments comments, Integer groupIndex) {
     Comments comments1 = commentRepository.save(comments);
     if (comments1 != null) {
       return true;
