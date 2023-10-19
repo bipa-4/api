@@ -92,7 +92,6 @@ public class CommentService {
 
       if(commentRequest.getParentChild() == 0){
         int parentLastIndex = findParentComments(commentRequest.getVideoId()).size();
-        System.out.println("parentLast11111 : " + parentLastIndex);
         comments.setGroupIndex(parentLastIndex+1);
       }
       else{
