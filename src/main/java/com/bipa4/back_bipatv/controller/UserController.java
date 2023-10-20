@@ -4,9 +4,9 @@ package com.bipa4.back_bipatv.controller;
 import com.bipa4.back_bipatv.aspect.AccessTokenValid;
 import com.bipa4.back_bipatv.dataType.ETokenTime;
 import com.bipa4.back_bipatv.dataType.ErrorCode;
-import com.bipa4.back_bipatv.dto.CustomApiException;
 import com.bipa4.back_bipatv.dto.user.GetAccountCheckDTO;
 import com.bipa4.back_bipatv.entity.Accounts;
+import com.bipa4.back_bipatv.exception.CustomApiException;
 import com.bipa4.back_bipatv.security.SecurityService;
 import com.bipa4.back_bipatv.service.PresignedUrlService;
 import com.bipa4.back_bipatv.service.UserService;
@@ -100,7 +100,8 @@ public class UserController {
 
     GetAccountCheckDTO getAccountCheckDTO = userService.getAccountCheck(accessToken);
 
-    return new ResponseEntity<>(getAccountCheckDTO, HttpStatus.OK);
+    return getAccountCheckDTO == null ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
+        : new ResponseEntity<>(getAccountCheckDTO, HttpStatus.OK);
   }
 
   @ApiOperation(value = "Logout", notes = "로그아웃기능")

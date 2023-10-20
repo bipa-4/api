@@ -1,8 +1,8 @@
 package com.bipa4.back_bipatv.controller;
 
 import com.bipa4.back_bipatv.dataType.ErrorCode;
-import com.bipa4.back_bipatv.dto.CustomApiException;
 import com.bipa4.back_bipatv.dto.comment.CommentRequest;
+import com.bipa4.back_bipatv.exception.CustomApiException;
 import com.bipa4.back_bipatv.security.SecurityService;
 import com.bipa4.back_bipatv.service.CommentService;
 import java.util.Objects;

@@ -31,23 +31,23 @@ public interface VideoRepositoryCustom {
 
   GetDetailResponseDto getDetail(UUID id);
 
-  Long remove(UUID id, Accounts account);
+  boolean remove(UUID id, Accounts account);
 
-  int insert(PostUploadRequestDto videoResponseDto, String token, UUID uuid);
+  boolean insert(PostUploadRequestDto videoResponseDto, Accounts account, UUID uuid);
 
-  int update(UUID id, PutUpdateRequestDto videoResponseDto, Accounts account);
+  boolean update(UUID id, PutUpdateRequestDto videoResponseDto, Accounts account);
 
   List<GetCategoryNameRequestDto> getCategoryNames();
 
-  Long checkOwner(Accounts account, UUID videoId);
+  boolean checkOwner(Accounts account, UUID videoId);
 
   int plusViews(UUID videoId);
 
-  Long getFavorite(UUID videoId, String token);
+  Long getFavorite(UUID videoId, Accounts account);
 
-  int plusLike(UUID videoId, String token);
+  boolean plusLike(UUID videoId, Accounts account);
 
-  int minusLike(UUID videoId, String token);
+  boolean minusLike(UUID videoId, Accounts account);
 
   List<GetVideoResponseDto> getVideosInChannel(UUID channelId, UUID uuid, int pageSize);
 

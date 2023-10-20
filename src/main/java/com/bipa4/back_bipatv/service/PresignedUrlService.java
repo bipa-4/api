@@ -7,8 +7,10 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.Headers;
 import com.amazonaws.services.s3.model.CannedAccessControlList;
 import com.amazonaws.services.s3.model.GeneratePresignedUrlRequest;
+import com.bipa4.back_bipatv.dataType.ErrorCode;
 import com.bipa4.back_bipatv.dto.video.GetFileUrlResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetUrlResponseDto;
+import com.bipa4.back_bipatv.exception.CustomApiException;
 import java.io.File;
 import java.time.LocalDateTime;
 import java.util.Calendar;
@@ -60,8 +62,14 @@ public class PresignedUrlService {
         Headers.S3_CANNED_ACL,
         CannedAccessControlList.PublicRead.toString());
 
-    return new GetFileUrlResponseDto(
-        amazonS3.generatePresignedUrl(generateVideoPresignedUrlImageRequest).toString(), fileKey);
+    String presignedUrl = amazonS3.generatePresignedUrl(generateVideoPresignedUrlImageRequest)
+        .toString();
+
+    if (presignedUrl == null) {
+      throw new CustomApiException(ErrorCode.PRESIGNED_URL_ERROR);
+    }
+
+    return new GetFileUrlResponseDto(presignedUrl, fileKey);
   }
 
 
@@ -99,7 +107,7 @@ public class PresignedUrlService {
       requestDto = new GetUrlResponseDto(signedVideoURL, signedImageURL, s3VideoKey, s3ImageKey);
 
     } catch (Exception e) {
-      e.printStackTrace();
+      throw new CustomApiException(ErrorCode.PRESIGNED_URL_ERROR);
     }
 
     return requestDto;

@@ -3,6 +3,7 @@ package com.bipa4.back_bipatv.repository;
 import static com.querydsl.core.types.dsl.Expressions.asNumber;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.bipa4.back_bipatv.dataType.ErrorCode;
 import com.bipa4.back_bipatv.dto.video.GetCategoryNameRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
@@ -19,11 +20,13 @@ import com.bipa4.back_bipatv.entity.QFavorite;
 import com.bipa4.back_bipatv.entity.QVideos;
 import com.bipa4.back_bipatv.entity.QViewLog;
 import com.bipa4.back_bipatv.entity.Videos;
-import com.bipa4.back_bipatv.security.SecurityService;
+import com.bipa4.back_bipatv.exception.AuthorizationException;
+import com.bipa4.back_bipatv.exception.CustomApiException;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.io.File;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import javax.persistence.EntityManager;
@@ -39,7 +42,6 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
   private String bucketName;
 
   private final JPAQueryFactory jpaQueryFactory;
-  private final SecurityService securityService;
   private final EntityManager entityManager;
   private final AmazonS3 amazonS3;
 
@@ -128,7 +130,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QCategorys qCategorys = QCategorys.categorys;
     QCategoryName qCategoryName = QCategoryName.categoryName;
 
-    return jpaQueryFactory.select(
+    List<GetVideoResponseDto> responseDto = jpaQueryFactory.select(
             Projections.bean(
                 GetVideoResponseDto.class,
                 qChannels.channelName.as("channelName"),
@@ -151,6 +153,9 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                     .and(qChannels.privateType.eq(false))))
         .orderBy(qVideos.videoId.desc())
         .limit(pageSize).fetch();
+
+    System.out.println(responseDto);
+    return responseDto;
   }
 
   @Override
@@ -295,138 +300,154 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 영상 삭제
   @Override
-  public Long remove(UUID id, Accounts account) {
+  public boolean remove(UUID id, Accounts account) {
     QChannels qChannels = QChannels.channels;
 
     Videos video = entityManager.find(Videos.class, id);
 
-    UUID channelId = jpaQueryFactory.select(qChannels.channelId).from(qChannels)
-        .where(qChannels.accounts.eq(account)).fetchOne();
-
-    if (video != null && video.getChannelId().getChannelId().equals(channelId)) {
-
-      // S3 삭제
-      try {
-        String videoName = video.getVideoUrl().replace("https://du30t7lolw1uk.cloudfront.net/", "");
-        String thumbnailName = video.getThumbnail()
-            .replace("https://du30t7lolw1uk.cloudfront.net/", "");
-        amazonS3.deleteObject(bucketName, (videoName).replace(File.separatorChar, '/'));
-        amazonS3.deleteObject(bucketName, (thumbnailName).replace(File.separatorChar, '/'));
-      } catch (Exception e) {
-        System.out.println(e);
-      }
-
-      entityManager.remove(video);
-      return 1L;
-    } else {
-      return 0L;
+    // 요청한 영상이 존재하지 않는 경우.
+    if (video == null) {
+      throw new CustomApiException(ErrorCode.NO_EXIST_VIDEO);
     }
+
+    Channels requestChannel = accountToChannel(account);
+
+    // 요청한 유저의 채널과 video의 채널이 다를 경우.
+    if (!video.getChannelId().getChannelId().equals(requestChannel.getChannelId())) {
+      throw new AuthorizationException();
+    }
+
+    // S3 삭제
+    try {
+      String videoName = video.getVideoUrl().replace("https://du30t7lolw1uk.cloudfront.net/", "");
+      String thumbnailName = video.getThumbnail()
+          .replace("https://du30t7lolw1uk.cloudfront.net/", "");
+      amazonS3.deleteObject(bucketName, (videoName).replace(File.separatorChar, '/'));
+      amazonS3.deleteObject(bucketName, (thumbnailName).replace(File.separatorChar, '/'));
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.S3_DELETE_ERROR);
+    }
+
+    // 비디오 삭제
+    entityManager.remove(video);
+    return true;
   }
 
   // 영상 수정
   @Override
-  public int update(UUID id, PutUpdateRequestDto videoResponseDto, Accounts account) {
+  public boolean update(UUID id, PutUpdateRequestDto videoResponseDto, Accounts account) {
     QChannels qChannels = QChannels.channels;
 
     Videos video = entityManager.find(Videos.class, id);
 
-    UUID channelId = jpaQueryFactory.select(qChannels.channelId).from(qChannels)
-        .where(qChannels.accounts.eq(account)).fetchOne();
+    // 요청한 영상이 존재하지 않는 경우.
+    if (video == null) {
+      throw new CustomApiException(ErrorCode.NO_EXIST_VIDEO);
+    }
 
-    if (video != null && video.getChannelId().getChannelId().equals(channelId)) {
+    Channels requestChannel = accountToChannel(account);
 
-      // S3 삭제
-      if (video.getVideoUrl() != videoResponseDto.getVideoUrl()) {
-        String videoName = video.getVideoUrl().replace("https://du30t7lolw1uk.cloudfront.net/", "");
-        try {
-          amazonS3.deleteObject(bucketName, (videoName).replace(File.separatorChar, '/'));
-        } catch (Exception e) {
-          System.out.println(e);
-        }
-      }
+    // 요청한 유저의 채널과 video의 채널이 다를 경우.
+    if (!video.getChannelId().getChannelId().equals(requestChannel.getChannelId())) {
+      throw new AuthorizationException();
+    }
 
-      if (video.getThumbnail() != videoResponseDto.getThumbnailUrl()) {
-        String thumbnailName = video.getThumbnail()
-            .replace("https://du30t7lolw1uk.cloudfront.net/", "");
-        try {
-          amazonS3.deleteObject(bucketName, (thumbnailName).replace(File.separatorChar, '/'));
-        } catch (Exception e) {
-          System.out.println(e);
-        }
-      }
+    // S3 삭제
+    if (video.getVideoUrl() != videoResponseDto.getVideoUrl()) {
+      deleteS3(video.getVideoUrl());
+    }
+    if (video.getThumbnail() != videoResponseDto.getThumbnailUrl()) {
+      deleteS3(video.getThumbnail());
+    }
 
+    LocalDateTime now = LocalDateTime.now();
+
+    // 영상 업데이트
+    try {
       video.setContent(videoResponseDto.getContent());
-      video.setCreateAt(new Timestamp(System.currentTimeMillis()));
+      video.setCreateAt(Timestamp.valueOf(now));
       video.setPrivateType(videoResponseDto.isPrivate_type());
       video.setThumbnail(videoResponseDto.getThumbnailUrl());
       video.setTitle(videoResponseDto.getTitle());
       video.setVideoUrl(videoResponseDto.getVideoUrl());
       video.setContent(videoResponseDto.getContent());
-    } else {
-      return 0;
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.UPDATE_ERROR);
     }
-    return 1;
+    return true;
   }
 
   // 영상 본인 글인지 확인하기
   @Override
-  public Long checkOwner(Accounts account, UUID videoId) {
+  public boolean checkOwner(Accounts account, UUID videoId) {
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
 
-    Channels channel = jpaQueryFactory.selectFrom(qChannels)
-        .where(qChannels.accounts.eq(account)).fetchOne();
+    Videos requestVideo = jpaQueryFactory.selectFrom(qVideos)
+        .where(qVideos.videoId.eq(videoId)).fetchOne();
 
-    Long result = jpaQueryFactory.select(qVideos.count()).from(qVideos)
-        .where(qVideos.channelId.eq(channel).and(qVideos.videoId.eq(videoId))).fetchFirst();
+    // 해당 영상이 존재하지 않는다면.
+    if (requestVideo == null) {
+      throw new CustomApiException(ErrorCode.NO_EXIST_VIDEO);
+    }
 
-    return result;
+    Channels channel = accountToChannel(account);
+
+    if (channel.getChannelId().equals(requestVideo.getChannelId().getChannelId())) {
+      return true;
+    }
+    return false;
   }
 
 
   // 영상 업로드
   @Override
-  public int insert(PostUploadRequestDto videoResponseDto, String token, UUID uuid) {
+  public boolean insert(PostUploadRequestDto videoResponseDto, Accounts account, UUID uuid) {
     QChannels qChannels = QChannels.channels;
 
-    // channelId 가져오기.
-    Accounts account = securityService.getSubjectAccount(token);
-    UUID channelId = jpaQueryFactory.select(qChannels.channelId).from(qChannels)
-        .where(qChannels.accounts.eq(account)).fetchOne();
+    Channels channel = accountToChannel(account);
 
-    Channels channel = new Channels();
-    channel.setChannelId(channelId);
-
-    // Videos 테이블 create.
-    int result = entityManager.createNativeQuery(
+    // video 테이블 create.
+    int videoFlag = entityManager.createNativeQuery(
             "INSERT INTO videos (video_url, thumbnail, title, content, private_type, create_at, channel_id, read_cnt, video_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
         .setParameter(1, videoResponseDto.getVideoUrl())
         .setParameter(2, videoResponseDto.getThumbnailUrl())
         .setParameter(3, videoResponseDto.getTitle())
         .setParameter(4, videoResponseDto.getContent())
-        .setParameter(5, videoResponseDto.isPrivateType())
+        .setParameter(5, videoResponseDto.getPrivateType())
         .setParameter(6, new Timestamp(System.currentTimeMillis()))
         .setParameter(7, channel)
         .setParameter(8, 0)
         .setParameter(9, uuid).executeUpdate();
 
-    if (result != 0) {
-      // ViewLog 테이블 create.
-      entityManager.createNativeQuery("INSERT INTO view_log (video_id, view_cnt) VALUES (?, ?);")
-          .setParameter(1, uuid)
-          .setParameter(2, 0).executeUpdate();
-
-      // category 테이블 create.
-      for (int i = 0; i < videoResponseDto.getCategory().size(); i++) {
-        entityManager.createNativeQuery(
-                "INSERT INTO categorys (video_id, category_name_id) VALUES (?, ?)")
-            .setParameter(1, uuid)
-            .setParameter(2, UUID.fromString(videoResponseDto.getCategory().get(i)))
-            .executeUpdate();
-      }
+    if (videoFlag == 0) {
+      throw new CustomApiException(ErrorCode.UPLOAD_ERROR);
     }
 
-    return result;
+    // view log 테이블 create.
+    int viewLogFlag = entityManager.createNativeQuery(
+            "INSERT INTO view_log (video_id, view_cnt) VALUES (?, ?);")
+        .setParameter(1, uuid)
+        .setParameter(2, 0).executeUpdate();
+
+    if (viewLogFlag == 0) {
+      throw new CustomApiException(ErrorCode.VIEW_LOG_CREATE_ERROR);
+    }
+
+    // category 테이블 create.
+    int categoryFlag;
+    for (int i = 0; i < videoResponseDto.getCategory().size(); i++) {
+      categoryFlag = entityManager.createNativeQuery(
+              "INSERT INTO categorys (video_id, category_name_id) VALUES (?, ?)")
+          .setParameter(1, uuid)
+          .setParameter(2, UUID.fromString(videoResponseDto.getCategory().get(i)))
+          .executeUpdate();
+
+      if (categoryFlag == 0) {
+        throw new CustomApiException(ErrorCode.CATEGORY_CREATE_ERROR);
+      }
+    }
+    return true;
   }
 
 
@@ -446,12 +467,11 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 좋아요 버튼 눌렀는지 여부
   @Override
-  public Long getFavorite(UUID videoId, String token) {
+  public Long getFavorite(UUID videoId, Accounts account) {
     QFavorite qFavorite = QFavorite.favorite;
 
     Videos videos = new Videos();
     videos.setVideoId(videoId);
-    Accounts account = securityService.getSubjectAccount(token);
 
     return jpaQueryFactory.select(qFavorite.count()).from(qFavorite)
         .where(
@@ -461,25 +481,29 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 좋아요
   @Override
-  public int plusLike(UUID videoId, String token) {
-    Accounts account = securityService.getSubjectAccount(token);
-
-    int result = entityManager.createNativeQuery(
-            "INSERT INTO favorite VALUES (?, ?)")
-        .setParameter(1, account.getAccountId())
-        .setParameter(2, videoId)
-        .executeUpdate();
-
-    return result;
+  public boolean plusLike(UUID videoId, Accounts account) {
+    try {
+      entityManager.createNativeQuery(
+              "INSERT INTO favorite VALUES (?, ?)")
+          .setParameter(1, account.getAccountId())
+          .setParameter(2, videoId)
+          .executeUpdate();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.LIKE_ERROR);
+    }
+    return true;
   }
 
 
   // 좋아요 취소
   @Override
-  public int minusLike(UUID videoId, String token) {
-    Videos video = new Videos();
-    video.setVideoId(videoId);
-    Accounts account = securityService.getSubjectAccount(token);
+  public boolean minusLike(UUID videoId, Accounts account) {
+    Videos video = entityManager.find(Videos.class, videoId);
+
+    // 요청한 영상이 존재하지 않는 경우.
+    if (video == null) {
+      throw new CustomApiException(ErrorCode.NO_EXIST_VIDEO);
+    }
 
     FavoritePK favoritePK = new FavoritePK();
     favoritePK.setVideos(video);
@@ -487,12 +511,17 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
     Favorite favorite = entityManager.find(Favorite.class, favoritePK);
 
-    if (favorite != null) {
-      entityManager.remove(favorite);
-      return 1;
-    } else {
-      return 0;
+    // 좋아요를 누를지 않았덛라면.
+    if (favorite == null) {
+      throw new CustomApiException(ErrorCode.CANNOT_UNLIKE_ERROR);
     }
+
+    try {
+      entityManager.remove(favorite);
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.UNLIKE_ERROR);
+    }
+    return true;
   }
 
   @Override
@@ -546,5 +575,25 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
         .where(qVideos.channelId.eq(channel).and(qVideos.videoId.loe(uuid)))
         .orderBy(qVideos.videoId.desc())
         .limit(pageSize).fetch();
+  }
+
+  //Account to Channel
+  private Channels accountToChannel(Accounts account) {
+    QChannels qChannels = QChannels.channels;
+
+    return jpaQueryFactory.selectFrom(qChannels)
+        .leftJoin(qChannels.accounts).fetchJoin()
+        .where(qChannels.accounts.eq(account))
+        .fetchOne();
+  }
+
+  //Delete S3 File
+  private void deleteS3(String videoUrl) {
+    String videoName = videoUrl.replace("https://du30t7lolw1uk.cloudfront.net/", "");
+    try {
+      amazonS3.deleteObject(bucketName, (videoName).replace(File.separatorChar, '/'));
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.NO_EXIST_VIDEO);
+    }
   }
 }

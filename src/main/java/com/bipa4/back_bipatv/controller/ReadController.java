@@ -1,7 +1,6 @@
 package com.bipa4.back_bipatv.controller;
 
 import com.bipa4.back_bipatv.dataType.ErrorCode;
-import com.bipa4.back_bipatv.dto.CustomApiException;
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
 import com.bipa4.back_bipatv.dto.channel.GetInfiniteScrollRequestChannelDto;
@@ -12,6 +11,8 @@ import com.bipa4.back_bipatv.dto.video.GetCategoryNameRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetInfiniteScrollRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
+import com.bipa4.back_bipatv.entity.Accounts;
+import com.bipa4.back_bipatv.exception.CustomApiException;
 import com.bipa4.back_bipatv.security.SecurityService;
 import com.bipa4.back_bipatv.service.ChannelService;
 import com.bipa4.back_bipatv.service.CommentService;
@@ -117,7 +118,8 @@ public class ReadController {
   public ResponseEntity<Boolean> getVideoLike(
       @PathVariable("videoId") UUID id,
       @CookieValue(name = "accessToken", required = false) String accessToken) {
-    return new ResponseEntity<>(videoService.getLike(id, accessToken), HttpStatus.OK);
+    Accounts account = securityService.getSubjectAccount(accessToken);
+    return new ResponseEntity<>(videoService.getLike(id, account), HttpStatus.OK);
   }
 
 
