@@ -67,9 +67,13 @@ public class ReadController {
       @PathVariable("category") UUID category,
       @RequestParam(value = "page", required = false) String page,
       @RequestParam("pageSize") int pageSize) {
+    String nextUUID = null;
     List<GetVideoResponseDto> videos = videoService.getCategoryVideos(category, page, pageSize);
-    String nextUUID = videoService.getNextUUID(
-        videos.get(videos.size() - 1).getVideoId()); // 마지막 page의 UUID 호출
+    if (!videos.isEmpty()) {
+      nextUUID = videoService.getNextUUID(
+          videos.get(videos.size() - 1).getVideoId()); // 마지막 page의 UUID 호출
+    }
+    System.out.println("nextUUID" + nextUUID);
     GetInfiniteScrollRequestDto responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
     return ResponseEntity.ok().body(responseDto);
   }

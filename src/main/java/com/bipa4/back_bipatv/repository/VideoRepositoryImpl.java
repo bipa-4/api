@@ -4,6 +4,7 @@ import static com.querydsl.core.types.dsl.Expressions.asNumber;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.bipa4.back_bipatv.dataType.ErrorCode;
+import com.bipa4.back_bipatv.dataType.HandleCode;
 import com.bipa4.back_bipatv.dto.video.GetCategoryNameRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetSearchVideoINChannelDTO;
@@ -23,6 +24,7 @@ import com.bipa4.back_bipatv.entity.QViewLog;
 import com.bipa4.back_bipatv.entity.Videos;
 import com.bipa4.back_bipatv.exception.AuthorizationException;
 import com.bipa4.back_bipatv.exception.CustomApiException;
+import com.bipa4.back_bipatv.exception.NoContentException;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.io.File;
@@ -167,34 +169,40 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
   // 카테고리별 전체보기
   @Override
   public List<GetVideoResponseDto> findByCategory(UUID category, UUID page, int pageSize) {
+    List<GetVideoResponseDto> responseDto;
+
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
     QCategorys qCategorys = QCategorys.categorys;
     QCategoryName qCategoryName = QCategoryName.categoryName;
-
-    List<GetVideoResponseDto> responseDto = jpaQueryFactory.select(
-            Projections.bean(
-                GetVideoResponseDto.class,
-                qChannels.channelName.as("channelName"),
-                qChannels.profileUrl.as("channelProfileUrl"),
-                qVideos.thumbnail,
-                qVideos.title.as("videoTitle"),
-                qVideos.createAt,
-                qVideos.readCnt.as("readCount"),
-                qVideos.videoId
-            )
-        )
-        .from(qCategorys)
-        .leftJoin(qCategorys.videoId, qVideos)
-        .leftJoin(qVideos.channelId, qChannels)
-        .leftJoin(qCategorys.categoryNameId, qCategoryName)
-        .where(
-            qCategoryName.categoryNameId.eq(category)
-                .and(qVideos.videoId.loe(page))
-                .and(qVideos.privateType.eq(false)
-                    .and(qChannels.privateType.eq(false))))
-        .orderBy(qVideos.videoId.desc())
-        .limit(pageSize).fetch();
+    
+    try {
+      responseDto = jpaQueryFactory.select(
+              Projections.bean(
+                  GetVideoResponseDto.class,
+                  qChannels.channelName.as("channelName"),
+                  qChannels.profileUrl.as("channelProfileUrl"),
+                  qVideos.thumbnail,
+                  qVideos.title.as("videoTitle"),
+                  qVideos.createAt,
+                  qVideos.readCnt.as("readCount"),
+                  qVideos.videoId
+              )
+          )
+          .from(qCategorys)
+          .leftJoin(qCategorys.videoId, qVideos)
+          .leftJoin(qVideos.channelId, qChannels)
+          .leftJoin(qCategorys.categoryNameId, qCategoryName)
+          .where(
+              qCategoryName.categoryNameId.eq(category)
+                  .and(qVideos.videoId.loe(page))
+                  .and(qVideos.privateType.eq(false)
+                      .and(qChannels.privateType.eq(false))))
+          .orderBy(qVideos.videoId.desc())
+          .limit(pageSize).fetch();
+    } catch (NullPointerException e) {
+      throw new NoContentException(HandleCode.NO_CONTENT);
+    }
     return responseDto;
   }
 
@@ -693,7 +701,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     System.out.println("searchList값:" + searchList);
     return searchList;
   }
-  
+
 
   //Account to Channel
   private Channels accountToChannel(Accounts account) {

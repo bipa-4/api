@@ -3,6 +3,7 @@ package com.bipa4.back_bipatv.controller;
 import com.bipa4.back_bipatv.dto.ErrorResult;
 import com.bipa4.back_bipatv.exception.AuthorizationException;
 import com.bipa4.back_bipatv.exception.CustomApiException;
+import com.bipa4.back_bipatv.exception.NoContentException;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -16,6 +17,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @Slf4j
 @RestControllerAdvice
 public class ExceptionController {
+
+  @ResponseStatus(HttpStatus.NO_CONTENT)
+  @ExceptionHandler(NoContentException.class)
+  public ErrorResult noContentExHandler(NoContentException e) {
+    return new ErrorResult(e.getHandleMessage().getCode());
+  }
 
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ExceptionHandler(CustomApiException.class)
