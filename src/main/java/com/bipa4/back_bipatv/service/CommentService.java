@@ -44,11 +44,22 @@ public class CommentService {
     return list;
   }
 
-  public boolean saveComment(CommentRequest commentRequest) {
+  public boolean saveParentComment(CommentRequest commentRequest) {
 
     if (Objects.nonNull(commentRequest.getAccountId())) {
-      Comments comments = convertDtoToEntityForInsert(commentRequest);
-      return commentDAO.saveComment(comments);
+      Comments comments = convertDtoToEntityForInsert(commentRequest,null);
+      return commentDAO.saveParentComment(comments);
+    } else {
+      return false;
+    }
+
+  }
+
+  public boolean saveChildComment(CommentRequest commentRequest, Integer groupIndex) {
+
+    if (Objects.nonNull(commentRequest.getAccountId())) {
+      Comments comments = convertDtoToEntityForInsert(commentRequest,groupIndex);
+      return commentDAO.saveChildComment(comments,groupIndex);
     } else {
       return false;
     }
@@ -59,25 +70,33 @@ public class CommentService {
 
     if (Objects.nonNull(commentRequest.getAccountId())) {
       Comments comments = convertDtoToEntityForUpdate(commentRequest);
-      return commentDAO.saveComment(comments);
+      return commentDAO.saveParentComment(comments);
     } else {
       return false;
     }
 
   }
 
-  public boolean deleteComment(UUID commentId) {
-    return commentDAO.deleteComment(commentId);
+  public boolean deleteComment(UUID commentId, String accessToken) {
+    return commentDAO.deleteComment(commentId,accessToken);
   }
 
 
-  private Comments convertDtoToEntityForInsert(CommentRequest commentRequest) {
+  private Comments convertDtoToEntityForInsert(CommentRequest commentRequest,Integer groupIndex) {
 
     Comments comments = new Comments();
 
     if (commentRequest.getVideoId()!= null) {
       Videos videos = videoRepository.findById(commentRequest.getVideoId()).orElse(null);
       comments.setVideos(videos);
+
+      if(commentRequest.getParentChild() == 0){
+        int parentLastIndex = findParentComments(commentRequest.getVideoId()).size();
+        comments.setGroupIndex(parentLastIndex+1);
+      }
+      else{
+        comments.setGroupIndex(groupIndex);
+      }
     }
 
     if (Objects.nonNull(commentRequest.getAccountId())) {
@@ -95,10 +114,6 @@ public class CommentService {
 
     if (Objects.nonNull(commentRequest.getParentChild())) {
       comments.setParentChild(commentRequest.getParentChild());
-    }
-
-    if (Objects.nonNull(commentRequest.getGroupIndex())) {
-      comments.setGroupIndex(commentRequest.getGroupIndex());
     }
 
     LocalDateTime now = LocalDateTime.now();

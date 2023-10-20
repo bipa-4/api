@@ -2,6 +2,7 @@ package com.bipa4.back_bipatv.repository;
 
 import com.bipa4.back_bipatv.dto.video.GetCategoryNameRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
+import com.bipa4.back_bipatv.dto.video.GetSearchVideoINChannelDTO;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.dto.video.PostUploadRequestDto;
 import com.bipa4.back_bipatv.dto.video.PutUpdateRequestDto;
@@ -18,6 +19,8 @@ public interface VideoRepositoryCustom {
   UUID lastUUIDInChannel(UUID channelId);
 
   UUID lastUUIDInMyChannel(UUID channelId);
+
+  List<UUID> lastUUIDSearchVideoInMyChannel(UUID channelId, String searchQuery);
 
   UUID lastCategoryUUID(UUID category);
 
@@ -53,4 +56,12 @@ public interface VideoRepositoryCustom {
 
   List<GetVideoResponseDto> getVideosInMyChannel(UUID channelId, UUID uuid, int pageSize);
 
+  List<GetSearchVideoINChannelDTO> getSearchVideoInMyChannel(UUID channelId, UUID uuid,
+      int pageSize,
+      String searchQuery);
+
+  List<UUID> lastUUIDSearchVideoInChannel(UUID channelId, String searchQuery);
+
+  List<GetSearchVideoINChannelDTO> getSearchVideoInChannel(UUID channelId, UUID uuid, int pageSize,
+      String searchQuery);
 }

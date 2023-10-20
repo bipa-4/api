@@ -27,6 +27,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.io.File;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javax.persistence.EntityManager;
@@ -102,7 +103,6 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
         .orderBy(qVideos.videoId.desc()).limit(1)
         .fetchOne();
   }
-
 
   // 다음 페이지의 UUID 찾기
   @Override
@@ -222,9 +222,6 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   @Override
   public int updateViews() {
-    QVideos qVideos = QVideos.videos;
-    QViewLog qViewLog = QViewLog.viewLog;
-
     return entityManager.createNativeQuery(
         "update view_log vl join videos v on vl.video_id = v.video_id set view_cnt = read_cnt where v.video_id = vl.video_id"
     ).executeUpdate();
