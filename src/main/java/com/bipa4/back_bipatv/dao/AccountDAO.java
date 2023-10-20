@@ -1,6 +1,8 @@
 package com.bipa4.back_bipatv.dao;
 
+import com.bipa4.back_bipatv.dataType.ErrorCode;
 import com.bipa4.back_bipatv.entity.Accounts;
+import com.bipa4.back_bipatv.exception.CustomApiException;
 import com.bipa4.back_bipatv.repository.AccountRepository;
 import java.util.Optional;
 import javax.transaction.Transactional;
@@ -33,12 +35,15 @@ public class AccountDAO {
 
   public Accounts selectAccount(Accounts accounts) {
     Optional<Accounts> optAccount = accountRepository.findByLoginId(accounts.getLoginId());
-
+    //토큰이 유효하지만, account를 찾을 수 없는 경우.
+    if (optAccount == null) {
+      throw new CustomApiException(ErrorCode.USER_JOIN_ERROR);
+    }
     return optAccount.orElse(null);
   }
 
 
-  public Accounts selectAccountId(Accounts accounts){
+  public Accounts selectAccountId(Accounts accounts) {
     Optional<Accounts> accounts1 = accountRepository.findById(accounts.getAccountId());
 
     return accounts1.orElse(null);

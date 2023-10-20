@@ -1,4 +1,4 @@
-package com.bipa4.back_bipatv.dto;
+package com.bipa4.back_bipatv.exception;
 
 
 import com.bipa4.back_bipatv.dataType.ErrorCode;

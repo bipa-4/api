@@ -29,26 +29,23 @@ public class VideoService {
     return videoChannelRepository.findBySearchQuery(searchQuery);
   }
 
-  public Long check(String accessToken, UUID videoId) {
-    Accounts account = securityService.getSubjectAccount(accessToken);
+  public Boolean check(Accounts account, UUID videoId) {
     return videoRepository.checkOwner(account, videoId);
   }
 
   @Transactional
-  public Long removeVideo(UUID videoId, String accessToken) {
-    Accounts account = securityService.getSubjectAccount(accessToken);
+  public boolean removeVideo(UUID videoId, Accounts account) {
     return videoRepository.remove(videoId, account);
   }
 
   @Transactional
-  public int uploadVideo(PostUploadRequestDto requestdto, String token) {
+  public boolean uploadVideo(PostUploadRequestDto requestdto, Accounts account) {
     UUID uuid = generateUUIDv1(requestdto.getContent());
-    return videoRepository.insert(requestdto, token, uuid);
+    return videoRepository.insert(requestdto, account, uuid);
   }
 
   @Transactional
-  public int updateVideo(UUID id, PutUpdateRequestDto requestDto, String accessToken) {
-    Accounts account = securityService.getSubjectAccount(accessToken);
+  public boolean updateVideo(UUID id, PutUpdateRequestDto requestDto, Accounts account) {
     return videoRepository.update(id, requestDto, account);
   }
 
@@ -66,14 +63,15 @@ public class VideoService {
     return videoRepository.getNextUUID(uuid);
   }
 
-  public List<GetVideoResponseDto> getCategoryVideos(UUID category, String page, int pageSize) {
+  public List<GetVideoResponseDto> getCategoryVideos(UUID category, String page,
+      int pageSize) {
     UUID uuid;
     if (page == null) {
       uuid = videoRepository.lastCategoryUUID(category);
     } else {
       uuid = UUID.fromString(page);
     }
-    return videoRepository.findByCategory(category, uuid, pageSize);
+    return (List<GetVideoResponseDto>) videoRepository.findByCategory(category, uuid, pageSize);
   }
 
   public List<GetCategoryNameRequestDto> getCategoryNames() {
@@ -99,21 +97,21 @@ public class VideoService {
     return videoRepository.plusViews(videoId);
   }
 
-  public boolean getLike(UUID videoId, String token) {
-    if (videoRepository.getFavorite(videoId, token) == 1) {
+  public boolean getLike(UUID videoId, Accounts account) {
+    if (videoRepository.getFavorite(videoId, account) == 1) {
       return true;
     }
     return false;
   }
 
   @Transactional
-  public int like(UUID videoId, String token) {
-    return videoRepository.plusLike(videoId, token);
+  public boolean like(UUID videoId, Accounts account) {
+    return videoRepository.plusLike(videoId, account);
   }
 
   @Transactional
-  public int cancelLike(UUID videoId, String token) {
-    return videoRepository.minusLike(videoId, token);
+  public boolean cancelLike(UUID videoId, Accounts account) {
+    return videoRepository.minusLike(videoId, account);
   }
 
   public UUID generateUUIDv1(String content) {
