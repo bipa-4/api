@@ -5,23 +5,21 @@ import com.bipa4.back_bipatv.dto.comment.CommentResponse;
 import com.bipa4.back_bipatv.entity.Comments;
 import com.bipa4.back_bipatv.repository.CommentRepository;
 import com.bipa4.back_bipatv.repository.VideoRepository;
+import com.bipa4.back_bipatv.security.SecurityService;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.bind.annotation.CookieValue;
 
 @Repository
 @RequiredArgsConstructor
 public class CommentDAO {
 
   private final CommentRepository commentRepository;
-
-
-  @Autowired
-  VideoRepository videoRepository;
-  @Autowired
-  AccountDAO accountDAO;
+  private final SecurityService securityService;
 
 
   public List<CommentResponse> findParentComments(UUID videoId) {
@@ -55,15 +53,21 @@ public class CommentDAO {
   }
 
 
-  public boolean deleteComment(UUID commentId) {
+  public boolean deleteComment(UUID commentId, String accessToken) {
     Comments comments = commentRepository.findById(commentId).orElse(null);
     if (comments != null) {
-      commentRepository.deleteById(commentId);
-      return true; // 댓글 삭제 성공
-    } else {
-      return false; // 댓글이 없거나 삭제 실패
+      if (Objects.equals(comments.getAccounts().getAccountId(),
+          securityService.getSubjectAccount(accessToken)
+              .getAccountId())) {
+        commentRepository.deleteById(commentId);
+      }
+        return true; // 댓글 삭제 성공
+      } else {
+        return false; // 댓글이 없거나 삭제 실패
+      }
     }
   }
 
 
-}
+
+

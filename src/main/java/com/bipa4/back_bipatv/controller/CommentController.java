@@ -75,15 +75,14 @@ public class CommentController {
 
   //delete
   @DeleteMapping("/{videoId}/comment/{commentId}")
-  public ResponseEntity<String> deleteComment(@RequestBody CommentRequest commentRequest,
+  public ResponseEntity<String> deleteComment(
       @PathVariable UUID videoId, @PathVariable UUID commentId,
       @CookieValue(name = "accessToken") String accessToken) {
-    if (Objects.equals(commentRequest.getAccountId(), securityService.getSubjectAccount(accessToken)
-        .getAccountId())) {
-      if (!commentService.deleteComment(commentId)) {
+
+      if (!commentService.deleteComment(commentId, accessToken)) {
         throw new CustomApiException(ErrorCode.DELETE_ERROR);
       }
-    }
+
     return ResponseEntity.ok("댓글 삭제 성공");
   }
 }
