@@ -56,14 +56,13 @@ public interface VideoRepositoryCustom {
 
   List<GetVideoResponseDto> getVideosInMyChannel(UUID channelId, UUID uuid, int pageSize);
 
-  List<GetSearchVideoINChannelDTO> getSearchVideoInMyChannel(UUID channelId,
-      Integer currentPage,
-      int pageSize, String searchQuery);
+  List<GetSearchVideoINChannelDTO> getSearchVideoInMyChannel(UUID channelId, Integer currentPage,
+      int pageSize,
+      String searchQuery);
 
   List<Integer> lastUUIDSearchVideoInChannel(UUID channelId, String searchQuery);
 
-  List<GetSearchVideoINChannelDTO> getSearchVideoInChannel(UUID channelId, int currentPage,
-      int pageSize, String searchQuery);
-
-
+  List<GetSearchVideoINChannelDTO> getSearchVideoInChannel(UUID channelId, Integer currentPage,
+      int pageSize,
+      String searchQuery);
 }

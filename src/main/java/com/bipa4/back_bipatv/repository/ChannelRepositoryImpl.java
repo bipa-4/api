@@ -4,6 +4,7 @@ import static com.querydsl.core.types.dsl.Expressions.asNumber;
 
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
+import com.bipa4.back_bipatv.dto.channel.GetSearchChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.SelectChannelDTO;
 import com.bipa4.back_bipatv.entity.QChannels;
 import com.bipa4.back_bipatv.entity.QVideos;
@@ -160,5 +161,33 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
         .setParameter(4, flag).getResultList();
     System.out.println("asdsad");
     return list;
+  }
+
+  @Override
+  public List<UUID> lastUUIDSearchChannel(String searchQuery) {
+    List<UUID> uuid = entityManager.createNativeQuery(
+            "select BIN_TO_UUID(channel_id) as channelId \n"
+                + "from channels \n"
+                + "where MATCH (channels.name) AGAINST ( ? IN NATURAL LANGUAGE MODE) \n"
+                + "and channels.private_type = false \n"
+                + "order By channels.channel_id desc \n"
+                + "limit 1 "
+        )
+        .setParameter(1, searchQuery)
+        .getResultList();
+    return uuid;
+  }
+
+  @Override
+  public List<GetSearchChannelDTO> getSearchChannel(UUID page, int pageSize, String searchQuery) {
+    String sql =
+        "select channel_id as channelId, name as channelName, content, private_type as privateType, profile_url as profileUrl \n"
+            + "from channels \n"
+            + "where MATCH (name) AGAINST ( ? IN NATURAL LANGUAGE MODE) \n"
+            + "and channel_id <= "
+            + "and private_type = false \n"
+            + "limit ? ";
+//    Query query = entityManager.createNativeQuery(sql).setParameter()
+    return null;
   }
 }

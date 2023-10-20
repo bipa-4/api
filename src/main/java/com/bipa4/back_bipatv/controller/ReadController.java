@@ -4,6 +4,7 @@ import com.bipa4.back_bipatv.dataType.ErrorCode;
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
 import com.bipa4.back_bipatv.dto.channel.GetInfiniteScrollRequestChannelDto;
+import com.bipa4.back_bipatv.dto.channel.GetSearchChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.SelectChannelDTO;
 import com.bipa4.back_bipatv.dto.comment.ChildCommentResponse;
 import com.bipa4.back_bipatv.dto.comment.CommentResponse;
@@ -220,7 +221,7 @@ public class ReadController {
   @GetMapping("/channel/{channelId}/video")
   public ResponseEntity<GetInfiniteScrollSearchVideoInChannelDTO> searchVideoInChannel(
       @CookieValue(value = "accessToken", required = false) String accessToken,
-      @RequestParam(value = "page", required = false) String page,
+      @RequestParam(value = "page", required = false) Integer page,
       @RequestParam("page_size") int pageSize,
       @PathVariable("channelId") UUID channelId,
       @RequestParam("search_query") String searchQuery) {
@@ -242,5 +243,33 @@ public class ReadController {
         nextUUID);
 
     return ResponseEntity.ok().body(responseDto);
+  }
+
+  @ApiOperation(value = "채널 검색", notes = "채널 검색")
+  @GetMapping("/channel/search")
+  public ResponseEntity<String> searchChannel(
+      @CookieValue(value = "accessToken", required = false) String accessToken,
+      @RequestParam(value = "page", required = false) String page,
+      @RequestParam("page_size") int pageSize,
+      @RequestParam("search_query") String searchQuery
+  ) {
+    System.out.println("searchChannel");
+    List<GetSearchChannelDTO> channels = channelService.searchChannel(
+        accessToken,
+        page, pageSize, searchQuery);
+    String nextUUID = null;
+//    if (!videos.isEmpty()) {
+//      videos.forEach(System.out::println);
+//      System.out.println(videos.get(0).getVideoId());
+//      nextUUID = channelService.getSearchNextChannelVideoUUID(
+//          videos.get(videos.size() - 1).getVideoId(), channelId, searchQuery,
+//          accessToken); // 마지막 page의 UUID 호출
+//    }
+//    System.out.println(nextUUID);
+//    GetInfiniteScrollSearchVideoInChannelDTO responseDto = new GetInfiniteScrollSearchVideoInChannelDTO(
+//        videos,
+//        nextUUID);
+
+    return null;
   }
 }
