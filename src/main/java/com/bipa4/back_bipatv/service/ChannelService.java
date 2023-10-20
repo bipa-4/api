@@ -189,23 +189,23 @@ public class ChannelService {
   public List<GetSearchVideoINChannelDTO> searchVideoInChannel(String accessToken, UUID channelId,
       String page, int pageSize, String searchQuery) {
     Accounts loginUser = securityService.getSubjectAccount(accessToken);
-    UUID uuid = null;
+    int uuid = 0;
     System.out.println("page값 " + page);
     if (loginUser.getAccountId() == (channelRepository.findByChannelId(channelId).getAccounts()
         .getAccountId())) {
       if (page == null) {
         uuid = videoRepository.lastUUIDSearchVideoInMyChannel(channelId, searchQuery).get(0);
       } else {
-        uuid = UUID.fromString(page);
+        //uuid = UUID.fromString(page);
       }
-      System.out.println("채널내 영상 검색 UUID 값:" + uuid);
+      System.out.println("채널내 영상 검색 UUID 값:");
 
       return videoRepository.getSearchVideoInMyChannel(channelId, uuid, pageSize, searchQuery);
     } else {
       if (page == null) {
         uuid = videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0);
       } else {
-        uuid = UUID.fromString(page);
+        //uuid = UUID.fromString(page);
       }
       System.out.println("채널내 영상 검색 UUID 값:" + uuid);
 
