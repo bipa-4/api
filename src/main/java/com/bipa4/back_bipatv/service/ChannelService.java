@@ -3,6 +3,7 @@ package com.bipa4.back_bipatv.service;
 import com.bipa4.back_bipatv.dao.ChannelDAO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
+import com.bipa4.back_bipatv.dto.channel.GetSearchChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.PutChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.SelectChannelDTO;
 import com.bipa4.back_bipatv.dto.video.GetSearchVideoINChannelDTO;
@@ -187,29 +188,51 @@ public class ChannelService {
   }
 
   public List<GetSearchVideoINChannelDTO> searchVideoInChannel(String accessToken, UUID channelId,
-      String page, int pageSize, String searchQuery) {
+      Integer page, int pageSize, String searchQuery) {
     Accounts loginUser = securityService.getSubjectAccount(accessToken);
-    UUID uuid = null;
+    Integer currentPage = null;
     System.out.println("page값 " + page);
     if (loginUser.getAccountId() == (channelRepository.findByChannelId(channelId).getAccounts()
         .getAccountId())) {
       if (page == null) {
-        uuid = videoRepository.lastUUIDSearchVideoInMyChannel(channelId, searchQuery).get(0);
+        currentPage =
+            videoRepository.lastUUIDSearchVideoInMyChannel(channelId, searchQuery).get(0) == null
+                ? null
+                : videoRepository.lastUUIDSearchVideoInMyChannel(channelId, searchQuery).get(0);
       } else {
-        uuid = UUID.fromString(page);
+        currentPage = page;
       }
-      System.out.println("채널내 영상 검색 UUID 값:" + uuid);
+      System.out.println("채널내 영상 검색 UUID 값:" + currentPage);
 
-      return videoRepository.getSearchVideoInMyChannel(channelId, uuid, pageSize, searchQuery);
+      return videoRepository.getSearchVideoInMyChannel(channelId, currentPage, pageSize,
+          searchQuery);
+
     } else {
       if (page == null) {
-        uuid = videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0);
+        currentPage = videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0);
       } else {
-        uuid = UUID.fromString(page);
+        currentPage = page;
       }
-      System.out.println("채널내 영상 검색 UUID 값:" + uuid);
+      System.out.println("채널내 영상 검색 UUID 값:" + currentPage);
+      videoRepository.getSearchVideoInChannel(channelId, currentPage, pageSize, searchQuery)
+          .forEach(
+              System.out::println);
+      return videoRepository.getSearchVideoInChannel(channelId, currentPage, pageSize, searchQuery);
 
-      return videoRepository.getSearchVideoInChannel(channelId, uuid, pageSize, searchQuery);
     }
   }
+
+  public List<GetSearchChannelDTO> searchChannel(String accessToken,
+      String page, int pageSize, String searchQuery) {
+    Accounts loginUser = securityService.getSubjectAccount(accessToken);
+    UUID uuid = null;
+    System.out.println("page값 " + page);
+    if (page == null) {
+      uuid = channelRepository.lastUUIDSearchChannel(searchQuery).get(0);
+    } else {
+      uuid = UUID.fromString(page);
+    }
+    return null;
+  }
+
 }

@@ -24,12 +24,12 @@ import com.bipa4.back_bipatv.security.SecurityService;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.io.File;
+import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javax.persistence.EntityManager;
-import javax.persistence.Query;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
@@ -105,13 +105,17 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
   }
 
   @Override
-  public List<UUID> lastUUIDSearchVideoInMyChannel(UUID channelId, String searchQuery) {
-    List<UUID> uuid = entityManager.createNativeQuery("select BIN_TO_UUID(video_id) as videoId \n"
-            + "from videos \n"
-            + "where videos.channel_id = ? \n"
-            + " and MATCH (videos.title, videos.content) AGAINST ( ? IN NATURAL LANGUAGE MODE) \n"
-            + "order By videos.video_id desc \n"
-            + "limit 1 "
+  public List<Integer> lastUUIDSearchVideoInMyChannel(UUID channelId, String searchQuery) {
+    List<Integer> uuid = entityManager.createNativeQuery(
+            "SELECT ranking\n"
+                + "FROM (\n"
+                + "    SELECT ROW_NUMBER() OVER () AS ranking\n"
+                + "    FROM videos\n"
+                + "    WHERE videos.channel_id = ?\n"
+                + "    AND MATCH (videos.title, videos.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
+                + "    ORDER BY ranking DESC\n"
+                + "    LIMIT 1\n"
+                + ") AS ranked_results;\n"
         ).setParameter(1, channelId)
         .setParameter(2, searchQuery)
         .getResultList();
@@ -119,16 +123,19 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
   }
 
   @Override
-  public List<UUID> lastUUIDSearchVideoInChannel(UUID channelId, String searchQuery) {
+  public List<Integer> lastUUIDSearchVideoInChannel(UUID channelId, String searchQuery) {
     System.out.println("lastUUIDSearchVideoInChannel 메소드 channelId값:" + channelId);
     System.out.println("lastUUIDSearchVideoInChannel 메소드 searchQuery값:" + searchQuery);
-    List<UUID> uuid = entityManager.createNativeQuery("select BIN_TO_UUID(video_id) as videoId \n"
-            + "from videos \n"
-            + "where videos.channel_id = ? \n"
-            + " and MATCH (videos.title, videos.content) AGAINST ( ? IN NATURAL LANGUAGE MODE) \n"
-            + " and videos.private_type = false \n"
-            + "order By videos.video_id desc \n"
-            + "limit 1 "
+    List<Integer> uuid = entityManager.createNativeQuery("SELECT ranking\n"
+            + "FROM (\n"
+            + "    SELECT ROW_NUMBER() OVER () AS ranking\n"
+            + "    FROM videos\n"
+            + "    WHERE videos.channel_id = ?\n"
+            + "    AND MATCH (videos.title, videos.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
+            + "    AND videos.private_type = false\n"
+            + "    ORDER BY ranking DESC\n"
+            + "    LIMIT 1\n"
+            + ") AS ranked_results;\n "
         ).setParameter(1, channelId)
         .setParameter(2, searchQuery)
         .getResultList();
@@ -581,44 +588,66 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
   }
 
   @Override
-  public List<GetSearchVideoINChannelDTO> getSearchVideoInMyChannel(UUID channelId, UUID uuid,
+  public List<GetSearchVideoINChannelDTO> getSearchVideoInMyChannel(UUID channelId,
+      Integer currentPage,
       int pageSize, String searchQuery) {
     List<GetSearchVideoINChannelDTO> searchList = entityManager.createNativeQuery(
-            "select c.name as channelName , c.profile_url as channelProfileUrl, v.thumbnail as thumbnail, v.title as videoTitle, v.create_at as createAt, v.read_cnt as readCnt, BIN_TO_UUID(v.video_id) as videoId \n"
-                + "from channels c \n"
-                + "left join videos v \n"
-                + "on c.channel_id = v.channel_id \n"
-                + "where v.channel_id = ? and v.video_id <= ? \n"
-                + "and MATCH (v.title, v.content) AGAINST ( ? IN NATURAL LANGUAGE MODE) \n"
-                + "order by v.video_id desc \n"
-                + "limit ? \n"
+            "SELECT c.name AS channelName, c.profile_url AS channelProfileUrl, v.thumbnail AS thumbnail, v.title AS videoTitle, v.create_at AS createAt, v.read_cnt AS readCnt, BIN_TO_UUID(v.video_id) AS videoId, ROW_NUMBER() OVER () AS ranking\n"
+                + "FROM channels c\n"
+                + "LEFT JOIN videos v ON c.channel_id = v.channel_id \n"
+                + "WHERE BIN_TO_UUID(v.channel_id) = ? \n"
+                + "AND MATCH (v.title, v.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
+                + "AND v.video_id IN (\n"
+                + "  SELECT video_id\n"
+                + "  FROM (\n"
+                + "    SELECT video_id, ROW_NUMBER() OVER () AS ranking\n"
+                + "    FROM videos\n"
+                + "    WHERE MATCH (title, content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
+                + "  ) AS ranked\n"
+                + "  WHERE ranking <= ?\n"
+                + ")\n"
+                + "LIMIT ?;"
         ).setParameter(1, channelId)
-        .setParameter(2, uuid)
+        .setParameter(2, searchQuery)
         .setParameter(3, searchQuery)
-        .setParameter(4, pageSize).getResultList();
+        .setParameter(4, currentPage)
+        .setParameter(5, pageSize).getResultList();
     System.out.println("searchList값:" + searchList);
     return searchList;
   }
 
   @Override
-  public List<GetSearchVideoINChannelDTO> getSearchVideoInChannel(UUID channelId, UUID uuid,
+  public List<GetSearchVideoINChannelDTO> getSearchVideoInChannel(UUID channelId,
+      Integer currentPage,
       int pageSize, String searchQuery) {
-    String sql =
-        "select c.name as channelName , c.profile_url as channelProfileUrl, v.thumbnail as thumbnail, v.title as videoTitle, v.create_at as createAt, v.read_cnt as readCnt, BIN_TO_UUID(v.video_id) as videoId \n"
-            + "from channels c \n"
-            + "left join videos v \n"
-            + "on c.channel_id = v.channel_id \n"
-            + "where v.channel_id = ? and v.video_id <= ? \n"
-            + "and MATCH (v.title, v.content) AGAINST ( ? IN NATURAL LANGUAGE MODE) \n"
-            + "and v.private_type = false \n"
-            + "order by v.video_id desc \n"
-            + "limit ? \n";
-    Query query = entityManager.createNativeQuery(sql)
-        .setParameter(1, channelId)
-        .setParameter(2, uuid)
+    System.out.println("channelId: " + channelId);
+    System.out.println("currentPage: " + currentPage);
+    System.out.println("pageSize: " + pageSize);
+    System.out.println("searchQuery: " + searchQuery);
+
+    List<Object[]> resultList = entityManager.createNativeQuery(
+            "SELECT c.name AS channelName, c.profile_url AS channelProfileUrl, v.thumbnail AS thumbnail, v.title AS videoTitle, v.create_at AS createAt, v.read_cnt AS readCnt, BIN_TO_UUID(v.video_id) AS videoId, ROW_NUMBER() OVER () AS ranking\n"
+                + "FROM channels c\n"
+                + "LEFT JOIN videos v ON c.channel_id = v.channel_id \n"
+                + "WHERE v.channel_id = ? \n"
+                + "AND MATCH (v.title, v.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
+                + "AND v.private_type = false "
+                + "AND v.video_id IN (\n"
+                + "  SELECT video_id\n"
+                + "  FROM (\n"
+                + "    SELECT video_id, ROW_NUMBER() OVER () AS ranking\n"
+                + "    FROM videos\n"
+                + "    WHERE MATCH (title, content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
+                + "  ) AS ranked\n"
+                + "  WHERE ranking <= ?\n"
+                + ")\n"
+                + "LIMIT ?;"
+        ).setParameter(1, channelId)
+        .setParameter(2, searchQuery)
         .setParameter(3, searchQuery)
-        .setParameter(4, pageSize);
-    List<Object[]> resultList = query.getResultList();
+        .setParameter(4, currentPage)
+        .setParameter(5, pageSize).getResultList();
+
     List<GetSearchVideoINChannelDTO> searchList = new ArrayList<>();
     for (Object[] row : resultList) {
       GetSearchVideoINChannelDTO dto = new GetSearchVideoINChannelDTO();
@@ -629,11 +658,11 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
       dto.setCreateAt((Timestamp) row[4]);
       dto.setReadCnt((int) row[5]);
       dto.setVideoId(UUID.fromString((String) row[6]));
-
+      dto.setRanking(((BigInteger) row[7]).intValue());
       // 나머지 필드 설정
       searchList.add(dto);
     }
-
+    System.out.println("searchList값:" + searchList);
     return searchList;
   }
 
