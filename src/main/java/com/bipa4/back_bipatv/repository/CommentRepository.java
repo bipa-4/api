@@ -23,7 +23,7 @@ public interface CommentRepository extends JpaRepository<Comments, UUID> {
           "LEFT JOIN channels\n" +
           "ON accounts.account_id = channels.account_id\n" +
           "WHERE parent_child = 0 \n" +
-          "ORDER BY comments.create_at;", nativeQuery = true)
+          "ORDER BY comments.create_at desc;", nativeQuery = true)
   List<CommentResponse> findParentComments(@Param("videoId") UUID videoId);
 
   @Query(value =
@@ -35,7 +35,7 @@ public interface CommentRepository extends JpaRepository<Comments, UUID> {
           "LEFT JOIN channels\n" +
           "ON accounts.account_id = channels.account_id\n" +
           "WHERE video_id = :videoId AND parent_child = 1 AND group_index = :groupIndex\n" +
-          "ORDER BY comments.create_at", nativeQuery = true)
+          "ORDER BY comments.create_at desc", nativeQuery = true)
   List<ChildCommentResponse> findChildComments(@Param("videoId") UUID videoId,
       @Param("groupIndex") int groupIndex);
 

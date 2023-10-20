@@ -64,8 +64,8 @@ public class CommentService {
     return commentDAO.saveParentComment(comments);
   }
 
-  public boolean deleteComment(UUID commentId, String accessToken) {
-    return commentDAO.deleteComment(commentId, accessToken);
+  public boolean deleteComment(UUID commentId, Accounts account) {
+    return commentDAO.deleteComment(commentId, account);
   }
 
 

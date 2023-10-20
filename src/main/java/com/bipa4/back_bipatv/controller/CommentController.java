@@ -59,17 +59,14 @@ public class CommentController {
 
   }
 
-  //delete
+  // 댓글 DELETE
   @DeleteMapping("/{videoId}/comment/{commentId}")
-  public ResponseEntity<String> deleteComment(
+  public ResponseEntity<Boolean> deleteComment(
       @PathVariable UUID videoId, @PathVariable UUID commentId,
       @CookieValue(name = "accessToken") String accessToken) {
-
-    if (!commentService.deleteComment(commentId, accessToken)) {
-      throw new CustomApiException(ErrorCode.DELETE_ERROR);
-    }
-
-    return ResponseEntity.ok("댓글 삭제 성공");
+    Accounts account = securityService.getSubjectAccount(accessToken);
+    boolean response = commentService.deleteComment(commentId, account);
+    return new ResponseEntity<>(response, HttpStatus.OK);
   }
 }
 

@@ -3,7 +3,9 @@ package com.bipa4.back_bipatv.dao;
 import com.bipa4.back_bipatv.dataType.ErrorCode;
 import com.bipa4.back_bipatv.dto.comment.ChildCommentResponse;
 import com.bipa4.back_bipatv.dto.comment.CommentResponse;
+import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.entity.Comments;
+import com.bipa4.back_bipatv.exception.AuthorizationException;
 import com.bipa4.back_bipatv.exception.CustomApiException;
 import com.bipa4.back_bipatv.repository.CommentRepository;
 import com.bipa4.back_bipatv.security.SecurityService;
@@ -55,18 +57,26 @@ public class CommentDAO {
   }
 
 
-  public boolean deleteComment(UUID commentId, String accessToken) {
-    Comments comments = commentRepository.findById(commentId).orElse(null);
-    if (comments != null) {
-      if (Objects.equals(comments.getAccounts().getAccountId(),
-          securityService.getSubjectAccount(accessToken)
-              .getAccountId())) {
-        commentRepository.deleteById(commentId);
-      }
-      return true; // 댓글 삭제 성공
-    } else {
-      return false; // 댓글이 없거나 삭제 실패
+  public boolean deleteComment(UUID commentId, Accounts account) {
+    Comments comment = commentRepository.findById(commentId).orElse(null);
+
+    // 댓글이 존재하지 않는다면.
+    if (comment == null) {
+      throw new CustomApiException(ErrorCode.No_EXIST_COMMENT);
     }
+
+    // 본인이 작성한 댓글이 아니라면.
+    if (Objects.equals(comment.getAccounts().getAccountId(), account.getAccountId())) {
+      throw new AuthorizationException();
+    }
+
+    try {
+      commentRepository.deleteById(commentId);
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.DELETE_ERROR);
+    }
+    
+    return true;
   }
 }
 
