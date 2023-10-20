@@ -77,8 +77,8 @@ public class CommentService {
 
   }
 
-  public boolean deleteComment(UUID commentId) {
-    return commentDAO.deleteComment(commentId);
+  public boolean deleteComment(UUID commentId, String accessToken) {
+    return commentDAO.deleteComment(commentId,accessToken);
   }
 
 
