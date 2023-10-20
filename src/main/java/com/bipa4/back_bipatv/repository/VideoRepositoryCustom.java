@@ -20,7 +20,7 @@ public interface VideoRepositoryCustom {
 
   UUID lastUUIDInMyChannel(UUID channelId);
 
-  List<UUID> lastUUIDSearchVideoInMyChannel(UUID channelId, String searchQuery);
+  List<Integer> lastUUIDSearchVideoInMyChannel(UUID channelId, String searchQuery);
 
   UUID lastCategoryUUID(UUID category);
 
@@ -56,12 +56,13 @@ public interface VideoRepositoryCustom {
 
   List<GetVideoResponseDto> getVideosInMyChannel(UUID channelId, UUID uuid, int pageSize);
 
-  List<GetSearchVideoINChannelDTO> getSearchVideoInMyChannel(UUID channelId, UUID uuid,
+  List<GetSearchVideoINChannelDTO> getSearchVideoInMyChannel(UUID channelId, Integer currentPage,
       int pageSize,
       String searchQuery);
 
-  List<UUID> lastUUIDSearchVideoInChannel(UUID channelId, String searchQuery);
+  List<Integer> lastUUIDSearchVideoInChannel(UUID channelId, String searchQuery);
 
-  List<GetSearchVideoINChannelDTO> getSearchVideoInChannel(UUID channelId, UUID uuid, int pageSize,
+  List<GetSearchVideoINChannelDTO> getSearchVideoInChannel(UUID channelId, Integer currentPage,
+      int pageSize,
       String searchQuery);
 }

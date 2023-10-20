@@ -18,4 +18,5 @@ public class GetSearchVideoINChannelDTO {
   private Timestamp createAt;
   private int readCnt;
   private UUID videoId;
+  private Integer ranking;
 }
