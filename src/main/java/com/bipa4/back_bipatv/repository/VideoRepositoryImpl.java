@@ -29,6 +29,7 @@ import java.io.File;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import javax.persistence.EntityManager;
@@ -171,7 +172,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QCategorys qCategorys = QCategorys.categorys;
     QCategoryName qCategoryName = QCategoryName.categoryName;
 
-    List<GetVideoResponseDto> responseDto =  jpaQueryFactory.select(
+    List<GetVideoResponseDto> responseDto = jpaQueryFactory.select(
             Projections.bean(
                 GetVideoResponseDto.class,
                 qChannels.channelName.as("channelName"),
@@ -508,7 +509,6 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
     Videos videos = new Videos();
     videos.setVideoId(videoId);
-    Accounts account = securityService.getSubjectAccount(token);
 
     return jpaQueryFactory.select(qFavorite.count()).from(qFavorite)
         .where(
@@ -693,21 +693,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     System.out.println("searchList값:" + searchList);
     return searchList;
   }
-
-  @Override
-  public List<Integer> lastUUIDSearchVideoInMyChannel(UUID channelId, String searchQuery) {
-    List<Integer> uuid = entityManager.createNativeQuery(
-            "select ROW_NUMBER() OVER () AS ranking  \n"
-                + "from videos \n"
-                + "where videos.channel_id = ? \n"
-                + " and MATCH (videos.title, videos.content) AGAINST ( ? IN NATURAL LANGUAGE MODE) \n"
-                + "order By videos.video_id desc \n"
-                + "limit 1 "
-        ).setParameter(1, channelId)
-        .setParameter(2, searchQuery)
-        .getResultList();
-    return uuid;
-  }
+  
 
   //Account to Channel
   private Channels accountToChannel(Accounts account) {
