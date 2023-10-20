@@ -131,17 +131,29 @@ public class ChannelService {
 
   public List<GetVideoResponseDto> getVideosInChannel(String accessToken, UUID channelId,
       String page, int pageSize) {
+
     Accounts loginUser = securityService.getSubjectAccount(accessToken);
     UUID uuid = null;
-    if (loginUser.getAccountId() == (channelRepository.findByChannelId(channelId).getAccounts()
-        .getAccountId())) {//채널 주인이 로그인한 사람이면 채널 내 비공개 영상도 조회 가능해야 함
-      if (page == null) {
-        uuid = videoRepository.lastUUIDInMyChannel(channelId);
+    if (loginUser != null) {
+      if (loginUser.getAccountId() == (channelRepository.findByChannelId(channelId).getAccounts()
+          .getAccountId())) {//채널 주인이 로그인한 사람이면 채널 내 비공개 영상도 조회 가능해야 함
+        if (page == null) {
+          uuid = videoRepository.lastUUIDInMyChannel(channelId);
+        } else {
+          uuid = UUID.fromString(page);
+        }
+        videoRepository.getVideosInMyChannel(channelId, uuid, pageSize)
+            .forEach(System.out::println);
+        return videoRepository.getVideosInMyChannel(channelId, uuid, pageSize);
       } else {
-        uuid = UUID.fromString(page);
+        if (page == null) {
+          uuid = videoRepository.lastUUIDInChannel(channelId);
+        } else {
+          uuid = UUID.fromString(page);
+        }
+        videoRepository.getVideosInChannel(channelId, uuid, pageSize).forEach(System.out::println);
+        return videoRepository.getVideosInChannel(channelId, uuid, pageSize);
       }
-      videoRepository.getVideosInMyChannel(channelId, uuid, pageSize).forEach(System.out::println);
-      return videoRepository.getVideosInMyChannel(channelId, uuid, pageSize);
     } else {
       if (page == null) {
         uuid = videoRepository.lastUUIDInChannel(channelId);
