@@ -1,9 +1,7 @@
 package com.bipa4.back_bipatv.controller;
 
-import com.bipa4.back_bipatv.dataType.ErrorCode;
 import com.bipa4.back_bipatv.dto.comment.CommentRequest;
 import com.bipa4.back_bipatv.entity.Accounts;
-import com.bipa4.back_bipatv.exception.CustomApiException;
 import com.bipa4.back_bipatv.security.SecurityService;
 import com.bipa4.back_bipatv.service.CommentService;
 import java.util.UUID;
@@ -47,16 +45,13 @@ public class CommentController {
   }
 
 
-  //update
+  // 댓글 UPDATE
   @PutMapping("/comment")
-  public ResponseEntity<String> updateComment(@RequestBody CommentRequest commentRequest,
+  public ResponseEntity<Boolean> updateComment(@RequestBody CommentRequest commentRequest,
       @CookieValue(name = "accessToken") String accessToken) {
-    boolean updated = commentService.updateComment(commentRequest);
-    if (!updated) {
-      throw new CustomApiException(ErrorCode.UPDATE_ERROR);
-    }
-    return ResponseEntity.ok("댓글 수정 성공");
-
+    Accounts account = securityService.getSubjectAccount(accessToken);
+    boolean response = commentService.updateComment(commentRequest, account);
+    return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
   // 댓글 DELETE

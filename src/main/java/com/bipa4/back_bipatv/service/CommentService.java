@@ -1,6 +1,5 @@
 package com.bipa4.back_bipatv.service;
 
-import com.bipa4.back_bipatv.dao.AccountDAO;
 import com.bipa4.back_bipatv.dao.CommentDAO;
 import com.bipa4.back_bipatv.dataType.ErrorCode;
 import com.bipa4.back_bipatv.dto.comment.ChildCommentResponse;
@@ -9,10 +8,10 @@ import com.bipa4.back_bipatv.dto.comment.CommentResponse;
 import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.entity.Comments;
 import com.bipa4.back_bipatv.entity.Videos;
+import com.bipa4.back_bipatv.exception.AuthorizationException;
 import com.bipa4.back_bipatv.exception.CustomApiException;
-import com.bipa4.back_bipatv.exception.ResourceNotFoundException;
+import com.bipa4.back_bipatv.repository.CommentRepository;
 import com.bipa4.back_bipatv.repository.VideoRepository;
-import com.bipa4.back_bipatv.security.SecurityService;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -28,9 +27,8 @@ import org.springframework.stereotype.Service;
 public class CommentService {
 
   private final CommentDAO commentDAO;
-  private final AccountDAO accountDAO;
   private final VideoRepository videoRepository;
-  private final SecurityService securityService;
+  private final CommentRepository commentRepository;
 
 
   public List<CommentResponse> findParentComments(UUID videoId) {
@@ -46,36 +44,48 @@ public class CommentService {
 
   @Transactional
   public boolean saveParentComment(Accounts account, CommentRequest commentRequest) {
-    Comments comments = convertDtoToEntityForInsert(account, commentRequest, null);
-    return commentDAO.saveParentComment(comments);
+    Comments comment = convertDtoToEntityForInsert(account, commentRequest, null);
+    return commentDAO.saveParentComment(comment);
   }
 
   public boolean saveChildComment(Accounts account, CommentRequest commentRequest,
       Integer groupIndex) {
-
-    Comments comments = convertDtoToEntityForInsert(account, commentRequest, groupIndex);
-    return commentDAO.saveChildComment(comments);
+    Comments comment = convertDtoToEntityForInsert(account, commentRequest, groupIndex);
+    return commentDAO.saveChildComment(comment);
 
   }
 
-  public boolean updateComment(CommentRequest commentRequest) {
-
-    Comments comments = convertDtoToEntityForUpdate(commentRequest);
-    return commentDAO.saveParentComment(comments);
+  @Transactional
+  public boolean updateComment(CommentRequest commentRequest, Accounts account) {
+    Comments comment = convertDtoToEntityForUpdate(commentRequest, account);
+    return commentDAO.saveParentComment(comment);
   }
 
+  @Transactional
   public boolean deleteComment(UUID commentId, Accounts account) {
-    return commentDAO.deleteComment(commentId, account);
+    Comments comment = commentRepository.findById(commentId).orElse(null);
+
+    // 댓글이 존재하지 않는다면.
+    if (comment == null) {
+      throw new CustomApiException(ErrorCode.No_EXIST_COMMENT);
+    }
+
+    // 본인이 작성한 댓글이 아니라면.
+    if (!Objects.equals(comment.getAccounts().getAccountId(), account.getAccountId())) {
+      throw new AuthorizationException();
+    }
+
+    return commentDAO.deleteComment(commentId);
   }
 
 
   private Comments convertDtoToEntityForInsert(Accounts account, CommentRequest commentRequest,
       Integer groupIndex) {
-    Comments comments = new Comments();
+    Comments comment = new Comments();
 
     Videos video = videoRepository.findById(commentRequest.getVideoId()).orElse(null);
 
-    // 비디오가 없다면.
+    // 비디오가 없다면
     if (video == null) {
       throw new CustomApiException(ErrorCode.NO_EXIST_VIDEO);
     }
@@ -87,37 +97,44 @@ public class CommentService {
     groupIndex = commentRequest.getParentChild() == 0 ?
         findParentComments(commentRequest.getVideoId()).size() + 1 : groupIndex;
 
-    // Comments insert할 부분.
+    // Comment DTO를 만드는 부분
     try {
-      comments.setVideos(video);
-      comments.setAccounts(account);
-      comments.setGroupIndex(groupIndex);
-      comments.setContent(commentRequest.getContent());
-      comments.setParentChild(commentRequest.getParentChild());
-      comments.setCreateAt(now);
+      comment.setVideos(video);
+      comment.setAccounts(account);
+      comment.setGroupIndex(groupIndex);
+      comment.setContent(commentRequest.getContent());
+      comment.setParentChild(commentRequest.getParentChild());
+      comment.setCreateAt(now);
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.INSERT_DTO_ERROR);
     }
-    return comments;
+    return comment;
   }
 
-  private Comments convertDtoToEntityForUpdate(CommentRequest commentRequest) {
-    Comments comments = commentDAO.findByCommentId(commentRequest.getCommentId());
-    if (comments == null) {
-      throw new ResourceNotFoundException("해당하는 댓글을 찾을 수 없음");
+  private Comments convertDtoToEntityForUpdate(CommentRequest commentRequest, Accounts account) {
+    Comments comment = commentDAO.findByCommentId(commentRequest.getCommentId());
+
+    // 댓글이 존재하지 않는다면
+    if (comment == null) {
+      throw new CustomApiException(ErrorCode.No_EXIST_COMMENT);
     }
-    if (Objects.nonNull(commentRequest.getContent())) {
-      comments.setContent(commentRequest.getContent());
+
+    // 본인이 작성한 댓글이 아니라면.
+    if (!Objects.equals(comment.getAccounts().getAccountId(), account.getAccountId())) {
+      throw new AuthorizationException();
     }
 
-    LocalDateTime now = LocalDateTime.now();
+    Timestamp now = Timestamp.valueOf(
+        LocalDateTime.now().plusHours(9)
+            .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 
-    commentRequest.setCreateAt(Timestamp.valueOf(
-        now.plusHours(9).format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))));
-    comments.setCreateAt(commentRequest.getCreateAt());
-
-    return comments;
+    // Comment DTO를 만드는 부분
+    try {
+      comment.setContent(commentRequest.getContent());
+      comment.setCreateAt(now);
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.INSERT_DTO_ERROR);
+    }
+    return comment;
   }
-
-
 }
