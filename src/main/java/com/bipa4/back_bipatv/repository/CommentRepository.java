@@ -15,7 +15,7 @@ public interface CommentRepository extends JpaRepository<Comments, UUID> {
 
 
   @Query(value =
-      "SELECT INSERT(INSERT(INSERT(INSERT(HEX(channels.channel_id), 9, 0, '-'), 14, 0, '-'), 19, 0, '-'), 24, 0, '-') AS channelId, channels.profile_url AS channelProfileUrl, channels.name AS channelName, comments.content AS content, comments.create_at AS createAt, INSERT(INSERT(INSERT(INSERT(HEX(comments.comment_id), 9, 0, '-'), 14, 0, '-'), 19, 0, '-'), 24, 0, '-') AS commentId, comments.group_index AS groupIndex, childCount\n"
+      "SELECT BIN_TO_UUID(channels.channel_id) AS channelId, channels.profile_url AS channelProfileUrl, channels.name AS channelName, comments.content AS content, comments.create_at AS createAt, BIN_TO_UUID(comments.comment_id) AS commentId, comments.group_index AS groupIndex, childCount\n"
           +
           "FROM (SELECT *, COUNT(*) over (PARTITION BY group_index) -1 AS childCount FROM bipaTV.comments WHERE video_id = :videoId) comments\n"
           +
@@ -28,7 +28,7 @@ public interface CommentRepository extends JpaRepository<Comments, UUID> {
   List<CommentResponse> findParentComments(@Param("videoId") UUID videoId);
 
   @Query(value =
-      "SELECT INSERT(INSERT(INSERT(INSERT(HEX(channels.channel_id), 9, 0, '-'), 14, 0, '-'), 19, 0, '-'), 24, 0, '-') AS channelId, channels.profile_url AS channelProfileUrl, channels.name AS channelName, comments.content AS content, comments.create_at AS createAt, INSERT(INSERT(INSERT(INSERT(HEX(comments.comment_id), 9, 0, '-'), 14, 0, '-'), 19, 0, '-'), 24, 0, '-') AS commentId, comments.group_index AS groupIndex\n"
+      "SELECT BIN_TO_UUID(channels.channel_id) AS channelId, channels.profile_url AS channelProfileUrl, channels.name AS channelName, comments.content AS content, comments.create_at AS createAt, BIN_TO_UUID(comments.comment_id) AS commentId, comments.group_index AS groupIndex\n"
           +
           "FROM comments \n" +
           "LEFT JOIN accounts\n" +
