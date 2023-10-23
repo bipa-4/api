@@ -17,9 +17,9 @@ public interface ChannelRepositoryCustom {
 
   UUID lastUUID();
 
-  String getChannelNextUUID(UUID uuid);
+  UUID getChannelNextUUID(UUID uuid);
 
-  String getNextChannelVideoUUID(UUID videoId, UUID channelId, boolean flag);
+  UUID getNextChannelVideoUUID(UUID videoId, UUID channelId, boolean flag);
 
   List<String> getSearchNextChannelVideoUUID(UUID videoId, UUID channelId, String searchQuery,
       boolean flag);

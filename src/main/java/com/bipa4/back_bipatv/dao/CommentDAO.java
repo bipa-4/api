@@ -5,6 +5,7 @@ import com.bipa4.back_bipatv.dto.comment.ChildCommentResponse;
 import com.bipa4.back_bipatv.dto.comment.CommentResponse;
 import com.bipa4.back_bipatv.entity.Comments;
 import com.bipa4.back_bipatv.exception.CustomApiException;
+import com.bipa4.back_bipatv.exception.NoContentException;
 import com.bipa4.back_bipatv.repository.CommentRepository;
 import java.util.List;
 import java.util.UUID;
@@ -19,12 +20,28 @@ public class CommentDAO {
 
 
   public List<CommentResponse> findParentComments(UUID videoId) {
-    List<CommentResponse> list = commentRepository.findParentComments(videoId);
+    List<CommentResponse> list;
+
+    try {
+      list = commentRepository.findParentComments(videoId);
+    } catch (NullPointerException e) {
+      throw new NoContentException();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_RECOMMEND_ERROR);
+    }
     return list;
   }
 
   public List<ChildCommentResponse> findChildComments(UUID videoId, int groupIndex) {
-    List<ChildCommentResponse> list = commentRepository.findChildComments(videoId, groupIndex);
+    List<ChildCommentResponse> list;
+
+    try {
+      list = commentRepository.findChildComments(videoId, groupIndex);
+    } catch (NullPointerException e) {
+      throw new NoContentException();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_RECOMMEND_ERROR);
+    }
     return list;
   }
 

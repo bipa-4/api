@@ -50,119 +50,80 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
   private final EntityManager entityManager;
   private final AmazonS3 amazonS3;
 
+  //----------------------------------------------VIDEO---------------------------------------------
+
   // 전체보기 (무한 스크롤)
   @Override
   public List<GetVideoResponseDto> getAllVideos(UUID page, int pageSize) {
+    List<GetVideoResponseDto> responseDtos;
+
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
 
-    List<GetVideoResponseDto> dto = jpaQueryFactory.select(
-            Projections.bean(
-                GetVideoResponseDto.class,
-                qChannels.channelName.as("channelName"),
-                qChannels.profileUrl.as("channelProfileUrl"),
-                qVideos.thumbnail,
-                qVideos.title.as("videoTitle"),
-                qVideos.createAt,
-                qVideos.readCnt.as("readCount"),
-                qVideos.videoId
-            )
-        )
-        .from(qVideos).leftJoin(qVideos.channelId, qChannels)
-        .where(qVideos.videoId.loe(page).and(qVideos.privateType.eq(false)))
-        .orderBy(qVideos.videoId.desc())
-        .limit(pageSize).fetch();
-
-    return dto;
+    try {
+      responseDtos = jpaQueryFactory.select(
+              Projections.bean(
+                  GetVideoResponseDto.class,
+                  qChannels.channelName.as("channelName"),
+                  qChannels.profileUrl.as("channelProfileUrl"),
+                  qVideos.thumbnail,
+                  qVideos.title.as("videoTitle"),
+                  qVideos.createAt,
+                  qVideos.readCnt.as("readCount"),
+                  qVideos.videoId
+              )
+          )
+          .from(qVideos).leftJoin(qVideos.channelId, qChannels)
+          .where(qVideos.videoId.loe(page).and(qVideos.privateType.eq(false))
+              .and(qVideos.channelId.privateType.eq(false)))
+          .orderBy(qVideos.videoId.desc())
+          .limit(pageSize).fetch();
+    } catch (NullPointerException e) {
+      throw new NoContentException();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_ERROR);
+    }
+    return responseDtos;
   }
 
 
   // Default UUID (무한 스크롤 시작점 찾기)
   @Override
   public UUID lastUUID() {
+    UUID defaultUUID;
+
     QVideos qVideos = QVideos.videos;
 
-    return jpaQueryFactory.select(qVideos.videoId).from(qVideos)
-        .where(qVideos.privateType.eq(false))
-        .orderBy(qVideos.videoId.desc()).limit(1)
-        .fetchOne();
+    try {
+      defaultUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
+          .where(qVideos.privateType.eq(false)).orderBy(qVideos.videoId.desc()).limit(1).fetchOne();
+    } catch (NullPointerException e) {
+      throw new NoContentException();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_LAST_UUID_ERRROR);
+    }
+
+    return defaultUUID;
   }
 
-  @Override
-  public UUID lastUUIDInChannel(UUID channelId) {
-    QVideos qVideos = QVideos.videos;
-
-    return jpaQueryFactory.select(qVideos.videoId).from(qVideos)
-        .where(qVideos.channelId.channelId.eq(channelId).and(qVideos.privateType.eq(false)))
-        .orderBy(qVideos.videoId.desc()).limit(1)
-        .fetchOne();
-  }
-
-  @Override
-  public UUID lastUUIDInMyChannel(UUID channelId) {
-    QVideos qVideos = QVideos.videos;
-
-    return jpaQueryFactory.select(qVideos.videoId).from(qVideos)
-        .where(qVideos.channelId.channelId.eq(channelId))
-        .orderBy(qVideos.videoId.desc()).limit(1)
-        .fetchOne();
-  }
-
-  @Override
-  public List<Integer> lastUUIDSearchVideoInMyChannel(UUID channelId, String searchQuery) {
-    List<Integer> uuid = entityManager.createNativeQuery(
-            "SELECT ranking\n"
-                + "FROM (\n"
-                + "    SELECT ROW_NUMBER() OVER () AS ranking\n"
-                + "    FROM videos\n"
-                + "    WHERE videos.channel_id = ?\n"
-                + "    AND MATCH (videos.title, videos.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
-                + "    ORDER BY ranking DESC\n"
-                + "    LIMIT 1\n"
-                + ") AS ranked_results;\n"
-        ).setParameter(1, channelId)
-        .setParameter(2, searchQuery)
-        .getResultList();
-    return uuid;
-  }
-
-  @Override
-  public List<Integer> lastUUIDSearchVideoInChannel(UUID channelId, String searchQuery) {
-    System.out.println("lastUUIDSearchVideoInChannel 메소드 channelId값:" + channelId);
-    System.out.println("lastUUIDSearchVideoInChannel 메소드 searchQuery값:" + searchQuery);
-    List<Integer> uuid = entityManager.createNativeQuery("SELECT ranking\n"
-            + "FROM (\n"
-            + "    SELECT ROW_NUMBER() OVER () AS ranking\n"
-            + "    FROM videos\n"
-            + "    WHERE videos.channel_id = ?\n"
-            + "    AND MATCH (videos.title, videos.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
-            + "    AND videos.private_type = false\n"
-            + "    ORDER BY ranking DESC\n"
-            + "    LIMIT 1\n"
-            + ") AS ranked_results;\n "
-        ).setParameter(1, channelId)
-        .setParameter(2, searchQuery)
-        .getResultList();
-    System.out.println(uuid);
-
-    return uuid;
-  }
 
   // 다음 페이지의 UUID 찾기
   @Override
-  public String getNextUUID(UUID uuid) {
+  public UUID getNextUUID(UUID uuid) {
     QVideos qVideos = QVideos.videos;
+    UUID nextUUID = null;
 
-    UUID nextUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
-        .where(qVideos.videoId.lt(uuid).and(qVideos.privateType.eq(false)))
-        .orderBy(qVideos.videoId.desc())
-        .limit(1).fetchOne();
-
-    if (nextUUID == null) {
-      return "";
+    try {
+      nextUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
+          .where(qVideos.videoId.lt(uuid).and(qVideos.privateType.eq(false)))
+          .orderBy(qVideos.videoId.desc()).limit(1).fetchOne();
+    } catch (NullPointerException e) {
+      throw new NoContentException();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_NEXT_UUID_ERRROR);
     }
 
-    return nextUUID.toString();
+    return nextUUID;
   }
 
 
@@ -175,7 +136,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QChannels qChannels = QChannels.channels;
     QCategorys qCategorys = QCategorys.categorys;
     QCategoryName qCategoryName = QCategoryName.categoryName;
-    
+
     try {
       responseDto = jpaQueryFactory.select(
               Projections.bean(
@@ -202,145 +163,226 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
           .limit(pageSize).fetch();
     } catch (NullPointerException e) {
       throw new NoContentException(HandleCode.NO_CONTENT);
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_ERROR);
     }
     return responseDto;
   }
 
+  // 카테고리 Default UUID (무한 스크롤 시작점 찾기)
   @Override
   public UUID lastCategoryUUID(UUID category) {
+    UUID defaultUUID = null;
+
     QVideos qVideos = QVideos.videos;
     QCategorys qCategorys = QCategorys.categorys;
     QCategoryName qCategoryName = QCategoryName.categoryName;
 
-    return jpaQueryFactory.select(qVideos.videoId).from(qCategorys)
-        .leftJoin(qCategorys.videoId, qVideos)
-        .leftJoin(qCategorys.categoryNameId, qCategoryName)
-        .where(
-            qCategoryName.categoryNameId.eq(category)
-                .and(qVideos.privateType.eq(false))
-        )
-        .orderBy(qVideos.videoId.desc()).limit(1)
-        .fetchOne();
+    try {
+      defaultUUID = jpaQueryFactory.select(qVideos.videoId).from(qCategorys)
+          .leftJoin(qCategorys.videoId, qVideos)
+          .leftJoin(qCategorys.categoryNameId, qCategoryName)
+          .where(
+              qCategoryName.categoryNameId.eq(category)
+                  .and(qVideos.privateType.eq(false))
+                  .and(qVideos.channelId.privateType.eq(false))
+          )
+          .orderBy(qVideos.videoId.desc()).limit(1).fetchOne();
+    } catch (NullPointerException e) {
+      throw new NoContentException();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_NEXT_UUID_ERRROR);
+    }
+
+    return defaultUUID;
+  }
+
+  // 카테고리 다음 페이지의 UUID 찾기
+  @Override
+  public UUID getNextCategoryUUID(UUID uuid, UUID category) {
+    UUID nextUUID = null;
+
+    QVideos qVideos = QVideos.videos;
+    QCategorys qCategorys = QCategorys.categorys;
+    QCategoryName qCategoryName = QCategoryName.categoryName;
+
+    try {
+      nextUUID = jpaQueryFactory.select(qVideos.videoId).from(qCategorys)
+          .leftJoin(qCategorys.videoId, qVideos)
+          .leftJoin(qCategorys.categoryNameId, qCategoryName)
+          .where(qCategoryName.categoryNameId.eq(category).and(qVideos.videoId.lt(uuid))
+              .and(qVideos.privateType.eq(false)))
+          .orderBy(qVideos.videoId.desc()).limit(1).fetchOne();
+    } catch (NullPointerException e) {
+      throw new NoContentException();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_NEXT_UUID_ERRROR);
+    }
+
+    return nextUUID;
   }
 
   // 카테고리 이름 리스트
   @Override
   public List<GetCategoryNameRequestDto> getCategoryNames() {
+    List<GetCategoryNameRequestDto> responseDtos = null;
+
     QCategoryName qCategoryName = QCategoryName.categoryName;
 
-    return jpaQueryFactory.select(
-        Projections.bean(
-            GetCategoryNameRequestDto.class,
-            qCategoryName.categoryNameId,
-            qCategoryName.name.as("categoryName")
-        )
-    ).from(qCategoryName).fetch();
+    try {
+      responseDtos = jpaQueryFactory.select(
+          Projections.bean(
+              GetCategoryNameRequestDto.class,
+              qCategoryName.categoryNameId,
+              qCategoryName.name.as("categoryName")
+          )
+      ).from(qCategoryName).fetch();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_CATEGORY_ERROR);
+    }
+
+    return responseDtos;
   }
 
 
   // 조회수 급상승 TOP 10 + 디비 1시간 전 정보 저장
   @Override
   public List<GetVideoResponseDto> findByViews() {
+    List<GetVideoResponseDto> responseDtos = null;
+
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
     QViewLog qViewLog = QViewLog.viewLog;
 
-    return jpaQueryFactory.select(
-            Projections.bean(
-                GetVideoResponseDto.class,
-                qChannels.channelName.as("channelName"),
-                qChannels.profileUrl.as("channelProfileUrl"),
-                qVideos.thumbnail,
-                qVideos.title.as("videoTitle"),
-                qVideos.createAt,
-                qVideos.readCnt.as("readCount"),
-                qVideos.videoId
-            )
-        )
-        .from(qViewLog)
-        .leftJoin(qViewLog.videoId, qVideos)
-        .leftJoin(qVideos.channelId, qChannels)
-        .where(qVideos.privateType.eq(false))
-        .orderBy(
-            asNumber(qVideos.readCnt.subtract(qViewLog.viewCnt)).doubleValue().desc()
-        )
-        .limit(10).fetch();
+    try {
+      responseDtos = jpaQueryFactory.select(
+              Projections.bean(
+                  GetVideoResponseDto.class,
+                  qChannels.channelName.as("channelName"),
+                  qChannels.profileUrl.as("channelProfileUrl"),
+                  qVideos.thumbnail,
+                  qVideos.title.as("videoTitle"),
+                  qVideos.createAt,
+                  qVideos.readCnt.as("readCount"),
+                  qVideos.videoId
+              )
+          )
+          .from(qViewLog)
+          .leftJoin(qViewLog.videoId, qVideos)
+          .leftJoin(qVideos.channelId, qChannels)
+          .where(qVideos.privateType.eq(false))
+          .orderBy(
+              asNumber(qVideos.readCnt.subtract(qViewLog.viewCnt)).doubleValue().desc()
+          )
+          .limit(10).fetch();
+    } catch (NullPointerException e) {
+      throw new NoContentException();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_TOP10_ERROR);
+    }
+    return responseDtos;
   }
 
 
   @Override
-  public int updateViews() {
-    return entityManager.createNativeQuery(
-        "update view_log vl join videos v on vl.video_id = v.video_id set view_cnt = read_cnt where v.video_id = vl.video_id"
-    ).executeUpdate();
+  public boolean updateViews() {
+    int result;
+
+    try {
+      result = entityManager.createNativeQuery(
+          "update view_log vl join videos v on vl.video_id = v.video_id set view_cnt = read_cnt where v.video_id = vl.video_id"
+      ).executeUpdate();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.UPDATE_ERROR);
+    }
+
+    return result > 0 ? true : false;
   }
 
 
   // 상세보기
   @Override
   public GetDetailResponseDto getDetail(UUID id) {
+    GetDetailResponseDto responseDto = null;
+
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
     QFavorite qFavorite = QFavorite.favorite;
     QCategorys qCategorys = QCategorys.categorys;
 
-    GetDetailResponseDto dto = jpaQueryFactory.select(
-            Projections.bean(
-                GetDetailResponseDto.class,
-                qChannels.channelName.as("channelName"),
-                qChannels.profileUrl.as("channelProfileUrl"),
-                qChannels.channelId,
-                qVideos.videoUrl,
-                qVideos.title.as("videoTitle"),
-                qVideos.content,
-                qVideos.createAt,
-                qVideos.readCnt.as("readCount"),
-                qVideos.videoId,
-                qVideos.thumbnail
-            )).from(qVideos)
-        .leftJoin(qVideos.channelId, qChannels)
-        .where(qVideos.videoId.eq(id))
-        .fetchOne();
+    try {
+      responseDto = jpaQueryFactory.select(
+              Projections.bean(
+                  GetDetailResponseDto.class,
+                  qChannels.channelName.as("channelName"),
+                  qChannels.profileUrl.as("channelProfileUrl"),
+                  qChannels.channelId,
+                  qVideos.videoUrl,
+                  qVideos.title.as("videoTitle"),
+                  qVideos.content,
+                  qVideos.createAt,
+                  qVideos.readCnt.as("readCount"),
+                  qVideos.videoId,
+                  qVideos.thumbnail
+              )).from(qVideos)
+          .leftJoin(qVideos.channelId, qChannels)
+          .where(qVideos.videoId.eq(id))
+          .fetchOne();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_DETAIL_ERROR);
+    }
 
-    Channels channel = new Channels();
-    channel.setChannelId(dto.getChannelId());
+    if (responseDto == null) {
+      throw new CustomApiException(ErrorCode.NO_EXIST_VIDEO);
+    }
 
     // 추천 영상 리스트 추출
-    List<GetVideoResponseDto> recommendedVideos = jpaQueryFactory.select(
-            Projections.bean(
-                GetVideoResponseDto.class,
-                qChannels.channelName.as("channelName"),
-                qChannels.profileUrl.as("channelProfileUrl"),
-                qVideos.thumbnail,
-                qVideos.title.as("videoTitle"),
-                qVideos.createAt,
-                qVideos.readCnt.as("readCount"),
-                qVideos.videoId
-            )
-        )
-        .from(qVideos).leftJoin(qVideos.channelId, qChannels)
-        .where(qVideos.channelId.eq(channel).and(qVideos.videoId.ne(dto.getVideoId())))
-        .orderBy(qVideos.readCnt.desc())
-        .limit(10).fetch();
+    try {
+      List<GetVideoResponseDto> recommendedVideos = jpaQueryFactory.select(
+              Projections.bean(
+                  GetVideoResponseDto.class,
+                  qChannels.channelName.as("channelName"),
+                  qChannels.profileUrl.as("channelProfileUrl"),
+                  qVideos.thumbnail,
+                  qVideos.title.as("videoTitle"),
+                  qVideos.createAt,
+                  qVideos.readCnt.as("readCount"),
+                  qVideos.videoId
+              )
+          )
+          .from(qVideos).leftJoin(qVideos.channelId, qChannels)
+          .where(qVideos.channelId.channelId.eq(responseDto.getChannelId())
+              .and(qVideos.videoId.ne(responseDto.getVideoId())))
+          .orderBy(qVideos.readCnt.desc())
+          .limit(10).fetch();
 
-    dto.setRecommendedList(recommendedVideos);
+      responseDto.setRecommendedList(recommendedVideos);
+    } catch (NullPointerException e) {
+      throw new NoContentException();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_RECOMMEND_ERROR);
+    }
 
     // 영상의 좋아요 총 개수
-    Videos videos = new Videos();
-    videos.setVideoId(dto.getVideoId());
-
-    long favoriteCnt = jpaQueryFactory.select(qFavorite.count()).from(qFavorite)
-        .where(qFavorite.favoritePK.videos.eq(videos)).fetchFirst();
-
-    dto.setLikeCount(favoriteCnt);
+    try {
+      long favoriteCnt = jpaQueryFactory.select(qFavorite.count()).from(qFavorite)
+          .where(qFavorite.favoritePK.videos.videoId.eq(responseDto.getVideoId())).fetchFirst();
+      responseDto.setLikeCount(favoriteCnt);
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_LIKE_ERROR);
+    }
 
     // 영상의 카테고리 저장
-    List<UUID> uuid = jpaQueryFactory.select(qCategorys.categoryNameId.categoryNameId)
-        .from(qCategorys)
-        .where(qCategorys.videoId.videoId.eq(dto.getVideoId())).fetch();
-    dto.setCategoryId(uuid);
+    try {
+      List<UUID> uuid = jpaQueryFactory.select(qCategorys.categoryNameId.categoryNameId)
+          .from(qCategorys)
+          .where(qCategorys.videoId.videoId.eq(responseDto.getVideoId())).fetch();
+      responseDto.setCategoryId(uuid);
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_CATEGORY_ERROR);
+    }
 
-    return dto;
+    return responseDto;
   }
 
   // 영상 삭제
@@ -428,6 +470,10 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
 
+    if (account == null) {
+      return false;
+    }
+
     Videos requestVideo = jpaQueryFactory.selectFrom(qVideos)
         .where(qVideos.videoId.eq(videoId)).fetchOne();
 
@@ -498,30 +544,45 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 조회수 상승
   @Override
-  public int plusViews(UUID videoId) {
+  public boolean plusViews(UUID videoId) {
     Videos video = entityManager.find(Videos.class, videoId);
 
-    if (video != null) {
-      video.setReadCnt(video.getReadCnt() + 1);
-    } else {
-      return 0;
+    if (video == null) {
+      throw new CustomApiException(ErrorCode.NO_EXIST_VIDEO);
     }
-    return 1;
+
+    try {
+      video.setReadCnt(video.getReadCnt() + 1);
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.UPDATE_VIEW_ERROR);
+    }
+
+    return true;
   }
 
 
   // 좋아요 버튼 눌렀는지 여부
   @Override
-  public Long getFavorite(UUID videoId, Accounts account) {
+  public boolean getFavorite(UUID videoId, Accounts account) {
+    long result;
+
     QFavorite qFavorite = QFavorite.favorite;
 
-    Videos videos = new Videos();
-    videos.setVideoId(videoId);
+    if (account == null) {
+      return false;
+    }
 
-    return jpaQueryFactory.select(qFavorite.count()).from(qFavorite)
-        .where(
-            qFavorite.favoritePK.videos.eq(videos).and(qFavorite.favoritePK.accounts.eq(account)))
-        .fetchFirst();
+    try {
+      result = jpaQueryFactory.select(qFavorite.count()).from(qFavorite)
+          .where(
+              qFavorite.favoritePK.videos.videoId.eq(videoId)
+                  .and(qFavorite.favoritePK.accounts.eq(account)))
+          .fetchFirst();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_LIKE_ERROR);
+    }
+
+    return result > 0 ? true : false;
   }
 
   // 좋아요
@@ -569,58 +630,173 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     return true;
   }
 
+  //Account to Channel
+  private Channels accountToChannel(Accounts account) {
+    QChannels qChannels = QChannels.channels;
+
+    return jpaQueryFactory.selectFrom(qChannels)
+        .leftJoin(qChannels.accounts).fetchJoin()
+        .where(qChannels.accounts.eq(account))
+        .fetchOne();
+  }
+
+  //Delete S3 File
+  private void deleteS3(String videoUrl) {
+    String videoName = videoUrl.replace("https://du30t7lolw1uk.cloudfront.net/", "");
+    try {
+      amazonS3.deleteObject(bucketName, (videoName).replace(File.separatorChar, '/'));
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.NO_EXIST_VIDEO);
+    }
+  }
+
+  //----------------------------------------------CHANNEL----------------------------------------
+
 
   @Override
   public List<GetVideoResponseDto> getVideosInChannel(UUID channelId, UUID page, int pageSize) {
-    Channels channel = new Channels();
-    channel.setChannelId(channelId);
+    List<GetVideoResponseDto> responseDtos;
+
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
 
-    // 추천 영상 리스트 추출
-    return jpaQueryFactory.select(
-            Projections.bean(
-                GetVideoResponseDto.class,
-                qChannels.channelName.as("channelName"),
-                qChannels.profileUrl.as("channelProfileUrl"),
-                qVideos.thumbnail,
-                qVideos.title.as("videoTitle"),
-                qVideos.createAt,
-                qVideos.readCnt.as("readCount"),
-                qVideos.videoId
-            )
-        )
-        .from(qVideos).leftJoin(qVideos.channelId, qChannels)
-        .where(qVideos.channelId.eq(channel).and(qVideos.videoId.loe(page))
-            .and(qVideos.privateType.eq(false)))
-        .orderBy(qVideos.videoId.desc())
-        .limit(pageSize).fetch();
+    try {
+      responseDtos = jpaQueryFactory.select(
+              Projections.bean(
+                  GetVideoResponseDto.class,
+                  qChannels.channelName.as("channelName"),
+                  qChannels.profileUrl.as("channelProfileUrl"),
+                  qVideos.thumbnail,
+                  qVideos.title.as("videoTitle"),
+                  qVideos.createAt,
+                  qVideos.readCnt.as("readCount"),
+                  qVideos.videoId
+              )
+          )
+          .from(qVideos).leftJoin(qVideos.channelId, qChannels)
+          .where(qVideos.channelId.channelId.eq(channelId).and(qVideos.videoId.loe(page))
+              .and(qVideos.privateType.eq(false)))
+          .orderBy(qVideos.videoId.desc())
+          .limit(pageSize).fetch();
+    } catch (NullPointerException e) {
+      throw new NoContentException();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_ERROR);
+    }
+
+    return responseDtos;
   }
 
   @Override
+  public UUID lastUUIDInChannel(UUID channelId) {
+    UUID lastUUID;
+
+    QVideos qVideos = QVideos.videos;
+
+    try {
+      lastUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
+          .where(qVideos.channelId.channelId.eq(channelId).and(qVideos.privateType.eq(false)))
+          .orderBy(qVideos.videoId.desc()).limit(1)
+          .fetchOne();
+    } catch (NullPointerException e) {
+      throw new NoContentException();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_LAST_UUID_ERRROR);
+    }
+    return lastUUID;
+  }
+
+  @Override
+  public UUID lastUUIDInMyChannel(UUID channelId) {
+    UUID lastUUID;
+    QVideos qVideos = QVideos.videos;
+
+    try {
+      lastUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
+          .where(qVideos.channelId.channelId.eq(channelId))
+          .orderBy(qVideos.videoId.desc()).limit(1)
+          .fetchOne();
+    } catch (NullPointerException e) {
+      throw new NoContentException();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_LAST_UUID_ERRROR);
+    }
+
+    return lastUUID;
+  }
+
+  @Override
+  public List<Integer> lastUUIDSearchVideoInMyChannel(UUID channelId, String searchQuery) {
+    List<Integer> uuid = entityManager.createNativeQuery(
+            "SELECT ranking\n"
+                + "FROM (\n"
+                + "    SELECT ROW_NUMBER() OVER () AS ranking\n"
+                + "    FROM videos\n"
+                + "    WHERE videos.channel_id = ?\n"
+                + "    AND MATCH (videos.title, videos.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
+                + "    ORDER BY ranking DESC\n"
+                + "    LIMIT 1\n"
+                + ") AS ranked_results;\n"
+        ).setParameter(1, channelId)
+        .setParameter(2, searchQuery)
+        .getResultList();
+    return uuid;
+  }
+
+  @Override
+  public List<Integer> lastUUIDSearchVideoInChannel(UUID channelId, String searchQuery) {
+    System.out.println("lastUUIDSearchVideoInChannel 메소드 channelId값:" + channelId);
+    System.out.println("lastUUIDSearchVideoInChannel 메소드 searchQuery값:" + searchQuery);
+    List<Integer> uuid = entityManager.createNativeQuery("SELECT ranking\n"
+            + "FROM (\n"
+            + "    SELECT ROW_NUMBER() OVER () AS ranking\n"
+            + "    FROM videos\n"
+            + "    WHERE videos.channel_id = ?\n"
+            + "    AND MATCH (videos.title, videos.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
+            + "    AND videos.private_type = false\n"
+            + "    ORDER BY ranking DESC\n"
+            + "    LIMIT 1\n"
+            + ") AS ranked_results;\n "
+        ).setParameter(1, channelId)
+        .setParameter(2, searchQuery)
+        .getResultList();
+    System.out.println(uuid);
+
+    return uuid;
+  }
+
+
+  @Override
   public List<GetVideoResponseDto> getVideosInMyChannel(UUID channelId, UUID uuid, int pageSize) {
-    Channels channel = new Channels();
-    channel.setChannelId(channelId);
+    List<GetVideoResponseDto> responseDtos;
+
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
 
-    // 추천 영상 리스트 추출
-    return jpaQueryFactory.select(
-            Projections.bean(
-                GetVideoResponseDto.class,
-                qChannels.channelName.as("channelName"),
-                qChannels.profileUrl.as("channelProfileUrl"),
-                qVideos.thumbnail,
-                qVideos.title.as("videoTitle"),
-                qVideos.createAt,
-                qVideos.readCnt.as("readCount"),
-                qVideos.videoId
-            )
-        )
-        .from(qVideos).leftJoin(qVideos.channelId, qChannels)
-        .where(qVideos.channelId.eq(channel).and(qVideos.videoId.loe(uuid)))
-        .orderBy(qVideos.videoId.desc())
-        .limit(pageSize).fetch();
+    try {
+      responseDtos = jpaQueryFactory.select(
+              Projections.bean(
+                  GetVideoResponseDto.class,
+                  qChannels.channelName.as("channelName"),
+                  qChannels.profileUrl.as("channelProfileUrl"),
+                  qVideos.thumbnail,
+                  qVideos.title.as("videoTitle"),
+                  qVideos.createAt,
+                  qVideos.readCnt.as("readCount"),
+                  qVideos.videoId
+              )
+          )
+          .from(qVideos).leftJoin(qVideos.channelId, qChannels)
+          .where(qVideos.channelId.channelId.eq(channelId).and(qVideos.videoId.loe(uuid)))
+          .orderBy(qVideos.videoId.desc())
+          .limit(pageSize).fetch();
+    } catch (NullPointerException e) {
+      throw new NoContentException();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_ERROR);
+    }
+
+    return responseDtos;
   }
 
   @Override
@@ -700,26 +876,5 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     }
     System.out.println("searchList값:" + searchList);
     return searchList;
-  }
-
-
-  //Account to Channel
-  private Channels accountToChannel(Accounts account) {
-    QChannels qChannels = QChannels.channels;
-
-    return jpaQueryFactory.selectFrom(qChannels)
-        .leftJoin(qChannels.accounts).fetchJoin()
-        .where(qChannels.accounts.eq(account))
-        .fetchOne();
-  }
-
-  //Delete S3 File
-  private void deleteS3(String videoUrl) {
-    String videoName = videoUrl.replace("https://du30t7lolw1uk.cloudfront.net/", "");
-    try {
-      amazonS3.deleteObject(bucketName, (videoName).replace(File.separatorChar, '/'));
-    } catch (Exception e) {
-      throw new CustomApiException(ErrorCode.NO_EXIST_VIDEO);
-    }
   }
 }
