@@ -77,6 +77,10 @@ public class CommentDAO {
     }
     return true;
   }
+
+  public Integer findMaxGroupIndex(UUID videoId){
+    return commentRepository.findMaxGroupIndex(videoId);
+  }
 }
 
 
