@@ -29,8 +29,11 @@ public class CommentDAO {
   }
 
   public boolean saveParentComment(Comments comment) {
-    commentRepository.save(comment);
-
+    try {
+      commentRepository.save(comment);
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.INSERT_ERROR);
+    }
     return true;
   }
 
