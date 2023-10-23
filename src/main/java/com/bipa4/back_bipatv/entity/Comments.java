@@ -29,8 +29,6 @@ public class Comments {
   private String content;
   @Column(name = "parent_child", nullable = false)
   private int parentChild;
-  @Column(name = "sort", nullable = false)
-  private int sort;
   @Column(name = "group_index", nullable = false)
   private int groupIndex;
   @Column(name = "create_at", nullable = false)

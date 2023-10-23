@@ -5,6 +5,7 @@ import com.bipa4.back_bipatv.dto.CustomApiException;
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
 import com.bipa4.back_bipatv.dto.channel.GetInfiniteScrollRequestChannelDto;
+import com.bipa4.back_bipatv.dto.channel.GetInfiniteScrollSearchChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetSearchChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.SelectChannelDTO;
 import com.bipa4.back_bipatv.dto.comment.ChildCommentResponse;
@@ -212,6 +213,7 @@ public class ReadController {
           videos.get(videos.size() - 1).getVideoId(), channelId, accessToken); // 마지막 page의 UUID 호출
       responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
     }
+    System.out.println("채널 내 영상 조회 api nextUUID: " + nextUUID);
     return ResponseEntity.ok().body(responseDto);
   }
 
@@ -227,47 +229,41 @@ public class ReadController {
     List<GetSearchVideoINChannelDTO> videos = channelService.searchVideoInChannel(accessToken,
         channelId,
         page, pageSize, searchQuery);
-    String nextUUID = null;
+    Integer nextRank = null; //nextRank로 바꾸기 Integer
     if (!videos.isEmpty()) {
-      videos.forEach(System.out::println);
-      System.out.println(videos.get(0).getVideoId());
-      nextUUID = channelService.getSearchNextChannelVideoUUID(
-          videos.get(videos.size() - 1).getVideoId(), channelId, searchQuery,
-          accessToken); // 마지막 page의 UUID 호출
+      nextRank = channelService.getSearchNextChannelVideoUUID(
+          videos.get(videos.size() - 1).getRanking(), channelId, searchQuery,
+          accessToken, pageSize, page) == null ? null : page + 1; // 마지막 page의 UUID 호출
     }
-    System.out.println(nextUUID);
+    System.out.println("searchVideoInChannel NextRank 값 : " + nextRank);
     GetInfiniteScrollSearchVideoInChannelDTO responseDto = new GetInfiniteScrollSearchVideoInChannelDTO(
         videos,
-        nextUUID);
+        nextRank);
 
     return ResponseEntity.ok().body(responseDto);
   }
 
   @ApiOperation(value = "채널 검색", notes = "채널 검색")
   @GetMapping("/channel/search")
-  public ResponseEntity<String> searchChannel(
-      @CookieValue(value = "accessToken", required = false) String accessToken,
-      @RequestParam(value = "page", required = false) String page,
+  public ResponseEntity<GetInfiniteScrollSearchChannelDTO> searchChannel(
+      @RequestParam(value = "page", required = false) Integer page,
       @RequestParam("page_size") int pageSize,
       @RequestParam("search_query") String searchQuery
   ) {
     System.out.println("searchChannel");
     List<GetSearchChannelDTO> channels = channelService.searchChannel(
-        accessToken,
         page, pageSize, searchQuery);
-    String nextUUID = null;
-//    if (!videos.isEmpty()) {
-//      videos.forEach(System.out::println);
-//      System.out.println(videos.get(0).getVideoId());
-//      nextUUID = channelService.getSearchNextChannelVideoUUID(
-//          videos.get(videos.size() - 1).getVideoId(), channelId, searchQuery,
-//          accessToken); // 마지막 page의 UUID 호출
-//    }
-//    System.out.println(nextUUID);
-//    GetInfiniteScrollSearchVideoInChannelDTO responseDto = new GetInfiniteScrollSearchVideoInChannelDTO(
-//        videos,
-//        nextUUID);
+    Integer nextRank = null;
+    if (!channels.isEmpty()) {
+      nextRank = channelService.getNextChannelRank(searchQuery,
+          channels.get(channels.size() - 1).getRanking(), pageSize, page
+      ) == null ? null : page + 1;
+    }
 
-    return null;
+    GetInfiniteScrollSearchChannelDTO responseDto = new GetInfiniteScrollSearchChannelDTO(
+        channels,
+        nextRank);
+
+    return ResponseEntity.ok().body(responseDto);
   }
 }

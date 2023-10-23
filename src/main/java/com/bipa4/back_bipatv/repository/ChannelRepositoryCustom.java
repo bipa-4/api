@@ -21,10 +21,15 @@ public interface ChannelRepositoryCustom {
 
   String getNextChannelVideoUUID(UUID videoId, UUID channelId, boolean flag);
 
-  List<String> getSearchNextChannelVideoUUID(UUID videoId, UUID channelId, String searchQuery,
-      boolean flag);
+  List<Integer> getSearchNextChannelVideoRank(Integer rank, UUID channelId, String searchQuery,
+      int pageSize, Integer page);
 
-  List<UUID> lastUUIDSearchChannel(String searchQuery);
+  List<Integer> getSearchNextMyChannelVideoRank(Integer rank, UUID channelId, String searchQuery,
+      int pageSize, Integer page);
 
-  List<GetSearchChannelDTO> getSearchChannel(UUID uuid, int pageSize, String searchQuery);
+  List<Integer> lastUUIDSearchChannel(String searchQuery);
+
+  List<GetSearchChannelDTO> getSearchChannel(Integer uuid, int pageSize, String searchQuery);
+
+  List<Integer> getNextChannelRank(String searchQuery, Integer ranking, int pageSize, Integer page);
 }

@@ -10,6 +10,6 @@ import lombok.ToString;
 @Getter
 public class GetInfiniteScrollSearchChannelDTO {
 
-  private List<GetInfiniteScrollSearchChannelDTO> channels;
-  private String nextUUID;
+  private List<GetSearchChannelDTO> channels;
+  private Integer page;
 }
