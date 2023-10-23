@@ -94,8 +94,9 @@ public class CommentService {
         LocalDateTime.now().plusHours(9)
             .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 
+
     groupIndex = commentRequest.getParentChild() == 0 ?
-        findParentComments(commentRequest.getVideoId()).size() + 1 : groupIndex;
+        commentDAO.findMaxGroupIndex(video.getVideoId()) + 1 : groupIndex;
 
     // Comment DTO를 만드는 부분
     try {
