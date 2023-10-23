@@ -1,6 +1,7 @@
 package com.bipa4.back_bipatv.service;
 
 import com.bipa4.back_bipatv.dao.ChannelDAO;
+import com.bipa4.back_bipatv.dataType.ErrorCode;
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
 import com.bipa4.back_bipatv.dto.channel.GetSearchChannelDTO;
@@ -10,6 +11,7 @@ import com.bipa4.back_bipatv.dto.video.GetSearchVideoINChannelDTO;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.entity.Channels;
+import com.bipa4.back_bipatv.exception.CustomApiException;
 import com.bipa4.back_bipatv.exception.ResourceNotFoundException;
 import com.bipa4.back_bipatv.repository.ChannelRepository;
 import com.bipa4.back_bipatv.repository.VideoRepository;
@@ -31,16 +33,30 @@ public class ChannelService {
   private final ChannelRepository channelRepository;
   private final VideoRepository videoRepository;
 
-  public boolean getUpdateFlag(String accessToken, UUID channelId) {
-    Accounts loginAccount = securityService.getSubjectAccount(accessToken);
-    Channels selectChannel = channelRepository.findByChannelId(channelId);
+  public boolean getUpdateFlag(Accounts accounts, UUID channelId) {
+    Channels selectChannel;
 
-    if (Objects.equals(selectChannel.getAccounts().getAccountId(),
-        loginAccount.getAccountId())) {//수정 가능
-      return true;
-    } else {//수정 불가
+    //비회원 채널 조회
+    if (accounts == null) {
       return false;
     }
+
+    try {
+      selectChannel = channelRepository.findByChannelId(channelId);
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.NO_EXIST_CHANNEL);
+    }
+
+    if (selectChannel == null) {
+      throw new CustomApiException(ErrorCode.NO_EXIST_CHANNEL);
+    }
+
+    if (!Objects.equals(selectChannel.getAccounts().getAccountId(),
+        accounts.getAccountId())) {
+      return false;
+    }
+
+    return true;
   }
 
   public SelectChannelDTO findChannel(UUID channelId) {
@@ -52,7 +68,9 @@ public class ChannelService {
   }
 
   public List<GetChannelTop5DTO> findLimitTimeSumCnt() {
-    List<GetChannelTop5DTO> list = channelDAO.findTop5Channels();
+    List<GetChannelTop5DTO> list;
+
+    list = channelDAO.findTop5Channels();
 
     IntStream.range(0, list.size())
         .forEach(i -> list.get(i).setRanking(i + 1));
@@ -78,20 +96,15 @@ public class ChannelService {
     return list;
   }
 
-  public String getChannelNextUUID(UUID uuid) {
+  public UUID getChannelNextUUID(UUID uuid) {
     return channelRepository.getChannelNextUUID(uuid);
   }
 
-  public List<GetChannelDTO> getAllChannels(String page, int pageSize) {
-    UUID uuid;
+  public List<GetChannelDTO> getAllChannels(UUID page, int pageSize) {
     if (page == null) {
-      uuid = channelRepository.lastUUID();
-
-    } else {
-      uuid = UUID.fromString(page);
+      page = channelRepository.lastUUID();
     }
-    System.out.println("Service getAllChannels Method uuid: " + uuid);
-    return channelRepository.getNotPrivateChannel(uuid, pageSize);
+    return channelRepository.getNotPrivateChannel(page, pageSize);
   }
 
   @Transactional
@@ -129,43 +142,33 @@ public class ChannelService {
     return channelRepository.save(myChannel);
   }
 
-  public List<GetVideoResponseDto> getVideosInChannel(String accessToken, UUID channelId,
-      String page, int pageSize) {
+  public List<GetVideoResponseDto> getVideosInChannel(Accounts loginUser, UUID channelId,
+      UUID page, int pageSize) {
 
-    Accounts loginUser = securityService.getSubjectAccount(accessToken);
-    UUID uuid = null;
     if (loginUser != null) {
       if (loginUser.getAccountId() == (channelRepository.findByChannelId(channelId).getAccounts()
           .getAccountId())) {//채널 주인이 로그인한 사람이면 채널 내 비공개 영상도 조회 가능해야 함
         if (page == null) {
-          uuid = videoRepository.lastUUIDInMyChannel(channelId);
-        } else {
-          uuid = UUID.fromString(page);
+          page = videoRepository.lastUUIDInMyChannel(channelId);
         }
-        videoRepository.getVideosInMyChannel(channelId, uuid, pageSize)
-            .forEach(System.out::println);
-        return videoRepository.getVideosInMyChannel(channelId, uuid, pageSize);
+        return videoRepository.getVideosInMyChannel(channelId, page, pageSize);
       } else {
         if (page == null) {
-          uuid = videoRepository.lastUUIDInChannel(channelId);
-        } else {
-          uuid = UUID.fromString(page);
+          page = videoRepository.lastUUIDInChannel(channelId);
         }
-        videoRepository.getVideosInChannel(channelId, uuid, pageSize).forEach(System.out::println);
-        return videoRepository.getVideosInChannel(channelId, uuid, pageSize);
+        videoRepository.getVideosInChannel(channelId, page, pageSize).forEach(System.out::println);
+        return videoRepository.getVideosInChannel(channelId, page, pageSize);
       }
     } else {
       if (page == null) {
-        uuid = videoRepository.lastUUIDInChannel(channelId);
-      } else {
-        uuid = UUID.fromString(page);
+        page = videoRepository.lastUUIDInChannel(channelId);
       }
-      videoRepository.getVideosInChannel(channelId, uuid, pageSize).forEach(System.out::println);
-      return videoRepository.getVideosInChannel(channelId, uuid, pageSize);
+      videoRepository.getVideosInChannel(channelId, page, pageSize).forEach(System.out::println);
+      return videoRepository.getVideosInChannel(channelId, page, pageSize);
     }
   }
 
-  public String getNextChannelVideoUUID(UUID videoId, UUID channelId, String accessToken) {
+  public UUID getNextChannelVideoUUID(UUID videoId, UUID channelId, String accessToken) {
     Accounts loginUser = securityService.getSubjectAccount(accessToken);
     if (loginUser.getAccountId() == (channelRepository.findByChannelId(channelId).getAccounts()
         .getAccountId())) {//채널 주인이 로그인한 사람이면 채널 내 비공개 영상도 조회 가능해야 함

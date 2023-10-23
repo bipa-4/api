@@ -49,29 +49,28 @@ public class VideoService {
     return videoRepository.update(id, requestDto, account);
   }
 
-  public List<GetVideoResponseDto> getAllVideos(String page, int pageSize) {
-    UUID uuid;
+  public List<GetVideoResponseDto> getAllVideos(UUID page, int pageSize) {
     if (page == null) {
-      uuid = videoRepository.lastUUID();
-    } else {
-      uuid = UUID.fromString(page);
+      page = videoRepository.lastUUID();
     }
-    return videoRepository.getAllVideos(uuid, pageSize);
+    return videoRepository.getAllVideos(page, pageSize);
   }
 
-  public String getNextUUID(UUID uuid) {
+  public UUID getNextUUID(UUID uuid) {
     return videoRepository.getNextUUID(uuid);
   }
 
-  public List<GetVideoResponseDto> getCategoryVideos(UUID category, String page,
+  public UUID getNextCategoryUUID(UUID uuid, UUID category) {
+    return videoRepository.getNextCategoryUUID(uuid, category);
+  }
+
+
+  public List<GetVideoResponseDto> getCategoryVideos(UUID category, UUID page,
       int pageSize) {
-    UUID uuid;
     if (page == null) {
-      uuid = videoRepository.lastCategoryUUID(category);
-    } else {
-      uuid = UUID.fromString(page);
+      page = videoRepository.lastCategoryUUID(category);
     }
-    return (List<GetVideoResponseDto>) videoRepository.findByCategory(category, uuid, pageSize);
+    return (List<GetVideoResponseDto>) videoRepository.findByCategory(category, page, pageSize);
   }
 
   public List<GetCategoryNameRequestDto> getCategoryNames() {
@@ -84,7 +83,7 @@ public class VideoService {
   }
 
   @Transactional
-  public int updateViews() {
+  public boolean updateViews() {
     return videoRepository.updateViews();
   }
 
@@ -93,15 +92,12 @@ public class VideoService {
   }
 
   @Transactional
-  public int plusViews(UUID videoId) {
+  public boolean plusViews(UUID videoId) {
     return videoRepository.plusViews(videoId);
   }
 
   public boolean getLike(UUID videoId, Accounts account) {
-    if (videoRepository.getFavorite(videoId, account) == 1) {
-      return true;
-    }
-    return false;
+    return videoRepository.getFavorite(videoId, account);
   }
 
   @Transactional

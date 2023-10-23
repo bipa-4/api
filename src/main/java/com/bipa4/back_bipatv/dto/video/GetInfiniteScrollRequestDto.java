@@ -1,6 +1,7 @@
 package com.bipa4.back_bipatv.dto.video;
 
 import java.util.List;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
@@ -11,5 +12,5 @@ import lombok.ToString;
 public class GetInfiniteScrollRequestDto {
 
   private List<GetVideoResponseDto> videos;
-  private String nextUUID;
+  private UUID nextUUID;
 }
