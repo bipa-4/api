@@ -39,5 +39,12 @@ public interface CommentRepository extends JpaRepository<Comments, UUID> {
   List<ChildCommentResponse> findChildComments(@Param("videoId") UUID videoId,
       @Param("groupIndex") int groupIndex);
 
+  @Query(value =
+      "SELECT MAX(group_index) \n" +
+          "FROM comments\n" +
+          "WHERE parent_child = 0\n" +
+          "AND video_id  = :videoId", nativeQuery = true)
+  Integer findMaxGroupIndex(@Param("videoId") UUID videoId);
+
 
 }
