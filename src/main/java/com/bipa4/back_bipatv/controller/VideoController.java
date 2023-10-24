@@ -43,8 +43,7 @@ public class VideoController {
   // 본인 영상인지 확인
   @ApiOperation(value = "본인의 영상이 맞는지 확인", notes = "토큰을 통해 본인의 영상이 맞는지 확인 (삭제 또는 업로드 등애 사용)")
   @GetMapping("/check")
-  public ResponseEntity<Boolean> checkVideos(
-      @CookieValue(name = "accessToken", required = false) String accessToken,
+  public ResponseEntity<Boolean> checkVideos(@CookieValue(name = "accessToken") String accessToken,
       @RequestParam("videoId") UUID videoId) {
     Accounts account = securityService.getSubjectAccount(accessToken);
     boolean response = videoService.check(account, videoId);

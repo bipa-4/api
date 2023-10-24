@@ -54,23 +54,13 @@ public class CommentController {
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
-  // 부모 댓글 DELETE
-  @DeleteMapping("/{videoId}/commentParent/{commentId}")
-  public ResponseEntity<Boolean> deleteParentComment(
+  // 댓글 DELETE
+  @DeleteMapping("/{videoId}/comment/{commentId}")
+  public ResponseEntity<Boolean> deleteComment(
       @PathVariable UUID videoId, @PathVariable UUID commentId,
       @CookieValue(name = "accessToken") String accessToken) {
     Accounts account = securityService.getSubjectAccount(accessToken);
-    boolean response = commentService.deleteParentComment(commentId,account);
-    return new ResponseEntity<>(response, HttpStatus.OK);
-  }
-
-  // 자식 댓글 DELETE
-  @DeleteMapping("/{videoId}/commentChild/{commentId}")
-  public ResponseEntity<Boolean> deleteChildComment(
-      @PathVariable UUID videoId, @PathVariable UUID commentId,
-      @CookieValue(name = "accessToken") String accessToken) {
-    Accounts account = securityService.getSubjectAccount(accessToken);
-    boolean response = commentService.deleteChildComment(commentId,account);
+    boolean response = commentService.deleteComment(commentId, account);
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 }

@@ -85,9 +85,6 @@ public class SecurityService {
   }
 
   public Accounts getSubjectAccount(String token) {
-    if (token == null) {
-      return null;
-    }
     Claims claims = Jwts.parserBuilder()
         .setSigningKey(DatatypeConverter.parseBase64Binary(SECRET_KEY))
         .build()

@@ -1,18 +1,16 @@
 package com.bipa4.back_bipatv.controller;
 
+
 import com.bipa4.back_bipatv.dataType.ErrorCode;
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
 import com.bipa4.back_bipatv.dto.channel.GetInfiniteScrollRequestChannelDto;
-import com.bipa4.back_bipatv.dto.channel.GetSearchChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.SelectChannelDTO;
 import com.bipa4.back_bipatv.dto.comment.ChildCommentResponse;
 import com.bipa4.back_bipatv.dto.comment.CommentResponse;
 import com.bipa4.back_bipatv.dto.video.GetCategoryNameRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetInfiniteScrollRequestDto;
-import com.bipa4.back_bipatv.dto.video.GetInfiniteScrollSearchVideoInChannelDTO;
-import com.bipa4.back_bipatv.dto.video.GetSearchVideoINChannelDTO;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.exception.CustomApiException;
@@ -45,6 +43,7 @@ public class ReadController {
   private final SecurityService securityService;
 
 
+  // 전체 조회 (최신 순으로)
   // 전체 조회 (최신 순으로)
   @ApiOperation(value = "전체 조회", notes = "최신순으로 전체 조회 (무한스크롤) / 처음엔 page 안넘겨주면 됨.")
   @GetMapping("/video/latest")
@@ -202,8 +201,7 @@ public class ReadController {
     UUID nextUUID = null;
     GetInfiniteScrollRequestDto responseDto = null;
 
-    Accounts loginUser = securityService.getSubjectAccount(accessToken);
-    List<GetVideoResponseDto> videos = channelService.getVideosInChannel(loginUser, channelId,
+    List<GetVideoResponseDto> videos = channelService.getVideosInChannel(accessToken, channelId,
         page, pageSize);
 
     if (!videos.isEmpty()) {
@@ -212,47 +210,5 @@ public class ReadController {
       responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
     }
     return new ResponseEntity<>(responseDto, HttpStatus.OK);
-  }
-
-  // ---------------------------------------------------------------------------------------
-
-  @ApiOperation(value = "채널 내 영상 검색", notes = "채널 안의 영상 검색")
-  @GetMapping("/channel/{channelId}/video")
-  public ResponseEntity<GetInfiniteScrollSearchVideoInChannelDTO> searchVideoInChannel(
-      @CookieValue(value = "accessToken", required = false) String accessToken,
-      @RequestParam(value = "page", required = false) Integer page,
-      @RequestParam("page_size") int pageSize,
-      @PathVariable("channelId") UUID channelId,
-      @RequestParam("search_query") String searchQuery) {
-    List<GetSearchVideoINChannelDTO> videos = channelService.searchVideoInChannel(accessToken,
-        channelId,
-        page, pageSize, searchQuery);
-    String nextUUID = null;
-    if (!videos.isEmpty()) {
-      nextUUID = channelService.getSearchNextChannelVideoUUID(
-          videos.get(videos.size() - 1).getVideoId(), channelId, searchQuery,
-          accessToken); // 마지막 page의 UUID 호출
-    }
-    GetInfiniteScrollSearchVideoInChannelDTO responseDto = new GetInfiniteScrollSearchVideoInChannelDTO(
-        videos,
-        nextUUID);
-
-    return ResponseEntity.ok().body(responseDto);
-  }
-
-  @ApiOperation(value = "채널 검색", notes = "채널 검색")
-  @GetMapping("/channel/search")
-  public ResponseEntity<String> searchChannel(
-      @CookieValue(value = "accessToken", required = false) String accessToken,
-      @RequestParam(value = "page", required = false) String page,
-      @RequestParam("page_size") int pageSize,
-      @RequestParam("search_query") String searchQuery
-  ) {
-    List<GetSearchChannelDTO> channels = channelService.searchChannel(
-        accessToken,
-        page, pageSize, searchQuery);
-    String nextUUID = null;
-
-    return null;
   }
 }

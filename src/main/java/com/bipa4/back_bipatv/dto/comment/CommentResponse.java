@@ -15,7 +15,7 @@ public interface CommentResponse {
 
   String getCreateAt();
 
-  int getChildCount();
+  String getChildCount();
 
   String getChannelId();
 }
