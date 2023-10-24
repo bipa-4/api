@@ -7,7 +7,6 @@ import com.bipa4.back_bipatv.dataType.ErrorCode;
 import com.bipa4.back_bipatv.dto.user.GetAccountCheckDTO;
 import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.exception.CustomApiException;
-import com.bipa4.back_bipatv.exception.NoContentException;
 import com.bipa4.back_bipatv.security.SecurityService;
 import com.bipa4.back_bipatv.service.PresignedUrlService;
 import com.bipa4.back_bipatv.service.UserService;
@@ -91,15 +90,16 @@ public class UserController {
   public ResponseEntity<GetAccountCheckDTO> getAccountCheck(
       @CookieValue(name = "accessToken", required = false) String accessToken,
       HttpServletRequest request) {
+    GetAccountCheckDTO getAccountCheckDTO = null;
+    
     String nat = (String) request.getAttribute("newAccessToken");
     if (nat != null) {
       accessToken = nat;
     }
-    if (accessToken == null) {
-      throw new NoContentException();
-    }
 
-    GetAccountCheckDTO getAccountCheckDTO = userService.getAccountCheck(accessToken);
+    if (accessToken != null) {
+      getAccountCheckDTO = userService.getAccountCheck(accessToken);
+    }
 
     return getAccountCheckDTO == null ? new ResponseEntity<>(HttpStatus.NO_CONTENT)
         : new ResponseEntity<>(getAccountCheckDTO, HttpStatus.OK);
