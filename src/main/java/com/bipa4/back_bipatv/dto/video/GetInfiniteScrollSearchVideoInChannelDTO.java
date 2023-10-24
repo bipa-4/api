@@ -11,5 +11,5 @@ import lombok.ToString;
 public class GetInfiniteScrollSearchVideoInChannelDTO {
 
   private List<GetSearchVideoINChannelDTO> videos;
-  private String nextUUID;
+  private Integer page;
 }
