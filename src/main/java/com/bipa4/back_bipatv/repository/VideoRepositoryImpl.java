@@ -811,7 +811,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     if (currentPage == null) {
       currentPage = 0;
     }
-    List<GetSearchVideoINChannelDTO> searchList = entityManager.createNativeQuery(
+    List<Object[]> resultList = entityManager.createNativeQuery(
             "SELECT c.name AS channelName, BIN_TO_UUID(c.channel_id) as channelId, c.profile_url AS channelProfileUrl, v.thumbnail AS thumbnail, v.title AS videoTitle, v.create_at AS createAt, v.read_cnt AS readCnt, BIN_TO_UUID(v.video_id) AS videoId, ROW_NUMBER() OVER () AS ranking\n"
                 + "FROM channels c\n"
                 + "LEFT JOIN videos v ON c.channel_id = v.channel_id \n"
@@ -833,6 +833,21 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
         .setParameter(3, searchQuery)
         .setParameter(4, 1 + ((currentPage - 1) * pageSize))
         .setParameter(5, pageSize).getResultList();
+    List<GetSearchVideoINChannelDTO> searchList = new ArrayList<>();
+    for (Object[] row : resultList) {
+      GetSearchVideoINChannelDTO dto = new GetSearchVideoINChannelDTO();
+      dto.setChannelName((String) row[0]);
+      dto.setChannelId(UUID.fromString((String) row[1]));
+      dto.setChannelProfileUrl((String) row[2]);
+      dto.setThumbnail((String) row[3]);
+      dto.setVideoTitle((String) row[4]);
+      dto.setCreateAt((Timestamp) row[5]);
+      dto.setReadCount((int) row[6]);
+      dto.setVideoId(UUID.fromString((String) row[7]));
+      dto.setRanking(((BigInteger) row[8]).intValue());
+      // 나머지 필드 설정
+      searchList.add(dto);
+    }
     System.out.println("searchList값:" + searchList);
     return searchList;
   }
@@ -872,13 +887,14 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     for (Object[] row : resultList) {
       GetSearchVideoINChannelDTO dto = new GetSearchVideoINChannelDTO();
       dto.setChannelName((String) row[0]);
-      dto.setChannelProfileUrl((String) row[1]);
-      dto.setThumbnail((String) row[2]);
-      dto.setVideoTitle((String) row[3]);
-      dto.setCreateAt((Timestamp) row[4]);
-      dto.setReadCount((int) row[5]);
-      dto.setVideoId(UUID.fromString((String) row[6]));
-      dto.setRanking(((BigInteger) row[7]).intValue());
+      dto.setChannelId(UUID.fromString((String) row[1]));
+      dto.setChannelProfileUrl((String) row[2]);
+      dto.setThumbnail((String) row[3]);
+      dto.setVideoTitle((String) row[4]);
+      dto.setCreateAt((Timestamp) row[5]);
+      dto.setReadCount((int) row[6]);
+      dto.setVideoId(UUID.fromString((String) row[7]));
+      dto.setRanking(((BigInteger) row[8]).intValue());
       // 나머지 필드 설정
       searchList.add(dto);
     }
