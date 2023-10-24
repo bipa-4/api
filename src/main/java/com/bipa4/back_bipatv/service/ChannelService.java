@@ -70,8 +70,8 @@ public class ChannelService {
   public List<GetChannelTop5DTO> findLimitTimeSumCnt() {
     List<GetChannelTop5DTO> list = channelDAO.findTop5Channels();
 
-    IntStream.range(1, list.size() + 1)
-        .forEach(i -> list.get(i).setRanking(i));
+    IntStream.range(0, list.size())
+        .forEach(i -> list.get(i).setRanking(i + 1));
     return list;
   }
 
