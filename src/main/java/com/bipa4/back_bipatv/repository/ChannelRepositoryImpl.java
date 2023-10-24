@@ -133,7 +133,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
 
     UUID nextUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
         .where(qVideos.videoId.lt(videoId).and(qVideos.channelId.channelId.eq(channelId))
-            .and(qVideos.privateType.eq(flag)))
+            .and(qVideos.privateType.eq(flag)).or(qVideos.privateType.eq(false)))
         .orderBy(qVideos.videoId.desc())
         .limit(1).fetchOne();
 

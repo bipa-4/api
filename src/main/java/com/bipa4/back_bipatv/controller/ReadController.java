@@ -5,16 +5,12 @@ import com.bipa4.back_bipatv.dto.CustomApiException;
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
 import com.bipa4.back_bipatv.dto.channel.GetInfiniteScrollRequestChannelDto;
-import com.bipa4.back_bipatv.dto.channel.GetInfiniteScrollSearchChannelDTO;
-import com.bipa4.back_bipatv.dto.channel.GetSearchChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.SelectChannelDTO;
 import com.bipa4.back_bipatv.dto.comment.ChildCommentResponse;
 import com.bipa4.back_bipatv.dto.comment.CommentResponse;
 import com.bipa4.back_bipatv.dto.video.GetCategoryNameRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetInfiniteScrollRequestDto;
-import com.bipa4.back_bipatv.dto.video.GetInfiniteScrollSearchVideoInChannelDTO;
-import com.bipa4.back_bipatv.dto.video.GetSearchVideoINChannelDTO;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.security.SecurityService;
 import com.bipa4.back_bipatv.service.ChannelService;
@@ -217,53 +213,5 @@ public class ReadController {
     return ResponseEntity.ok().body(responseDto);
   }
 
-  @ApiOperation(value = "채널 내 영상 검색", notes = "채널 안의 영상 검색")
-  @GetMapping("/channel/{channelId}/video")
-  public ResponseEntity<GetInfiniteScrollSearchVideoInChannelDTO> searchVideoInChannel(
-      @CookieValue(value = "accessToken", required = false) String accessToken,
-      @RequestParam(value = "page", required = false) Integer page,
-      @RequestParam("page_size") int pageSize,
-      @PathVariable("channelId") UUID channelId,
-      @RequestParam("search_query") String searchQuery) {
-    System.out.println("searchVideoInChannel");
-    List<GetSearchVideoINChannelDTO> videos = channelService.searchVideoInChannel(accessToken,
-        channelId,
-        page, pageSize, searchQuery);
-    Integer nextRank = null; //nextRank로 바꾸기 Integer
-    if (!videos.isEmpty()) {
-      nextRank = channelService.getSearchNextChannelVideoUUID(
-          videos.get(videos.size() - 1).getRanking(), channelId, searchQuery,
-          accessToken, pageSize, page) == null ? null : page + 1; // 마지막 page의 UUID 호출
-    }
-    System.out.println("searchVideoInChannel NextRank 값 : " + nextRank);
-    GetInfiniteScrollSearchVideoInChannelDTO responseDto = new GetInfiniteScrollSearchVideoInChannelDTO(
-        videos,
-        nextRank);
 
-    return ResponseEntity.ok().body(responseDto);
-  }
-
-  @ApiOperation(value = "채널 검색", notes = "채널 검색")
-  @GetMapping("/channel/search")
-  public ResponseEntity<GetInfiniteScrollSearchChannelDTO> searchChannel(
-      @RequestParam(value = "page", required = false) Integer page,
-      @RequestParam("page_size") int pageSize,
-      @RequestParam("search_query") String searchQuery
-  ) {
-    System.out.println("searchChannel");
-    List<GetSearchChannelDTO> channels = channelService.searchChannel(
-        page, pageSize, searchQuery);
-    Integer nextRank = null;
-    if (!channels.isEmpty()) {
-      nextRank = channelService.getNextChannelRank(searchQuery,
-          channels.get(channels.size() - 1).getRanking(), pageSize, page
-      ) == null ? null : page + 1;
-    }
-
-    GetInfiniteScrollSearchChannelDTO responseDto = new GetInfiniteScrollSearchChannelDTO(
-        channels,
-        nextRank);
-
-    return ResponseEntity.ok().body(responseDto);
-  }
 }
