@@ -5,6 +5,7 @@ public interface ChildCommentResponse {
     String getCommentId();
     String getGroupIndex();
     String getChannelProfileUrl();
+    String getChannelId();
     String getChannelName();
     String getContent();
     String getCreateAt();
