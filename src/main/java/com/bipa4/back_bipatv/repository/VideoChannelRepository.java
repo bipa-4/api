@@ -14,9 +14,8 @@ public interface VideoChannelRepository extends JpaRepository<Videos, Long> {
 
   @Modifying
   @Query(value =
-      "SELECT BIN_TO_UUID(video_id) as videoId, BIN_TO_UUID(c.channel_id) as channelId, v.content, create_at as createAt, v.private_type as privateType, read_cnt as readCount, thumbnail, title as videoTitle, profile_url as channelProfileUrl, name as channelName FROM videos v\n"
-          + "    left outer join channels c on v.channel_id = c.channel_id\n"
-          + "    WHERE MATCH (v.title, v.content)\n"
-          + "    AGAINST (:searchQuery IN NATURAL LANGUAGE MODE)", nativeQuery = true)
+      "SELECT BIN_TO_UUID(video_id) as videoId, BIN_TO_UUID(c.channel_id) as channelId, s.content, create_at as createAt, s.private_type as privateType, read_cnt as readCount, thumbnail, title as videoTitle, profile_url as channelProfileUrl, name as channelName FROM (SELECT *, MATCH (v.title, v.content) AGAINST (:searchQuery IN NATURAL LANGUAGE MODE) as score\n"
+          + " FROM bipaTV.videos v) s left outer join channels c on s.channel_id = c.channel_id\n"
+          + " WHERE s.score > 0.7", nativeQuery = true)
   List<GetSearchResponseDto> findBySearchQuery(@Param("searchQuery") String searchQuery);
 }

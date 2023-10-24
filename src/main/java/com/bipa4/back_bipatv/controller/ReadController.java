@@ -1,7 +1,6 @@
 package com.bipa4.back_bipatv.controller;
 
 
-import com.bipa4.back_bipatv.dataType.ErrorCode;
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
 import com.bipa4.back_bipatv.dto.channel.GetInfiniteScrollRequestChannelDto;
@@ -13,7 +12,6 @@ import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetInfiniteScrollRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.entity.Accounts;
-import com.bipa4.back_bipatv.exception.CustomApiException;
 import com.bipa4.back_bipatv.security.SecurityService;
 import com.bipa4.back_bipatv.service.ChannelService;
 import com.bipa4.back_bipatv.service.CommentService;
@@ -30,6 +28,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Api(tags = {"ReadController"})
@@ -112,16 +111,20 @@ public class ReadController {
 
 
   // 영상 상세 조회
-  @ApiOperation(value = "영상 상세 조회 및 추천 영상 조회", notes = "영상 클릭시 상세 정보 + 추천 영상 추출")
+  @ApiOperation(value = "영상 상세 조회", notes = "영상 클릭시 상세 정보 + 추천 영상 추출")
   @GetMapping("/video/detail/{videoId}")
   public ResponseEntity<GetDetailResponseDto> getVideoDetail(
       @PathVariable("videoId") UUID id) {
-    boolean viewsResult = videoService.plusViews(id); //  조회수 상승
     GetDetailResponseDto video = videoService.getVideoDetail(id);
-    if (!viewsResult) {
-      throw new CustomApiException(ErrorCode.UPDATE_VIEW_ERROR);
-    }
     return new ResponseEntity<>(video, HttpStatus.OK);
+  }
+
+  // 조회수 상승
+  @ApiOperation(value = "조회수 상승", notes = "조회수 상승")
+  @PutMapping("/video/updateViews/{videoId}")
+  public ResponseEntity<Boolean> getPlusViews(@PathVariable("videoId") UUID id) {
+    boolean response = videoService.plusViews(id); //  조회수 상승
+    return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
 
