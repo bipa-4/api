@@ -20,8 +20,8 @@ public class GetVideoResponseDto {
   private String channelProfileUrl;
   private String thumbnail;
   private String videoTitle;
-  @DateTimeFormat(pattern = "yyyy-MM-dd 00:00:00")
-  @JsonFormat(pattern = "yyyy-MM-dd 00:00:00", timezone = "GMT+9")
+  @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+9")
   private Date createAt;
   private Integer readCount;
   private UUID videoId;

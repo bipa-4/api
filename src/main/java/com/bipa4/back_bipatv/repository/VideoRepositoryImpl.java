@@ -809,7 +809,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
       Integer currentPage,
       int pageSize, String searchQuery) {
     List<GetSearchVideoINChannelDTO> searchList = entityManager.createNativeQuery(
-            "SELECT c.name AS channelName, c.channelId, c.profile_url AS channelProfileUrl, v.thumbnail AS thumbnail, v.title AS videoTitle, v.create_at AS createAt, v.read_cnt AS readCnt, BIN_TO_UUID(v.video_id) AS videoId, ROW_NUMBER() OVER () AS ranking\n"
+            "SELECT c.name AS channelName, BIN_TO_UUID(c.channel_id) as channelId, c.profile_url AS channelProfileUrl, v.thumbnail AS thumbnail, v.title AS videoTitle, v.create_at AS createAt, v.read_cnt AS readCnt, BIN_TO_UUID(v.video_id) AS videoId, ROW_NUMBER() OVER () AS ranking\n"
                 + "FROM channels c\n"
                 + "LEFT JOIN videos v ON c.channel_id = v.channel_id \n"
                 + "WHERE v.channel_id = ? \n"
@@ -840,7 +840,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
       int pageSize, String searchQuery) {
 
     List<Object[]> resultList = entityManager.createNativeQuery(
-            "SELECT c.name AS channelName, c.channelId, c.profile_url AS channelProfileUrl, v.thumbnail AS thumbnail, v.title AS videoTitle, v.create_at AS createAt, v.read_cnt AS readCnt, BIN_TO_UUID(v.video_id) AS videoId, ROW_NUMBER() OVER () AS ranking\n"
+            "SELECT c.name AS channelName, BIN_TO_UUID(c.channel_id) as channelId, c.profile_url AS channelProfileUrl, v.thumbnail AS thumbnail, v.title AS videoTitle, v.create_at AS createAt, v.read_cnt AS readCnt, BIN_TO_UUID(v.video_id) AS videoId, ROW_NUMBER() OVER () AS ranking\n"
                 + "FROM channels c\n"
                 + "LEFT JOIN videos v ON c.channel_id = v.channel_id \n"
                 + "WHERE v.channel_id = ? \n"
