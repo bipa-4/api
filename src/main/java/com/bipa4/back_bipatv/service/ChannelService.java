@@ -297,10 +297,9 @@ public class ChannelService {
     Integer currentPage = null;
     System.out.println("page값 " + page);
     if (page == null) {
-      currentPage =
-          channelRepository.lastUUIDSearchChannel(searchQuery).get(0) == null
-              ? null
-              : channelRepository.lastUUIDSearchChannel(searchQuery).get(0);
+      if (channelRepository.lastUUIDSearchChannel(searchQuery) == null) {
+        currentPage = channelRepository.lastUUIDSearchChannel(searchQuery).get(0);
+      }
     } else {
       currentPage = page;
     }
