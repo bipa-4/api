@@ -62,7 +62,7 @@ public class CommentService {
   }
 
   @Transactional
-  public boolean deleteComment(UUID commentId, Accounts account) {
+  public boolean deleteParentComment(UUID commentId, Accounts account) {
     Comments comment = commentRepository.findById(commentId).orElse(null);
 
     // 댓글이 존재하지 않는다면.
@@ -75,7 +75,24 @@ public class CommentService {
       throw new AuthorizationException();
     }
 
-    return commentDAO.deleteComment(commentId);
+    return commentDAO.deleteParentComment(comment.getVideos().getVideoId(),comment.getGroupIndex());
+  }
+
+  @Transactional
+  public boolean deleteChildComment(UUID commentId, Accounts account) {
+    Comments comment = commentRepository.findById(commentId).orElse(null);
+
+    // 댓글이 존재하지 않는다면.
+    if (comment == null) {
+      throw new CustomApiException(ErrorCode.No_EXIST_COMMENT);
+    }
+
+    // 본인이 작성한 댓글이 아니라면.
+    if (!Objects.equals(comment.getAccounts().getAccountId(), account.getAccountId())) {
+      throw new AuthorizationException();
+    }
+
+    return commentDAO.deleteChildComment(commentId);
   }
 
 
