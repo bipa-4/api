@@ -7,6 +7,7 @@ import com.bipa4.back_bipatv.dataType.ErrorCode;
 import com.bipa4.back_bipatv.dto.user.GetAccountCheckDTO;
 import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.exception.CustomApiException;
+import com.bipa4.back_bipatv.exception.NoContentException;
 import com.bipa4.back_bipatv.security.SecurityService;
 import com.bipa4.back_bipatv.service.PresignedUrlService;
 import com.bipa4.back_bipatv.service.UserService;
@@ -95,7 +96,7 @@ public class UserController {
       accessToken = nat;
     }
     if (accessToken == null) {
-      throw new CustomApiException(ErrorCode.ACCESSTOKEN_ERROR);
+      throw new NoContentException();
     }
 
     GetAccountCheckDTO getAccountCheckDTO = userService.getAccountCheck(accessToken);
