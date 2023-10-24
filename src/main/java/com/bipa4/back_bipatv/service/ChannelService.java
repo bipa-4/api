@@ -70,27 +70,8 @@ public class ChannelService {
   public List<GetChannelTop5DTO> findLimitTimeSumCnt() {
     List<GetChannelTop5DTO> list = channelDAO.findTop5Channels();
 
-    IntStream.range(0, list.size())
-        .forEach(i -> list.get(i).setRanking(i + 1));
-    return list;
-  }
-
-  public List<GetChannelTop5DTO> findLimitTimeSumCntV2() {
-    List<GetChannelTop5DTO> list = channelDAO.findTop5Channels();
-
-    int i = 0;
-    list.get(0).setRanking(1);
-    for (GetChannelTop5DTO item : list) {
-      i++;
-      if (Objects.equals(list.get(i - 1).getTimeLimitSumCnt(), list.get(i).getTimeLimitSumCnt())) {
-        list.get(i).setRanking(item.getRanking());
-      } else {
-        list.get(i).setRanking(i + 1);
-      }
-      if (i == list.size() - 1) {
-        break;
-      }
-    }
+    IntStream.range(1, list.size() + 1)
+        .forEach(i -> list.get(i).setRanking(i));
     return list;
   }
 
@@ -269,10 +250,9 @@ public class ChannelService {
     Integer currentPage = null;
     if (Objects.isNull(loginUser)) {
       if (page == null) {
-        currentPage =
-            videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0) == null
-                ? null
-                : videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0);
+        if (!videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).isEmpty()) {
+          currentPage = videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0);
+        }
       } else {
         currentPage = page;
       }
@@ -286,10 +266,9 @@ public class ChannelService {
     if (loginUser.getAccountId().equals(channelRepository.findByChannelId(channelId).getAccounts()
         .getAccountId())) {
       if (page == null) {
-        currentPage =
-            videoRepository.lastUUIDSearchVideoInMyChannel(channelId, searchQuery).get(0) == null
-                ? null
-                : videoRepository.lastUUIDSearchVideoInMyChannel(channelId, searchQuery).get(0);
+        if (!videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).isEmpty()) {
+          currentPage = videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0);
+        }
       } else {
         currentPage = page;
       }
@@ -299,10 +278,9 @@ public class ChannelService {
 
     } else {
       if (page == null) {
-        currentPage =
-            videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0) == null
-                ? null
-                : videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0);
+        if (!videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).isEmpty()) {
+          currentPage = videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0);
+        }
       } else {
         currentPage = page;
       }

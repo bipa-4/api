@@ -90,7 +90,8 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
               qChannels.privateType.eq(false)
                   .and(qChannels.accounts.deleteAt.isNull())
           )
-          .groupBy(qChannels.channelId)
+          .groupBy(qChannels.channelId, qChannels.channelName, qChannels.profileUrl,
+              qChannels.content)
           .orderBy(
               asNumber(qVideos.readCnt.subtract(qViewLog.viewCnt)).doubleValue().desc()
           )
@@ -208,6 +209,9 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
   @Override
   public List<Integer> getSearchNextChannelVideoRank(Integer rank, UUID channelId,
       String searchQuery, int pageSize, Integer page) {
+    if (page == null) {
+      page = 1;
+    }
     List<Integer> resultList = entityManager.createNativeQuery(
             "SELECT ROW_NUMBER() OVER () AS ranking\n"
                 + "FROM channels c\n"
@@ -238,6 +242,9 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
   @Override
   public List<Integer> getSearchNextMyChannelVideoRank(Integer rank, UUID channelId,
       String searchQuery, int pageSize, Integer page) {
+    if (page == null) {
+      page = 1;
+    }
     List<Integer> resultList = entityManager.createNativeQuery(
             "SELECT ROW_NUMBER() OVER () AS ranking\n"
                 + "FROM channels c\n"
