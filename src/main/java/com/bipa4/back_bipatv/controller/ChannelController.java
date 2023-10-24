@@ -79,11 +79,14 @@ public class ChannelController {
   ) {
     List<GetSearchChannelDTO> channels = channelService.searchChannel(
         page, pageSize, searchQuery);
+    channels.forEach(System.out::println);
     Integer nextRank = null;
     if (!channels.isEmpty()) {
-      nextRank = channelService.getNextChannelRank(searchQuery,
-          channels.get(channels.size() - 1).getRanking(), pageSize, page
-      ) == null ? null : page + 1;
+      if (channelService.getNextChannelRank(searchQuery,
+          channels.get(channels.size() - 1).getRanking(), pageSize, page) != null) {
+        nextRank = channelService.getNextChannelRank(searchQuery,
+            channels.get(channels.size() - 1).getRanking(), pageSize, page);
+      }
     }
 
     GetInfiniteScrollSearchChannelDTO responseDto = new GetInfiniteScrollSearchChannelDTO(
