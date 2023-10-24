@@ -10,17 +10,19 @@ public interface GetSearchResponseDto {
 
   UUID getVideoId();
 
+  UUID getChannelId();
+
   String getThumbnail();
 
   String getVideoTitle();
 
   String getContent();
 
-  @DateTimeFormat(pattern = "yyyy-MM-dd")
-  @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+9")
+  @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+  @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+9")
   Date getCreateAt();
 
-  Integer getReadCnt();
+  Integer getReadCount();
 
   boolean getPrivateType();
 

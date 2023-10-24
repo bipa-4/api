@@ -90,6 +90,10 @@ public class CommentDAO {
   }
 
   public Integer findMaxGroupIndex(UUID videoId){
+
+    if(commentRepository.findMaxGroupIndex(videoId) == null){
+      return 0;
+    }
     return commentRepository.findMaxGroupIndex(videoId);
   }
 }

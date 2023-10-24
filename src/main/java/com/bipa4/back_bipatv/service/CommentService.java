@@ -111,7 +111,6 @@ public class CommentService {
         LocalDateTime.now().plusHours(9)
             .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")));
 
-
     groupIndex = commentRequest.getParentChild() == 0 ?
         commentDAO.findMaxGroupIndex(video.getVideoId()) + 1 : groupIndex;
 

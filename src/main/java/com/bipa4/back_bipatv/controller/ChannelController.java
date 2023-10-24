@@ -54,7 +54,6 @@ public class ChannelController {
       @RequestParam("page_size") int pageSize,
       @PathVariable("channelId") UUID channelId,
       @RequestParam("search_query") String searchQuery) {
-    System.out.println("searchVideoInChannel");
     List<GetSearchVideoINChannelDTO> videos = channelService.searchVideoInChannel(accessToken,
         channelId,
         page, pageSize, searchQuery);
@@ -64,7 +63,6 @@ public class ChannelController {
           videos.get(videos.size() - 1).getRanking(), channelId, searchQuery,
           accessToken, pageSize, page) == null ? null : page + 1; // 마지막 page의 UUID 호출
     }
-    System.out.println("searchVideoInChannel NextRank 값 : " + nextRank);
     GetInfiniteScrollSearchVideoInChannelDTO responseDto = new GetInfiniteScrollSearchVideoInChannelDTO(
         videos,
         nextRank);
@@ -79,7 +77,6 @@ public class ChannelController {
       @RequestParam("page_size") int pageSize,
       @RequestParam("search_query") String searchQuery
   ) {
-    System.out.println("searchChannel");
     List<GetSearchChannelDTO> channels = channelService.searchChannel(
         page, pageSize, searchQuery);
     Integer nextRank = null;
