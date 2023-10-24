@@ -69,7 +69,18 @@ public class CommentDAO {
   }
 
 
-  public boolean deleteComment(UUID commentId) {
+  public boolean deleteParentComment(UUID videoId, int groupIndex) {
+    int result;
+    try {
+      result = commentRepository.deleteParentComment(videoId,groupIndex);
+      System.out.println("videoId ====" + videoId + "groupIndex ====" + groupIndex);
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.DELETE_ERROR);
+    }
+    return result > 0 ? true : false;
+  }
+
+  public boolean deleteChildComment(UUID commentId) {
     try {
       commentRepository.deleteById(commentId);
     } catch (Exception e) {

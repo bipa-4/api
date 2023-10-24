@@ -7,6 +7,7 @@ import io.lettuce.core.dynamic.annotation.Param;
 import java.util.List;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 
@@ -45,6 +46,14 @@ public interface CommentRepository extends JpaRepository<Comments, UUID> {
           "WHERE parent_child = 0\n" +
           "AND video_id  = :videoId", nativeQuery = true)
   Integer findMaxGroupIndex(@Param("videoId") UUID videoId);
+
+  @Modifying
+  @Query(value =
+      "DELETE FROM comments\n"
+          + "WHERE group_index = :groupIndex \n"
+          + "AND video_id = :videoId", nativeQuery = true)
+  Integer deleteParentComment(@Param("videoId") UUID videoId,
+      @Param("groupIndex") int groupIndex);
 
 
 }
