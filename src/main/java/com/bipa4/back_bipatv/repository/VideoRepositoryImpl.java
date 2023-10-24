@@ -66,6 +66,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                   GetVideoResponseDto.class,
                   qChannels.channelName.as("channelName"),
                   qChannels.profileUrl.as("channelProfileUrl"),
+                  qChannels.channelId,
                   qVideos.thumbnail,
                   qVideos.title.as("videoTitle"),
                   qVideos.createAt,
@@ -143,6 +144,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                   GetVideoResponseDto.class,
                   qChannels.channelName.as("channelName"),
                   qChannels.profileUrl.as("channelProfileUrl"),
+                  qChannels.channelId,
                   qVideos.thumbnail,
                   qVideos.title.as("videoTitle"),
                   qVideos.createAt,
@@ -260,6 +262,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                   GetVideoResponseDto.class,
                   qChannels.channelName.as("channelName"),
                   qChannels.profileUrl.as("channelProfileUrl"),
+                  qChannels.channelId,
                   qVideos.thumbnail,
                   qVideos.title.as("videoTitle"),
                   qVideos.createAt,
@@ -343,6 +346,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                   GetVideoResponseDto.class,
                   qChannels.channelName.as("channelName"),
                   qChannels.profileUrl.as("channelProfileUrl"),
+                  qChannels.channelId,
                   qVideos.thumbnail,
                   qVideos.title.as("videoTitle"),
                   qVideos.createAt,
@@ -666,6 +670,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                   GetVideoResponseDto.class,
                   qChannels.channelName.as("channelName"),
                   qChannels.profileUrl.as("channelProfileUrl"),
+                  qChannels.channelId,
                   qVideos.thumbnail,
                   qVideos.title.as("videoTitle"),
                   qVideos.createAt,
@@ -779,6 +784,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                   GetVideoResponseDto.class,
                   qChannels.channelName.as("channelName"),
                   qChannels.profileUrl.as("channelProfileUrl"),
+                  qChannels.channelId,
                   qVideos.thumbnail,
                   qVideos.title.as("videoTitle"),
                   qVideos.createAt,
@@ -804,7 +810,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
       Integer currentPage,
       int pageSize, String searchQuery) {
     List<GetSearchVideoINChannelDTO> searchList = entityManager.createNativeQuery(
-            "SELECT c.name AS channelName, c.profile_url AS channelProfileUrl, v.thumbnail AS thumbnail, v.title AS videoTitle, v.create_at AS createAt, v.read_cnt AS readCnt, BIN_TO_UUID(v.video_id) AS videoId, ROW_NUMBER() OVER () AS ranking\n"
+            "SELECT c.name AS channelName, c.channelId, c.profile_url AS channelProfileUrl, v.thumbnail AS thumbnail, v.title AS videoTitle, v.create_at AS createAt, v.read_cnt AS readCnt, BIN_TO_UUID(v.video_id) AS videoId, ROW_NUMBER() OVER () AS ranking\n"
                 + "FROM channels c\n"
                 + "LEFT JOIN videos v ON c.channel_id = v.channel_id \n"
                 + "WHERE BIN_TO_UUID(v.channel_id) = ? \n"
@@ -832,13 +838,9 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
   public List<GetSearchVideoINChannelDTO> getSearchVideoInChannel(UUID channelId,
       Integer currentPage,
       int pageSize, String searchQuery) {
-    System.out.println("channelId: " + channelId);
-    System.out.println("currentPage: " + currentPage);
-    System.out.println("pageSize: " + pageSize);
-    System.out.println("searchQuery: " + searchQuery);
 
     List<Object[]> resultList = entityManager.createNativeQuery(
-            "SELECT c.name AS channelName, c.profile_url AS channelProfileUrl, v.thumbnail AS thumbnail, v.title AS videoTitle, v.create_at AS createAt, v.read_cnt AS readCnt, BIN_TO_UUID(v.video_id) AS videoId, ROW_NUMBER() OVER () AS ranking\n"
+            "SELECT c.name AS channelName, c.channelId, c.profile_url AS channelProfileUrl, v.thumbnail AS thumbnail, v.title AS videoTitle, v.create_at AS createAt, v.read_cnt AS readCnt, BIN_TO_UUID(v.video_id) AS videoId, ROW_NUMBER() OVER () AS ranking\n"
                 + "FROM channels c\n"
                 + "LEFT JOIN videos v ON c.channel_id = v.channel_id \n"
                 + "WHERE v.channel_id = ? \n"
