@@ -13,6 +13,5 @@ public class GetChannelTop5DTO {
   private String channelName;
   private String profileUrl;
   private String content;
-  private Integer timeLimitSumCnt;
 
 }
