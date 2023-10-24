@@ -2,6 +2,7 @@ package com.bipa4.back_bipatv.repository;
 
 import static com.querydsl.core.types.dsl.Expressions.asNumber;
 
+import com.bipa4.back_bipatv.dataType.ErrorCode;
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
 import com.bipa4.back_bipatv.dto.channel.GetSearchChannelDTO;
@@ -9,6 +10,8 @@ import com.bipa4.back_bipatv.dto.channel.SelectChannelDTO;
 import com.bipa4.back_bipatv.entity.QChannels;
 import com.bipa4.back_bipatv.entity.QVideos;
 import com.bipa4.back_bipatv.entity.QViewLog;
+import com.bipa4.back_bipatv.exception.CustomApiException;
+import com.bipa4.back_bipatv.exception.NoContentException;
 import com.bipa4.back_bipatv.security.SecurityService;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -30,120 +33,178 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
 
   @Override
   public List<GetChannelDTO> getNotPrivateChannel(UUID page, int pageSize) {
+    List<GetChannelDTO> responseDtos;
+
     QChannels qChannels = QChannels.channels;
-    return jpaQueryFactory.select(
-            Projections.bean(
-                GetChannelDTO.class,
-                qChannels.channelId,
-                qChannels.channelName,
-                qChannels.profileUrl,
-                qChannels.content,
-                qChannels.privateType
-            )
-        )
-        .from(qChannels)
-        .where(
-            qChannels.privateType.eq(false)
-                .and(qChannels.accounts.deleteAt.isNull())
-                .and(qChannels.channelId.loe(page))
-        )
-        .orderBy(qChannels.channelId.desc())
-        .limit(pageSize).fetch();
+
+    try {
+      responseDtos = jpaQueryFactory.select(
+              Projections.bean(
+                  GetChannelDTO.class,
+                  qChannels.channelId,
+                  qChannels.channelName,
+                  qChannels.profileUrl,
+                  qChannels.content,
+                  qChannels.privateType
+              )
+          )
+          .from(qChannels)
+          .where(
+              qChannels.privateType.eq(false)
+                  .and(qChannels.accounts.deleteAt.isNull())
+                  .and(qChannels.channelId.loe(page))
+          )
+          .orderBy(qChannels.channelId.desc())
+          .limit(pageSize).fetch();
+    } catch (NullPointerException e) {
+      throw new NoContentException();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.NO_EXIST_CHANNEL);
+    }
+
+    return responseDtos;
   }
 
   public List<GetChannelTop5DTO> findTop5Channels() {
+    List<GetChannelTop5DTO> responseDtos;
+
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
     QViewLog qViewLog = QViewLog.viewLog;
 
-    return jpaQueryFactory.select(
-            Projections.bean(
-                GetChannelTop5DTO.class,
-                qChannels.channelId,
-                qChannels.channelName,
-                qChannels.profileUrl,
-                qChannels.content,
-                asNumber(qVideos.readCnt.subtract(qViewLog.viewCnt)).as("timeLimitSumCnt")
-            )
-        )
-        .from(qViewLog)
-        .leftJoin(qViewLog.videoId, qVideos)
-        .leftJoin(qVideos.channelId, qChannels)
-        .where(
-            qChannels.privateType.eq(false)
-                .and(qChannels.accounts.deleteAt.isNull())
-        )
-        .groupBy(qChannels.channelId)
-        .orderBy(
-            asNumber(qVideos.readCnt.subtract(qViewLog.viewCnt)).doubleValue().desc()
-        )
-        .limit(5).fetch();
+    try {
+      responseDtos = jpaQueryFactory.select(
+              Projections.bean(
+                  GetChannelTop5DTO.class,
+                  qChannels.channelId,
+                  qChannels.channelName,
+                  qChannels.profileUrl,
+                  qChannels.content,
+                  asNumber(qVideos.readCnt.subtract(qViewLog.viewCnt)).as("timeLimitSumCnt")
+              )
+          )
+          .from(qViewLog)
+          .leftJoin(qViewLog.videoId, qVideos)
+          .leftJoin(qVideos.channelId, qChannels)
+          .where(
+              qChannels.privateType.eq(false)
+                  .and(qChannels.accounts.deleteAt.isNull())
+          )
+          .groupBy(qChannels.channelId)
+          .orderBy(
+              asNumber(qVideos.readCnt.subtract(qViewLog.viewCnt)).doubleValue().desc()
+          )
+          .limit(5).fetch();
+
+    } catch (NullPointerException e) {
+      throw new NoContentException();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_CHANNEL_TOP5_ERROR);
+    }
+    return responseDtos;
   }
 
   @Override
   public SelectChannelDTO selectChannel(UUID channelId) {
+    SelectChannelDTO responseDto;
+
     QChannels qChannels = QChannels.channels;
-    return jpaQueryFactory.select(
-            Projections.bean(
-                SelectChannelDTO.class,
-                qChannels.channelId,
-                qChannels.channelName,
-                qChannels.profileUrl,
-                qChannels.content,
-                qChannels.privateType
-            )
-        )
-        .from(qChannels)
-        .where(
-            qChannels.channelId.eq(channelId)
-                .and(qChannels.accounts.deleteAt.isNull())
-        )
-        .fetchOne();
+
+    try {
+      responseDto = jpaQueryFactory.select(
+              Projections.bean(
+                  SelectChannelDTO.class,
+                  qChannels.channelId,
+                  qChannels.channelName,
+                  qChannels.profileUrl,
+                  qChannels.content,
+                  qChannels.privateType
+              )
+          )
+          .from(qChannels)
+          .where(
+              qChannels.channelId.eq(channelId)
+                  .and(qChannels.accounts.deleteAt.isNull())
+          )
+          .fetchOne();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_CHANNEL_ERROR);
+    }
+
+    if (responseDto == null) {
+      throw new CustomApiException(ErrorCode.NO_EXIST_CHANNEL);
+    }
+
+    return responseDto;
   }
 
   @Override
   public UUID lastUUID() {
-    QChannels qChannels = QChannels.channels;
-    return jpaQueryFactory.select(qChannels.channelId).from(qChannels)
-        .where(qChannels.privateType.eq(false).and(qChannels.accounts.deleteAt.isNull()))
-        .orderBy(qChannels.channelId.desc()).limit(1)
-        .fetchOne();
-  }
+    UUID lastUUID = null;
 
-  @Override
-  public String getChannelNextUUID(UUID uuid) {
     QChannels qChannels = QChannels.channels;
 
-    UUID nextUUID = jpaQueryFactory.select(qChannels.channelId).from(qChannels)
-        .where(qChannels.channelId.lt(uuid).and(qChannels.privateType.eq(false)))
-        .orderBy(qChannels.channelId.desc())
-        .limit(1).fetchOne();
-
-    if (nextUUID == null) {
-      return "";
+    try {
+      lastUUID = jpaQueryFactory.select(qChannels.channelId).from(qChannels)
+          .where(qChannels.privateType.eq(false).and(qChannels.accounts.deleteAt.isNull()))
+          .orderBy(qChannels.channelId.desc()).limit(1)
+          .fetchOne();
+    } catch (NullPointerException e) {
+      throw new NoContentException();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_NEXT_UUID_ERRROR);
     }
 
-    return nextUUID.toString();
+    return lastUUID;
+  }
+
+  @Override
+  public UUID getChannelNextUUID(UUID uuid) {
+    UUID nextUUID = null;
+
+    QChannels qChannels = QChannels.channels;
+
+    try {
+      nextUUID = jpaQueryFactory.select(qChannels.channelId).from(qChannels)
+          .where(qChannels.channelId.lt(uuid).and(qChannels.privateType.eq(false)))
+          .orderBy(qChannels.channelId.desc())
+          .limit(1).fetchOne();
+    } catch (NullPointerException e) {
+      throw new NoContentException();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_NEXT_UUID_ERRROR);
+    }
+
+    return nextUUID;
   }
 
 
   @Override
-  public String getNextChannelVideoUUID(UUID videoId, UUID channelId, boolean flag) {
+  public UUID getNextChannelVideoUUID(UUID videoId, UUID channelId, boolean flag) {
+    UUID nextUUID;
     QVideos qVideos = QVideos.videos;
+    try {
+      if (flag) {
+        nextUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
+            .where(qVideos.videoId.lt(videoId).and(qVideos.channelId.channelId.eq(channelId)))
+            .orderBy(qVideos.videoId.desc())
+            .limit(1).fetchOne();
+      } else {
+        nextUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
+            .where(qVideos.videoId.lt(videoId).and(qVideos.channelId.channelId.eq(channelId))
+                .and(qVideos.privateType.eq(false)))
+            .orderBy(qVideos.videoId.desc())
+            .limit(1).fetchOne();
+      }
 
-    UUID nextUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
-        .where(qVideos.videoId.lt(videoId).and(qVideos.channelId.channelId.eq(channelId))
-            .and(qVideos.privateType.eq(flag)).or(qVideos.privateType.eq(false)))
-        .orderBy(qVideos.videoId.desc())
-        .limit(1).fetchOne();
-
-    if (nextUUID == null) {
-      return "";
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_NEXT_UUID_ERRROR);
     }
 
-    return nextUUID.toString();
+    return nextUUID;
   }
 
+  // 채널 검색
   @Override
   public List<Integer> getSearchNextChannelVideoRank(Integer rank, UUID channelId,
       String searchQuery, int pageSize, Integer page) {

@@ -1,13 +1,12 @@
 package com.bipa4.back_bipatv.controller;
 
-import com.bipa4.back_bipatv.dataType.ErrorCode;
-import com.bipa4.back_bipatv.dto.CustomApiException;
 import com.bipa4.back_bipatv.dto.comment.CommentRequest;
+import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.security.SecurityService;
 import com.bipa4.back_bipatv.service.CommentService;
-import java.util.Objects;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -26,64 +25,43 @@ public class CommentController {
 
   private final SecurityService securityService;
 
-  //insert
+  // 부모 댓글 INSERT
   @PostMapping("/commentParent")
-  public ResponseEntity<String> insertParentComment(@RequestBody CommentRequest commentRequest,
+  public ResponseEntity<Boolean> insertParentComment(@RequestBody CommentRequest commentRequest,
       @CookieValue(name = "accessToken") String accessToken) {
-    if (securityService.getSubject(accessToken)) {
-      boolean saved = commentService.saveParentComment(commentRequest);
-      if (!saved) {
-        throw new CustomApiException(ErrorCode.UPLOAD_ERROR);
-      }
-      return ResponseEntity.ok("댓글 등록 성공");
-    } else {
-      throw new CustomApiException(ErrorCode.AUTHORITY_ERROR);
-    }
+    Accounts account = securityService.getSubjectAccount(accessToken);
+    boolean response = commentService.saveParentComment(account, commentRequest);
+    return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
-  //insert
+  // 자식 댓글 INSERT
   @PostMapping("/commentChild")
-  public ResponseEntity<String> insertChildComment(@RequestBody CommentRequest commentRequest,
-      @RequestParam("groupIndex") Integer groupIndex, @CookieValue(name = "accessToken") String accessToken) {
-    if (securityService.getSubject(accessToken)) {
-      boolean saved = commentService.saveChildComment(commentRequest,groupIndex);
-      if (!saved) {
-        throw new CustomApiException(ErrorCode.UPLOAD_ERROR);
-      }
-      return ResponseEntity.ok("댓글 등록 성공");
-    } else {
-      throw new CustomApiException(ErrorCode.AUTHORITY_ERROR);
-    }
-  }
-
-
-  //update
-  @PutMapping("/comment")
-  public ResponseEntity<String> updateComment(@RequestBody CommentRequest commentRequest,
+  public ResponseEntity<Boolean> insertChildComment(@RequestBody CommentRequest commentRequest,
+      @RequestParam("groupIndex") Integer groupIndex,
       @CookieValue(name = "accessToken") String accessToken) {
-    if (commentRequest.getAccountId().equals(securityService.getSubjectAccount(accessToken)
-        .getAccountId())) {
-      boolean updated = commentService.updateComment(commentRequest);
-      if (!updated) {
-        throw new CustomApiException(ErrorCode.UPDATE_ERROR);
-      }
-      return ResponseEntity.ok("댓글 수정 성공");
-    } else {
-      throw new CustomApiException(ErrorCode.AUTHORITY_ERROR);
-    }
+    Accounts account = securityService.getSubjectAccount(accessToken);
+    boolean response = commentService.saveChildComment(account, commentRequest, groupIndex);
+    return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
-  //delete
+
+  // 댓글 UPDATE
+  @PutMapping("/comment")
+  public ResponseEntity<Boolean> updateComment(@RequestBody CommentRequest commentRequest,
+      @CookieValue(name = "accessToken") String accessToken) {
+    Accounts account = securityService.getSubjectAccount(accessToken);
+    boolean response = commentService.updateComment(commentRequest, account);
+    return new ResponseEntity<>(response, HttpStatus.OK);
+  }
+
+  // 댓글 DELETE
   @DeleteMapping("/{videoId}/comment/{commentId}")
-  public ResponseEntity<String> deleteComment(
+  public ResponseEntity<Boolean> deleteComment(
       @PathVariable UUID videoId, @PathVariable UUID commentId,
       @CookieValue(name = "accessToken") String accessToken) {
-
-      if (!commentService.deleteComment(commentId, accessToken)) {
-        throw new CustomApiException(ErrorCode.DELETE_ERROR);
-      }
-
-    return ResponseEntity.ok("댓글 삭제 성공");
+    Accounts account = securityService.getSubjectAccount(accessToken);
+    boolean response = commentService.deleteComment(commentId, account);
+    return new ResponseEntity<>(response, HttpStatus.OK);
   }
 }
 

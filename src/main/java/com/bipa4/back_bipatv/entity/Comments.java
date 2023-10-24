@@ -10,6 +10,8 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 import lombok.Data;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
@@ -26,12 +28,16 @@ public class Comments {
   @Column(name = "comment_id", columnDefinition = "BINARY(16)")
   private UUID commentId;
   @Column(name = "content", length = 200, nullable = true)
+  @NotBlank
   private String content;
   @Column(name = "parent_child", nullable = false)
+  @NotNull
   private int parentChild;
   @Column(name = "group_index", nullable = false)
+  @NotNull
   private int groupIndex;
   @Column(name = "create_at", nullable = false)
+  @NotNull
   private Timestamp createAt;
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "video_id")

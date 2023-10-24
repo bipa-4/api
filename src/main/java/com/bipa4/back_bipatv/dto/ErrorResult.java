@@ -9,5 +9,4 @@ import lombok.Data;
 public class ErrorResult {
 
   private String code;
-  private String message;
 }

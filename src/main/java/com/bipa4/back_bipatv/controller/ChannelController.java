@@ -1,13 +1,15 @@
 package com.bipa4.back_bipatv.controller;
 
+
 import com.bipa4.back_bipatv.dto.channel.GetInfiniteScrollSearchChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetSearchChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.PutChannelDTO;
 import com.bipa4.back_bipatv.dto.video.GetInfiniteScrollSearchVideoInChannelDTO;
 import com.bipa4.back_bipatv.dto.video.GetSearchVideoINChannelDTO;
+import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.entity.Channels;
+import com.bipa4.back_bipatv.security.SecurityService;
 import com.bipa4.back_bipatv.service.ChannelService;
-import com.bipa4.back_bipatv.service.PresignedUrlService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.util.List;
@@ -31,7 +33,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ChannelController {
 
   private final ChannelService channelService;
-  private final PresignedUrlService presignedUrlService;
+  private final SecurityService securityService;
 
 
   @ApiOperation(value = "updateMyChannel", notes = "채널 정보 수정")
@@ -42,6 +44,7 @@ public class ChannelController {
     Channels updatedChannel = channelService.updateChannel(channelId, code, putChannelDTO);
     return new ResponseEntity<>(updatedChannel, HttpStatus.OK);
   }
+
 
   @ApiOperation(value = "채널 내 영상 검색", notes = "채널 안의 영상 검색")
   @GetMapping("/{channelId}/video")
@@ -91,5 +94,16 @@ public class ChannelController {
         nextRank);
 
     return ResponseEntity.ok().body(responseDto);
+  }
+
+  @ApiOperation(value = "getUpdateFlag", notes = "업데이트 플레그 얻기")
+  @GetMapping("/flag/{channelId}")
+  public ResponseEntity<Boolean> getUpdateFlag(
+      @CookieValue(value = "accessToken", required = false) String accessToken,
+      @PathVariable("channelId") UUID channelId) {
+    Accounts loginAccount = securityService.getSubjectAccount(accessToken);
+    return new ResponseEntity<>(channelService.getUpdateFlag(loginAccount, channelId),
+        HttpStatus.OK);
+
   }
 }
