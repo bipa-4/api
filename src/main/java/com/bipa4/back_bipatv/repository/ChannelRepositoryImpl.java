@@ -292,7 +292,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
   public List<GetSearchChannelDTO> getSearchChannel(Integer page, int pageSize,
       String searchQuery) {
     if (page == null) {
-      page = 0;
+      page = 1;
     }
     String sql =
         "select BIN_TO_UUID(channel_id) as channelId, name as channelName, content, private_type as privateType, profile_url as profileUrl, ROW_NUMBER() OVER () AS ranking\n"
@@ -335,7 +335,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
   public List<Integer> getNextChannelRank(String searchQuery, Integer ranking, int pageSize,
       Integer page) {
     if (page == null) {
-      page = 0;
+      page = 1;
     }
     List<Integer> list = entityManager.createNativeQuery(
             "select ROW_NUMBER() OVER () AS ranking\n"
