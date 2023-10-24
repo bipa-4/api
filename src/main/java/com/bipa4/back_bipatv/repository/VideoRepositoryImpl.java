@@ -808,6 +808,9 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
   public List<GetSearchVideoINChannelDTO> getSearchVideoInMyChannel(UUID channelId,
       Integer currentPage,
       int pageSize, String searchQuery) {
+    if (currentPage == null) {
+      currentPage = 0;
+    }
     List<GetSearchVideoINChannelDTO> searchList = entityManager.createNativeQuery(
             "SELECT c.name AS channelName, BIN_TO_UUID(c.channel_id) as channelId, c.profile_url AS channelProfileUrl, v.thumbnail AS thumbnail, v.title AS videoTitle, v.create_at AS createAt, v.read_cnt AS readCnt, BIN_TO_UUID(v.video_id) AS videoId, ROW_NUMBER() OVER () AS ranking\n"
                 + "FROM channels c\n"
