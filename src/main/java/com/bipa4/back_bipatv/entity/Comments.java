@@ -39,6 +39,9 @@ public class Comments {
   @Column(name = "create_at", nullable = false)
   @NotNull
   private Timestamp createAt;
+  @Column(name = "is_updated", nullable = false)
+  @NotNull
+  private Boolean isUpdated;
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "video_id")
   @OnDelete(action = OnDeleteAction.CASCADE)

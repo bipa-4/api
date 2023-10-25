@@ -24,5 +24,6 @@ public class CommentRequest {
   private int parentChild;
   private int groupIndex;
   private Timestamp createAt;
+  private Boolean isUpdated;
   private UUID videoId;
 }
