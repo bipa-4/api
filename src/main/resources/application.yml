@@ -71,7 +71,7 @@ management:
   endpoints:
     jmx:
       exposure:
-        exclude: *
+        exclude: "*"
     web:
       exposure:
         include: health,info,beans,conditions
