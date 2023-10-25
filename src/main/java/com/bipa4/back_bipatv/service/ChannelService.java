@@ -75,25 +75,6 @@ public class ChannelService {
     return list;
   }
 
-  public List<GetChannelTop5DTO> findLimitTimeSumCntV2() {
-    List<GetChannelTop5DTO> list = channelDAO.findTop5Channels();
-
-    int i = 0;
-    list.get(0).setRanking(1);
-    for (GetChannelTop5DTO item : list) {
-      i++;
-      if (Objects.equals(list.get(i - 1).getTimeLimitSumCnt(), list.get(i).getTimeLimitSumCnt())) {
-        list.get(i).setRanking(item.getRanking());
-      } else {
-        list.get(i).setRanking(i + 1);
-      }
-      if (i == list.size() - 1) {
-        break;
-      }
-    }
-    return list;
-  }
-
   public UUID getChannelNextUUID(UUID uuid) {
     return channelRepository.getChannelNextUUID(uuid);
   }
@@ -269,10 +250,9 @@ public class ChannelService {
     Integer currentPage = null;
     if (Objects.isNull(loginUser)) {
       if (page == null) {
-        currentPage =
-            videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0) == null
-                ? null
-                : videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0);
+        if (!videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).isEmpty()) {
+          currentPage = videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0);
+        }
       } else {
         currentPage = page;
       }
@@ -286,10 +266,9 @@ public class ChannelService {
     if (loginUser.getAccountId().equals(channelRepository.findByChannelId(channelId).getAccounts()
         .getAccountId())) {
       if (page == null) {
-        currentPage =
-            videoRepository.lastUUIDSearchVideoInMyChannel(channelId, searchQuery).get(0) == null
-                ? null
-                : videoRepository.lastUUIDSearchVideoInMyChannel(channelId, searchQuery).get(0);
+        if (!videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).isEmpty()) {
+          currentPage = videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0);
+        }
       } else {
         currentPage = page;
       }
@@ -299,10 +278,9 @@ public class ChannelService {
 
     } else {
       if (page == null) {
-        currentPage =
-            videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0) == null
-                ? null
-                : videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0);
+        if (!videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).isEmpty()) {
+          currentPage = videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0);
+        }
       } else {
         currentPage = page;
       }
@@ -319,10 +297,9 @@ public class ChannelService {
     Integer currentPage = null;
     System.out.println("page값 " + page);
     if (page == null) {
-      currentPage =
-          channelRepository.lastUUIDSearchChannel(searchQuery).get(0) == null
-              ? null
-              : channelRepository.lastUUIDSearchChannel(searchQuery).get(0);
+      if (channelRepository.lastUUIDSearchChannel(searchQuery) == null) {
+        currentPage = channelRepository.lastUUIDSearchChannel(searchQuery).get(0);
+      }
     } else {
       currentPage = page;
     }
