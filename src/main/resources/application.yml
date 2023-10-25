@@ -63,11 +63,25 @@ cloud:
       keyPairId: ${KEY_PAIR_ID}
       distributionDomain: ${DISTRIBUTION_DOMAIN}
 management:
+  health:
+    redis:
+      enabled: false
+    diskspace:
+      enabled: false
   endpoints:
+    jmx:
+      exposure:
+        exclude: *
     web:
       exposure:
         include: health,info,beans,conditions
         exclude: threaddump, heapdump
+      base-path: /checking
+    enabled-by-default: false
+
   endpoint:
     health:
       show-details: "always"
+      enabled: true
+    info:
+      enabled: true
