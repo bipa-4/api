@@ -703,7 +703,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     UUID lastUUID = null;
 
     QVideos qVideos = QVideos.videos;
-    System.out.println("lastUUIDInChannel");
+    System.out.println("lastUUIDInChannel들어옴");
     try {
       Optional<UUID> uuid = Optional.ofNullable(
           jpaQueryFactory.select(qVideos.videoId).from(qVideos)

@@ -146,7 +146,8 @@ public class ChannelService {
     }
     UUID uuid = null;
     if (Objects.isNull(loginUser)) {
-      System.out.println("비회원");
+      System.out.println("getVideosInChannel user Status: 비회원");
+      System.out.println("getVideosInChannel page: " + page);
       if (page == null) {
         uuid = videoRepository.lastUUIDInChannel(channelId);
       } else {
