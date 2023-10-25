@@ -9,5 +9,6 @@ public interface ChildCommentResponse {
     String getChannelName();
     String getContent();
     String getCreateAt();
+    String getIsUpdated();
 
 }

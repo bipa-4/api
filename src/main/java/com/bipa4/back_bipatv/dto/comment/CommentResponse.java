@@ -17,5 +17,7 @@ public interface CommentResponse {
 
   int getChildCount();
 
+  String getIsUpdated();
+
   String getChannelId();
 }
