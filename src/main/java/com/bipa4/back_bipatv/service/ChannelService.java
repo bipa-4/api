@@ -152,7 +152,7 @@ public class ChannelService {
       } else {
         uuid = page;
       }
-      videoRepository.getVideosInChannel(channelId, uuid, pageSize).forEach(System.out::println);
+
       return videoRepository.getVideosInChannel(channelId, uuid, pageSize);
     }
     if (loginUser.getAccountId().equals(channelRepository.findByChannelId(channelId).getAccounts()
