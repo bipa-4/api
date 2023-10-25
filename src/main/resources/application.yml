@@ -28,8 +28,6 @@ spring:
     console:
       enabled: true
 
-
-
 oauth2:
   kakao:
     token-uri: ${KTOKEN_URI}
@@ -64,16 +62,12 @@ cloud:
     cloudFront:
       keyPairId: ${KEY_PAIR_ID}
       distributionDomain: ${DISTRIBUTION_DOMAIN}
-
-
-
-
-
-
-
-
-
-
-
-
-
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,beans,conditions
+        exclude: threaddump, heapdump
+  endpoint:
+    health:
+      show-details: "always"
