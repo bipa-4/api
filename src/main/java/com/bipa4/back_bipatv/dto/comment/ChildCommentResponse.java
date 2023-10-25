@@ -1,13 +1,20 @@
 package com.bipa4.back_bipatv.dto.comment;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+import java.util.Date;
+import org.springframework.format.annotation.DateTimeFormat;
+
 public interface ChildCommentResponse {
 
     String getCommentId();
-    String getGroupIndex();
+    int getGroupIndex();
     String getChannelProfileUrl();
     String getChannelId();
     String getChannelName();
     String getContent();
-    String getCreateAt();
+    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+9")
+    Date getCreateAt();
+    Boolean getIsUpdated();
 
 }

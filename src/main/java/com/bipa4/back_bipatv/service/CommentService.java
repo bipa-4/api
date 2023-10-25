@@ -122,6 +122,7 @@ public class CommentService {
       comment.setContent(commentRequest.getContent());
       comment.setParentChild(commentRequest.getParentChild());
       comment.setCreateAt(now);
+      comment.setIsUpdated(false);
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.INSERT_DTO_ERROR);
     }
@@ -149,6 +150,7 @@ public class CommentService {
     try {
       comment.setContent(commentRequest.getContent());
       comment.setCreateAt(now);
+      comment.setIsUpdated(true);
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.INSERT_DTO_ERROR);
     }

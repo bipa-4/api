@@ -70,8 +70,8 @@ public class ChannelService {
   public List<GetChannelTop5DTO> findLimitTimeSumCnt() {
     List<GetChannelTop5DTO> list = channelDAO.findTop5Channels();
 
-    IntStream.range(1, list.size() + 1)
-        .forEach(i -> list.get(i).setRanking(i));
+    IntStream.range(0, list.size())
+        .forEach(i -> list.get(i).setRanking(i + 1));
     return list;
   }
 
@@ -146,13 +146,14 @@ public class ChannelService {
     }
     UUID uuid = null;
     if (Objects.isNull(loginUser)) {
-      System.out.println("비회원");
+      System.out.println("getVideosInChannel user Status: 비회원");
+      System.out.println("getVideosInChannel page: " + page);
       if (page == null) {
         uuid = videoRepository.lastUUIDInChannel(channelId);
       } else {
         uuid = page;
       }
-      videoRepository.getVideosInChannel(channelId, uuid, pageSize).forEach(System.out::println);
+
       return videoRepository.getVideosInChannel(channelId, uuid, pageSize);
     }
     if (loginUser.getAccountId().equals(channelRepository.findByChannelId(channelId).getAccounts()
@@ -297,10 +298,9 @@ public class ChannelService {
     Integer currentPage = null;
     System.out.println("page값 " + page);
     if (page == null) {
-      currentPage =
-          channelRepository.lastUUIDSearchChannel(searchQuery).get(0) == null
-              ? null
-              : channelRepository.lastUUIDSearchChannel(searchQuery).get(0);
+      if (channelRepository.lastUUIDSearchChannel(searchQuery) == null) {
+        currentPage = channelRepository.lastUUIDSearchChannel(searchQuery).get(0);
+      }
     } else {
       currentPage = page;
     }

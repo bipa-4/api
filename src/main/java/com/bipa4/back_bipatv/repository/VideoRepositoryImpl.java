@@ -33,6 +33,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import javax.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -659,12 +660,17 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   @Override
   public List<GetVideoResponseDto> getVideosInChannel(UUID channelId, UUID page, int pageSize) {
-    List<GetVideoResponseDto> responseDtos;
+    List<GetVideoResponseDto> responseDtos = null;
 
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
 
+    System.out.println("getVideosInChannel page : " + page);
     try {
+      if (page == null) {
+        return new ArrayList<>();
+      }
+
       responseDtos = jpaQueryFactory.select(
               Projections.bean(
                   GetVideoResponseDto.class,
@@ -694,17 +700,20 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   @Override
   public UUID lastUUIDInChannel(UUID channelId) {
-    UUID lastUUID;
+    UUID lastUUID = null;
 
     QVideos qVideos = QVideos.videos;
-
+    System.out.println("lastUUIDInChannel들어옴");
     try {
-      lastUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
-          .where(qVideos.channelId.channelId.eq(channelId).and(qVideos.privateType.eq(false)))
-          .orderBy(qVideos.videoId.desc()).limit(1)
-          .fetchOne();
-    } catch (NullPointerException e) {
-      throw new NoContentException();
+      Optional<UUID> uuid = Optional.ofNullable(
+          jpaQueryFactory.select(qVideos.videoId).from(qVideos)
+              .where(qVideos.channelId.channelId.eq(channelId).and(qVideos.privateType.eq(false)))
+              .orderBy(qVideos.videoId.desc()).limit(1)
+              .fetchOne());
+      if (uuid.isPresent()) {
+        lastUUID = uuid.get();
+      }
+      System.out.println("lastUUID:" + lastUUID);
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.READ_LAST_UUID_ERRROR);
     }
@@ -713,16 +722,18 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   @Override
   public UUID lastUUIDInMyChannel(UUID channelId) {
-    UUID lastUUID;
+    UUID lastUUID = null;
     QVideos qVideos = QVideos.videos;
 
     try {
-      lastUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
-          .where(qVideos.channelId.channelId.eq(channelId))
-          .orderBy(qVideos.videoId.desc()).limit(1)
-          .fetchOne();
-    } catch (NullPointerException e) {
-      throw new NoContentException();
+      Optional<UUID> uuid = Optional.ofNullable(
+          jpaQueryFactory.select(qVideos.videoId).from(qVideos)
+              .where(qVideos.channelId.channelId.eq(channelId))
+              .orderBy(qVideos.videoId.desc()).limit(1)
+              .fetchOne());
+      if (uuid.isPresent()) {
+        lastUUID = uuid.get();
+      }
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.READ_LAST_UUID_ERRROR);
     }
@@ -778,6 +789,9 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QChannels qChannels = QChannels.channels;
 
     try {
+      if (uuid == null) {
+        return new ArrayList<>();
+      }
       responseDtos = jpaQueryFactory.select(
               Projections.bean(
                   GetVideoResponseDto.class,
@@ -808,7 +822,10 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
   public List<GetSearchVideoINChannelDTO> getSearchVideoInMyChannel(UUID channelId,
       Integer currentPage,
       int pageSize, String searchQuery) {
-    List<GetSearchVideoINChannelDTO> searchList = entityManager.createNativeQuery(
+    if (currentPage == null) {
+      currentPage = 0;
+    }
+    List<Object[]> resultList = entityManager.createNativeQuery(
             "SELECT c.name AS channelName, BIN_TO_UUID(c.channel_id) as channelId, c.profile_url AS channelProfileUrl, v.thumbnail AS thumbnail, v.title AS videoTitle, v.create_at AS createAt, v.read_cnt AS readCnt, BIN_TO_UUID(v.video_id) AS videoId, ROW_NUMBER() OVER () AS ranking\n"
                 + "FROM channels c\n"
                 + "LEFT JOIN videos v ON c.channel_id = v.channel_id \n"
@@ -830,6 +847,21 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
         .setParameter(3, searchQuery)
         .setParameter(4, 1 + ((currentPage - 1) * pageSize))
         .setParameter(5, pageSize).getResultList();
+    List<GetSearchVideoINChannelDTO> searchList = new ArrayList<>();
+    for (Object[] row : resultList) {
+      GetSearchVideoINChannelDTO dto = new GetSearchVideoINChannelDTO();
+      dto.setChannelName((String) row[0]);
+      dto.setChannelId(UUID.fromString((String) row[1]));
+      dto.setChannelProfileUrl((String) row[2]);
+      dto.setThumbnail((String) row[3]);
+      dto.setVideoTitle((String) row[4]);
+      dto.setCreateAt((Timestamp) row[5]);
+      dto.setReadCount((int) row[6]);
+      dto.setVideoId(UUID.fromString((String) row[7]));
+      dto.setRanking(((BigInteger) row[8]).intValue());
+      // 나머지 필드 설정
+      searchList.add(dto);
+    }
     System.out.println("searchList값:" + searchList);
     return searchList;
   }
@@ -869,13 +901,14 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     for (Object[] row : resultList) {
       GetSearchVideoINChannelDTO dto = new GetSearchVideoINChannelDTO();
       dto.setChannelName((String) row[0]);
-      dto.setChannelProfileUrl((String) row[1]);
-      dto.setThumbnail((String) row[2]);
-      dto.setVideoTitle((String) row[3]);
-      dto.setCreateAt((Timestamp) row[4]);
-      dto.setReadCount((int) row[5]);
-      dto.setVideoId(UUID.fromString((String) row[6]));
-      dto.setRanking(((BigInteger) row[7]).intValue());
+      dto.setChannelId(UUID.fromString((String) row[1]));
+      dto.setChannelProfileUrl((String) row[2]);
+      dto.setThumbnail((String) row[3]);
+      dto.setVideoTitle((String) row[4]);
+      dto.setCreateAt((Timestamp) row[5]);
+      dto.setReadCount((int) row[6]);
+      dto.setVideoId(UUID.fromString((String) row[7]));
+      dto.setRanking(((BigInteger) row[8]).intValue());
       // 나머지 필드 설정
       searchList.add(dto);
     }
