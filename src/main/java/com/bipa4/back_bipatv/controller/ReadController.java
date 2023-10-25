@@ -189,8 +189,8 @@ public class ReadController {
 
     if (!list.isEmpty()) {
       nextUUID = channelService.getChannelNextUUID(list.get(list.size() - 1).getChannelId());
-      channelList = new GetInfiniteScrollRequestChannelDto(list, nextUUID);
     }
+    channelList = new GetInfiniteScrollRequestChannelDto(list, nextUUID);
     return new ResponseEntity<>(channelList, HttpStatus.OK);
   }
 
@@ -210,8 +210,8 @@ public class ReadController {
     if (!videos.isEmpty()) {
       nextUUID = channelService.getNextChannelVideoUUID(
           videos.get(videos.size() - 1).getVideoId(), channelId, accessToken); // 마지막 page의 UUID 호출
-      responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
     }
+    responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
     return new ResponseEntity<>(responseDto, HttpStatus.OK);
   }
 }

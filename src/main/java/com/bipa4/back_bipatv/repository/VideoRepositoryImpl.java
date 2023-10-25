@@ -659,12 +659,16 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   @Override
   public List<GetVideoResponseDto> getVideosInChannel(UUID channelId, UUID page, int pageSize) {
-    List<GetVideoResponseDto> responseDtos;
+    List<GetVideoResponseDto> responseDtos = null;
 
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
 
     try {
+      if (page == null) {
+        return new ArrayList<>();
+      }
+
       responseDtos = jpaQueryFactory.select(
               Projections.bean(
                   GetVideoResponseDto.class,
@@ -694,7 +698,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   @Override
   public UUID lastUUIDInChannel(UUID channelId) {
-    UUID lastUUID;
+    UUID lastUUID = null;
 
     QVideos qVideos = QVideos.videos;
 
@@ -703,6 +707,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
           .where(qVideos.channelId.channelId.eq(channelId).and(qVideos.privateType.eq(false)))
           .orderBy(qVideos.videoId.desc()).limit(1)
           .fetchOne();
+      System.out.println("lastUUID:" + lastUUID);
     } catch (NullPointerException e) {
       throw new NoContentException();
     } catch (Exception e) {
@@ -778,6 +783,9 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QChannels qChannels = QChannels.channels;
 
     try {
+      if (uuid == null) {
+        return new ArrayList<>();
+      }
       responseDtos = jpaQueryFactory.select(
               Projections.bean(
                   GetVideoResponseDto.class,

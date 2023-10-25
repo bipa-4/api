@@ -36,7 +36,9 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
     List<GetChannelDTO> responseDtos;
 
     QChannels qChannels = QChannels.channels;
-
+    if (page == null) {
+      return new ArrayList<>();
+    }
     try {
       responseDtos = jpaQueryFactory.select(
               Projections.bean(
