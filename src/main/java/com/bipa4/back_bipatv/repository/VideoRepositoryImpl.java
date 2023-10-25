@@ -664,6 +664,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
 
+    System.out.println("getVideosInChannel page : " + page);
     try {
       if (page == null) {
         return new ArrayList<>();
@@ -718,7 +719,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   @Override
   public UUID lastUUIDInMyChannel(UUID channelId) {
-    UUID lastUUID;
+    UUID lastUUID = null;
     QVideos qVideos = QVideos.videos;
 
     try {
