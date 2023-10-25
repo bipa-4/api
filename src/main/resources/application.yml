@@ -1,6 +1,6 @@
 server:
-  address: localhost
-  port: 8080
+  #  address: localhost
+  port: 8081
 spring:
   redis:
     host: ${Redis_Host}
@@ -12,7 +12,7 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     password: ${MYSQL_PASSWORD}
-    url: jdbc:mysql://bipatv.crdviyewmnbn.ap-northeast-2.rds.amazonaws.com:3306/bipaTV?useSSL=false&characterEncoding=UTF-8&serverTimezone=UTC
+    url: jdbc:mysql://${MY_SQL_HOST}:${MY_SQL_PORT}/${DATA_BASE_NAME}?useSSL=false&characterEncoding=UTF-8&serverTimezone=UTC
     username: ${MYSQL_USER_NAME}
   jpa: # https://victorydntmd.tistory.com/323
     database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
@@ -27,6 +27,8 @@ spring:
   h2:
     console:
       enabled: true
+
+
 
 oauth2:
   kakao:
@@ -85,3 +87,5 @@ management:
       enabled: true
     info:
       enabled: true
+
+
