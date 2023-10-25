@@ -33,6 +33,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import javax.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -702,15 +703,17 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     UUID lastUUID = null;
 
     QVideos qVideos = QVideos.videos;
-
+    System.out.println("lastUUIDInChannel");
     try {
-      lastUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
-          .where(qVideos.channelId.channelId.eq(channelId).and(qVideos.privateType.eq(false)))
-          .orderBy(qVideos.videoId.desc()).limit(1)
-          .fetchOne();
+      Optional<UUID> uuid = Optional.ofNullable(
+          jpaQueryFactory.select(qVideos.videoId).from(qVideos)
+              .where(qVideos.channelId.channelId.eq(channelId).and(qVideos.privateType.eq(false)))
+              .orderBy(qVideos.videoId.desc()).limit(1)
+              .fetchOne());
+      if (uuid.isPresent()) {
+        lastUUID = uuid.get();
+      }
       System.out.println("lastUUID:" + lastUUID);
-    } catch (NullPointerException e) {
-      throw new NoContentException();
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.READ_LAST_UUID_ERRROR);
     }
@@ -723,12 +726,14 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QVideos qVideos = QVideos.videos;
 
     try {
-      lastUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
-          .where(qVideos.channelId.channelId.eq(channelId))
-          .orderBy(qVideos.videoId.desc()).limit(1)
-          .fetchOne();
-    } catch (NullPointerException e) {
-      throw new NoContentException();
+      Optional<UUID> uuid = Optional.ofNullable(
+          jpaQueryFactory.select(qVideos.videoId).from(qVideos)
+              .where(qVideos.channelId.channelId.eq(channelId))
+              .orderBy(qVideos.videoId.desc()).limit(1)
+              .fetchOne());
+      if (uuid.isPresent()) {
+        lastUUID = uuid.get();
+      }
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.READ_LAST_UUID_ERRROR);
     }
