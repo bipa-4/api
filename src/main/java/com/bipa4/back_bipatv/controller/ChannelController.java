@@ -50,7 +50,7 @@ public class ChannelController {
   @GetMapping("/{channelId}/video")
   public ResponseEntity<GetInfiniteScrollSearchVideoInChannelDTO> searchVideoInChannel(
       @CookieValue(value = "accessToken", required = false) String accessToken,
-      @RequestParam(value = "page", required = false) Integer page,
+      @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
       @RequestParam("page_size") int pageSize,
       @RequestParam("search_query") String searchQuery,
       @PathVariable("channelId") UUID channelId) {
@@ -61,9 +61,9 @@ public class ChannelController {
         channelId, page, pageSize, searchQuery);
 
     if (!videos.isEmpty()) {
-      nextRank = channelService.getSearchNextChannelVideoUUID(
-          videos.get(videos.size() - 1).getRanking(), channelId, searchQuery,
-          accessToken, pageSize, page) == null ? null : page + 1;
+      nextRank =
+          channelService.getSearchNextChannelVideoUUID(videos.get(videos.size() - 1).getRanking(),
+              channelId, searchQuery, loginAccount, pageSize, page) == null ? null : page + 1;
     }
 
     GetInfiniteScrollSearchVideoInChannelDTO responseDto = new GetInfiniteScrollSearchVideoInChannelDTO(
@@ -83,11 +83,8 @@ public class ChannelController {
     List<GetSearchChannelDTO> channels = channelService.searchChannel(page, pageSize, searchQuery);
 
     if (!channels.isEmpty()) {
-      if (channelService.getNextChannelRank(searchQuery,
-          channels.get(channels.size() - 1).getRanking(), pageSize, page) != null) {
-        nextRank = channelService.getNextChannelRank(searchQuery,
-            channels.get(channels.size() - 1).getRanking(), pageSize, page);
-      }
+      nextRank = channelService.getNextChannelRank(searchQuery,
+          channels.get(channels.size() - 1).getRanking(), pageSize, page);
     }
 
     GetInfiniteScrollSearchChannelDTO responseDto = new GetInfiniteScrollSearchChannelDTO(

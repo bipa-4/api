@@ -1,7 +1,6 @@
 package com.bipa4.back_bipatv.service;
 
 import com.bipa4.back_bipatv.dao.AccountDAO;
-import com.bipa4.back_bipatv.dao.ChannelDAO;
 import com.bipa4.back_bipatv.dataType.ELogin_Type;
 import com.bipa4.back_bipatv.dto.user.GetAccountCheckDTO;
 import com.bipa4.back_bipatv.entity.Accounts;
@@ -9,6 +8,7 @@ import com.bipa4.back_bipatv.entity.Channels;
 import com.bipa4.back_bipatv.entity.RefreshToken;
 import com.bipa4.back_bipatv.exception.ResourceNotFoundException;
 import com.bipa4.back_bipatv.repository.AccountRepository;
+import com.bipa4.back_bipatv.repository.ChannelRepository;
 import com.bipa4.back_bipatv.repository.RedisRepository;
 import com.bipa4.back_bipatv.security.SecurityService;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -43,10 +43,10 @@ public class UserService {
   private final Environment env;
   private final RestTemplate restTemplate = new RestTemplate();
   private final AccountDAO accountDAO;
-  private final ChannelDAO channelDAO;
   private final SecurityService securityService;
   private final RedisRepository redisRepository;
   private final AccountRepository accountRepository;
+  private final ChannelRepository channelRepository;
 
   private void insertUser(Accounts accounts) {
 
@@ -54,7 +54,6 @@ public class UserService {
     UUID uuid = UUID.randomUUID();
     accounts.setAccountId(uuid);
     accounts.setJoinDate(now);
-    System.out.println(accounts);
     accountDAO.createAccount(accounts);
 
   }
@@ -68,8 +67,7 @@ public class UserService {
     channels.setAccounts(accounts);
     channels.setProfileUrl(accounts.getProfileUrl());
     channels.setContent(accounts.getName() + "의 채널");
-    System.out.println(channels);
-    channelDAO.createChannel(channels);
+    channelRepository.save(channels);
   }
 
   private boolean findAccount(Accounts accounts) {

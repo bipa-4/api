@@ -1,6 +1,5 @@
 package com.bipa4.back_bipatv.service;
 
-import com.bipa4.back_bipatv.dao.ChannelDAO;
 import com.bipa4.back_bipatv.dataType.ErrorCode;
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
@@ -28,7 +27,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class ChannelService {
 
-  private final ChannelDAO channelDAO;
   private final SecurityService securityService;
   private final ChannelRepository channelRepository;
   private final VideoRepository videoRepository;
@@ -68,7 +66,7 @@ public class ChannelService {
   }
 
   public List<GetChannelTop5DTO> findLimitTimeSumCnt() {
-    List<GetChannelTop5DTO> list = channelDAO.findTop5Channels();
+    List<GetChannelTop5DTO> list = channelRepository.findTop5Channels();
 
     IntStream.range(0, list.size())
         .forEach(i -> list.get(i).setRanking(i + 1));
@@ -119,7 +117,7 @@ public class ChannelService {
 
   public List<GetVideoResponseDto> getVideosInChannel(Accounts account, UUID channelId,
       UUID page, int pageSize) {
-    // login 하지 않은 비회원인 경우
+    // 비회원
     if (account == null) {
       if (page == null) {
         page = videoRepository.lastUUIDInChannel(channelId);
@@ -127,16 +125,17 @@ public class ChannelService {
       return videoRepository.getVideosInChannel(channelId, page, pageSize);
     }
 
-    // login 했는데 admin인 경우
+    // 본인 채널
     if (account.getAccountId()
-        .equals(channelDAO.findByChannelId(channelId))) {//채널 주인이 로그인한 사람이면 채널 내 비공개 영상도 조회 가능해야 함
+        .equals(channelRepository.findByChannelId(channelId).getAccounts()
+            .getAccountId())) {//채널 주인이 로그인한 사람이면 채널 내 비공개 영상도 조회 가능해야 함
       if (page == null) {
         page = videoRepository.lastUUIDInMyChannel(channelId);
       }
       return videoRepository.getVideosInMyChannel(channelId, page, pageSize);
     }
 
-    // login한 user인 경우
+    // 그외 채널
     if (page == null) {
       page = videoRepository.lastUUIDInChannel(channelId);
     }
@@ -148,7 +147,8 @@ public class ChannelService {
     if (account == null) { // 비회원
       return channelRepository.getNextChannelVideoUUID(videoId, channelId, false);
     }
-    if (account.getAccountId() == (channelDAO.findByChannelId(channelId))) { // 본인 채널
+    if (account.getAccountId() == channelRepository.findByChannelId(channelId).getAccounts()
+        .getAccountId()) { // 본인 채널
       return channelRepository.getNextChannelVideoUUID(videoId, channelId, true);
     } else { // 다른 회원
       return channelRepository.getNextChannelVideoUUID(videoId, channelId, false);
@@ -157,60 +157,33 @@ public class ChannelService {
 
   public Integer getSearchNextChannelVideoUUID(Integer rank, UUID channelId,
       String searchQuery,
-      String accessToken, int pageSize, Integer page) {
-    Accounts loginUser = null;
-    List<Integer> nextVideoInChannelRank = null;
-    if (accessToken != null) {
-      loginUser = securityService.getSubjectAccount(accessToken);
-    }
-    if (Objects.isNull(loginUser)) {
-      nextVideoInChannelRank = channelRepository.getSearchNextChannelVideoRank(rank,
+      Accounts account, int pageSize, Integer page) {
+    if (account == null) {
+      return channelRepository.getSearchNextChannelVideoRank(rank,
           channelId, searchQuery, pageSize, page);
-      if (nextVideoInChannelRank.isEmpty()) {
-        return null;//null로 바꾸기
-      } else {
-        return nextVideoInChannelRank.get(0);
-      }
     }
-    if (loginUser.getAccountId().equals(channelRepository.findByChannelId(channelId).getAccounts()
+    if (account.getAccountId().equals(channelRepository.findByChannelId(channelId).getAccounts()
         .getAccountId())) {//채널 주인이 로그인한 사람이면 채널 내 비공개 영상도 조회 가능해야 함
-      nextVideoInChannelRank = channelRepository.getSearchNextMyChannelVideoRank(rank,
+      return channelRepository.getSearchNextMyChannelVideoRank(rank,
           channelId, searchQuery, pageSize, page);
-      if (nextVideoInChannelRank.isEmpty()) {
-        return null;//null로 바꾸기
-      } else {
-        return nextVideoInChannelRank.get(0);
-      }
-    } else {
-      nextVideoInChannelRank = channelRepository.getSearchNextChannelVideoRank(rank,
-          channelId, searchQuery, pageSize, page);
-      if (nextVideoInChannelRank.isEmpty()) {
-        return null;//null로 바꾸기
-      } else {
-        return nextVideoInChannelRank.get(0);
-      }
     }
+    return channelRepository.getSearchNextChannelVideoRank(rank,
+        channelId, searchQuery, pageSize, page);
   }
 
   public Integer getNextChannelRank(String searchQuery, Integer ranking, int pageSize,
       Integer page) {
-    List<Integer> nextChannelRank = channelRepository.getNextChannelRank(searchQuery, ranking,
+    return channelRepository.getNextChannelRank(searchQuery, ranking,
         pageSize, page);
-    if (nextChannelRank.isEmpty()) {
-      return null;
-    } else {
-      return nextChannelRank.get(0);
-    }
   }
 
   public List<GetSearchVideoINChannelDTO> searchVideoInChannel(Accounts account, UUID channelId,
       Integer page, int pageSize, String searchQuery) {
+
     // 비회원
     if (account == null) {
       if (page == null) {
-        if (!videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).isEmpty()) {
-          page = videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0);
-        }
+        page = videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery);
       }
       return videoRepository.getSearchVideoInChannel(channelId, page, pageSize, searchQuery);
     }
@@ -219,27 +192,21 @@ public class ChannelService {
     if (account.getAccountId().equals(channelRepository.findByChannelId(channelId).getAccounts()
         .getAccountId())) {
       if (page == null) {
-        if (!videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).isEmpty()) {
-          page = videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0);
-        }
+        page = videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery);
       }
       return videoRepository.getSearchVideoInMyChannel(channelId, page, pageSize, searchQuery);
     }
 
     // 본인 글이 아닌 경우
     if (page == null) {
-      if (!videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).isEmpty()) {
-        page = videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0);
-      }
+      page = videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery);
     }
     return videoRepository.getSearchVideoInChannel(channelId, page, pageSize, searchQuery);
   }
 
   public List<GetSearchChannelDTO> searchChannel(Integer page, int pageSize, String searchQuery) {
     if (page == null) {
-      if (channelRepository.lastUUIDSearchChannel(searchQuery) == null) {
-        page = channelRepository.lastUUIDSearchChannel(searchQuery).get(0);
-      }
+      page = channelRepository.lastUUIDSearchChannel(searchQuery);
     }
     return channelRepository.getSearchChannel(page, pageSize, searchQuery);
   }
