@@ -11,8 +11,8 @@ import com.bipa4.back_bipatv.dto.video.GetSearchVideoINChannelDTO;
 import com.bipa4.back_bipatv.dto.video.GetVideoResponseDto;
 import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.entity.Channels;
+import com.bipa4.back_bipatv.exception.AuthorizationException;
 import com.bipa4.back_bipatv.exception.CustomApiException;
-import com.bipa4.back_bipatv.exception.ResourceNotFoundException;
 import com.bipa4.back_bipatv.repository.ChannelRepository;
 import com.bipa4.back_bipatv.repository.VideoRepository;
 import com.bipa4.back_bipatv.security.SecurityService;
@@ -92,38 +92,36 @@ public class ChannelService {
   }
 
   @Transactional
-  public Channels updateChannel(UUID channelId, String code, PutChannelDTO putChannelDTO) {
-    Accounts loginAccount = securityService.getSubjectAccount(code);
-
-    Accounts putAccount = channelRepository.findByChannelId(channelId).getAccounts();
-
-    System.out.println("loginAccount:" + loginAccount.getAccountId());
-    System.out.println("putAccount:" + putAccount.getAccountId());
-
+  public Channels updateChannel(Accounts loginAccount, Channels putChannel,
+      PutChannelDTO putChannelDTO) {
+    boolean flag = false;
     if (!Objects.equals(loginAccount.getAccountId(),
-        putAccount.getAccountId())) { //로그인한 accountId와 수정할 채널의 accountId가 같은 경우
-      throw new ResourceNotFoundException(
-          "로그인 유저와 수정할 채널의 유저 정보가 같지 않다.");
+        putChannel.getAccounts().getAccountId())) { //로그인한 accountId와 수정할 채널의 accountId가 같은 경우
+      throw new AuthorizationException();
     }
-    Channels myChannel = findbyChannelId(channelId);
-    System.out.println(myChannel);
-    System.out.println(putChannelDTO);
-    if (!(myChannel.getContent()
+    if (!(putChannel.getContent()
         .equals(putChannelDTO.getContent()))) {
-      myChannel.setContent(putChannelDTO.getContent());
+      putChannel.setContent(putChannelDTO.getContent());
+      flag = true;
     }
-    if (!(myChannel.getProfileUrl()
+    if (!(putChannel.getProfileUrl()
         .equals(putChannelDTO.getProfileUrl()))) {
-      myChannel.setProfileUrl(putChannelDTO.getProfileUrl());
+      putChannel.setProfileUrl(putChannelDTO.getProfileUrl());
+      flag = true;
     }
-    if (!(myChannel.getPrivateType().equals(putChannelDTO.isPrivateType()))) {
-      myChannel.setPrivateType(putChannelDTO.isPrivateType());
+    if (!(putChannel.getPrivateType().equals(putChannelDTO.isPrivateType()))) {
+      putChannel.setPrivateType(putChannelDTO.isPrivateType());
+      flag = true;
     }
-    if (!(myChannel.getChannelName()
+    if (!(putChannel.getChannelName()
         .equals(putChannelDTO.getChannelName()))) {
-      myChannel.setChannelName(putChannelDTO.getChannelName());
+      putChannel.setChannelName(putChannelDTO.getChannelName());
+      flag = true;
     }
-    return channelRepository.save(myChannel);
+    if (flag) {
+      return channelRepository.save(putChannel);
+    }
+    return null;
   }
 
   public List<GetVideoResponseDto> getVideosInChannel(String accessToken, UUID channelId,

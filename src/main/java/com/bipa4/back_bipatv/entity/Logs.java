@@ -3,12 +3,12 @@ package com.bipa4.back_bipatv.entity;
 import java.sql.Timestamp;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import lombok.Data;
+import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
@@ -18,8 +18,8 @@ import org.hibernate.annotations.OnDeleteAction;
 public class Logs {
 
   @Id
-  @GeneratedValue
-  @Column(name = "log_id")
+  @Column(name = "log_id", columnDefinition = "BINARY(16)")
+  @GenericGenerator(name = "uuid2", strategy = "uuid2")
   private Long logId;
   @Column(name = "date", nullable = false)
   private Timestamp date;
