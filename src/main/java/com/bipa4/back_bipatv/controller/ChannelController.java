@@ -52,22 +52,24 @@ public class ChannelController {
       @CookieValue(value = "accessToken", required = false) String accessToken,
       @RequestParam(value = "page", required = false) Integer page,
       @RequestParam("page_size") int pageSize,
-      @PathVariable("channelId") UUID channelId,
-      @RequestParam("search_query") String searchQuery) {
-    List<GetSearchVideoINChannelDTO> videos = channelService.searchVideoInChannel(accessToken,
-        channelId,
-        page, pageSize, searchQuery);
-    Integer nextRank = null; //nextRank로 바꾸기 Integer
+      @RequestParam("search_query") String searchQuery,
+      @PathVariable("channelId") UUID channelId) {
+    Integer nextRank = null;
+
+    Accounts loginAccount = securityService.getSubjectAccount(accessToken);
+    List<GetSearchVideoINChannelDTO> videos = channelService.searchVideoInChannel(loginAccount,
+        channelId, page, pageSize, searchQuery);
+
     if (!videos.isEmpty()) {
       nextRank = channelService.getSearchNextChannelVideoUUID(
           videos.get(videos.size() - 1).getRanking(), channelId, searchQuery,
-          accessToken, pageSize, page) == null ? null : page + 1; // 마지막 page의 UUID 호출
+          accessToken, pageSize, page) == null ? null : page + 1;
     }
-    GetInfiniteScrollSearchVideoInChannelDTO responseDto = new GetInfiniteScrollSearchVideoInChannelDTO(
-        videos,
-        nextRank);
 
-    return ResponseEntity.ok().body(responseDto);
+    GetInfiniteScrollSearchVideoInChannelDTO responseDto = new GetInfiniteScrollSearchVideoInChannelDTO(
+        videos, nextRank);
+
+    return new ResponseEntity<>(responseDto, HttpStatus.OK);
   }
 
   @ApiOperation(value = "채널 검색", notes = "채널 검색")
@@ -75,12 +77,11 @@ public class ChannelController {
   public ResponseEntity<GetInfiniteScrollSearchChannelDTO> searchChannel(
       @RequestParam(value = "page", required = false) Integer page,
       @RequestParam("page_size") int pageSize,
-      @RequestParam("search_query") String searchQuery
-  ) {
-    List<GetSearchChannelDTO> channels = channelService.searchChannel(
-        page, pageSize, searchQuery);
-    channels.forEach(System.out::println);
+      @RequestParam("search_query") String searchQuery) {
     Integer nextRank = null;
+
+    List<GetSearchChannelDTO> channels = channelService.searchChannel(page, pageSize, searchQuery);
+
     if (!channels.isEmpty()) {
       if (channelService.getNextChannelRank(searchQuery,
           channels.get(channels.size() - 1).getRanking(), pageSize, page) != null) {
@@ -90,10 +91,9 @@ public class ChannelController {
     }
 
     GetInfiniteScrollSearchChannelDTO responseDto = new GetInfiniteScrollSearchChannelDTO(
-        channels,
-        nextRank);
+        channels, nextRank);
 
-    return ResponseEntity.ok().body(responseDto);
+    return new ResponseEntity<>(responseDto, HttpStatus.OK);
   }
 
   @ApiOperation(value = "getUpdateFlag", notes = "업데이트 플레그 얻기")
@@ -104,6 +104,5 @@ public class ChannelController {
     Accounts loginAccount = securityService.getSubjectAccount(accessToken);
     return new ResponseEntity<>(channelService.getUpdateFlag(loginAccount, channelId),
         HttpStatus.OK);
-
   }
 }

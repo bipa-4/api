@@ -119,8 +119,6 @@ public class ChannelService {
 
   public List<GetVideoResponseDto> getVideosInChannel(Accounts account, UUID channelId,
       UUID page, int pageSize) {
-    Accounts loginUser = null;
-
     // login 하지 않은 비회원인 경우
     if (account == null) {
       if (page == null) {
@@ -130,8 +128,8 @@ public class ChannelService {
     }
 
     // login 했는데 admin인 경우
-    if (loginUser.getAccountId().equals(channelRepository.findByChannelId(channelId).getAccounts()
-        .getAccountId())) {//채널 주인이 로그인한 사람이면 채널 내 비공개 영상도 조회 가능해야 함
+    if (account.getAccountId()
+        .equals(channelDAO.findByChannelId(channelId))) {//채널 주인이 로그인한 사람이면 채널 내 비공개 영상도 조회 가능해야 함
       if (page == null) {
         page = videoRepository.lastUUIDInMyChannel(channelId);
       }
@@ -199,70 +197,50 @@ public class ChannelService {
     List<Integer> nextChannelRank = channelRepository.getNextChannelRank(searchQuery, ranking,
         pageSize, page);
     if (nextChannelRank.isEmpty()) {
-      return null;//null로 바꾸기
+      return null;
     } else {
       return nextChannelRank.get(0);
     }
   }
 
-  public List<GetSearchVideoINChannelDTO> searchVideoInChannel(String accessToken, UUID channelId,
+  public List<GetSearchVideoINChannelDTO> searchVideoInChannel(Accounts account, UUID channelId,
       Integer page, int pageSize, String searchQuery) {
-    Accounts loginUser = null;
-    if (accessToken != null) {
-      loginUser = securityService.getSubjectAccount(accessToken);
-    }
-    Integer currentPage = null;
-    if (Objects.isNull(loginUser)) {
+    // 비회원
+    if (account == null) {
       if (page == null) {
         if (!videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).isEmpty()) {
-          currentPage = videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0);
+          page = videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0);
         }
-      } else {
-        currentPage = page;
       }
-
-      return videoRepository.getSearchVideoInChannel(channelId, currentPage, pageSize, searchQuery);
+      return videoRepository.getSearchVideoInChannel(channelId, page, pageSize, searchQuery);
     }
 
-    if (loginUser.getAccountId().equals(channelRepository.findByChannelId(channelId).getAccounts()
+    // 본인 글
+    if (account.getAccountId().equals(channelRepository.findByChannelId(channelId).getAccounts()
         .getAccountId())) {
       if (page == null) {
         if (!videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).isEmpty()) {
-          currentPage = videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0);
+          page = videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0);
         }
-      } else {
-        currentPage = page;
       }
-
-      return videoRepository.getSearchVideoInMyChannel(channelId, currentPage, pageSize,
-          searchQuery);
-
-    } else {
-      if (page == null) {
-        if (!videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).isEmpty()) {
-          currentPage = videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0);
-        }
-      } else {
-        currentPage = page;
-      }
-
-      return videoRepository.getSearchVideoInChannel(channelId, currentPage, pageSize, searchQuery);
-
+      return videoRepository.getSearchVideoInMyChannel(channelId, page, pageSize, searchQuery);
     }
+
+    // 본인 글이 아닌 경우
+    if (page == null) {
+      if (!videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).isEmpty()) {
+        page = videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery).get(0);
+      }
+    }
+    return videoRepository.getSearchVideoInChannel(channelId, page, pageSize, searchQuery);
   }
 
   public List<GetSearchChannelDTO> searchChannel(Integer page, int pageSize, String searchQuery) {
-    Integer currentPage = null;
     if (page == null) {
       if (channelRepository.lastUUIDSearchChannel(searchQuery) == null) {
-        currentPage = channelRepository.lastUUIDSearchChannel(searchQuery).get(0);
+        page = channelRepository.lastUUIDSearchChannel(searchQuery).get(0);
       }
-    } else {
-      currentPage = page;
     }
-
-    return channelRepository.getSearchChannel(currentPage, pageSize, searchQuery);
+    return channelRepository.getSearchChannel(page, pageSize, searchQuery);
   }
-
-
 }
