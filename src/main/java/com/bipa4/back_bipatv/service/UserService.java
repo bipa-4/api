@@ -161,7 +161,12 @@ public class UserService {
               userResourceNode.get("kakao_account").get("profile").get("nickname").asText());
         }
         accounts.setLoginType(ELogin_Type.KAKAO);
-        accounts.setProfileUrl(userResourceNode.get("properties").get("thumbnail_image").asText());
+        if (userResourceNode.get("properties").get("thumbnail_image").asBoolean()) {
+          accounts.setProfileUrl(
+              userResourceNode.get("properties").get("thumbnail_image").asText());
+        } else {
+          accounts.setProfileUrl("");
+        }
         System.out.println(accounts);
         break;
       }
@@ -214,24 +219,24 @@ public class UserService {
   }
 
   @Transactional
-  public Accounts updateAccount(UUID accountId, Accounts accounts) {
-    Accounts user = accountRepository.findById(accountId).orElse(null);
-
-    if (user != null) {
-      if (user.getProfileUrl() == null) {
-        user.setProfileUrl("");
+  public Accounts updateAccount(Accounts loginUser, Accounts updateDataAccount) {
+    boolean flag = false;
+    if (loginUser != null) {
+      if (!loginUser.getProfileUrl().equals(updateDataAccount.getProfileUrl())) {
+        loginUser.setProfileUrl(updateDataAccount.getProfileUrl());
+        flag = true;
       }
-      System.out.println(user);
-      if (!user.getProfileUrl().equals(accounts.getProfileUrl())) {
-        user.setProfileUrl(accounts.getProfileUrl());
+      if (!(loginUser.getName().equals(updateDataAccount.getName()))) {
+        loginUser.setName(updateDataAccount.getName());
+        flag = true;
       }
-      if (!(user.getName().equals(accounts.getName()))) {
-        user.setName(accounts.getName());
+      if (flag) {
+        return accountRepository.save(loginUser);
       }
-      return accountRepository.save(user);
+      return null;
     }
     throw new ResourceNotFoundException(
-        "User with ID " + accountId + " not found"); // 리소스를 찾지 못한 경우 예외 던지기
+        "User not found"); // 리소스를 찾지 못한 경우 예외 던지기
   }
 
   public boolean logout(String refreshToken, String accessToken) {

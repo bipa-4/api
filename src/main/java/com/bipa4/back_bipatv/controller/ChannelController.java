@@ -41,7 +41,10 @@ public class ChannelController {
   public ResponseEntity<Channels> updateMyChannelInfo(@PathVariable UUID channelId,
       @CookieValue(value = "accessToken", required = false) String code,
       @RequestBody PutChannelDTO putChannelDTO) {
-    Channels updatedChannel = channelService.updateChannel(channelId, code, putChannelDTO);
+    Accounts loginAccount = securityService.getSubjectAccount(code);
+    Channels putChannel = channelService.findbyChannelId(channelId);
+    Channels updatedChannel = channelService.updateChannel(loginAccount, putChannel, putChannelDTO);
+    
     return new ResponseEntity<>(updatedChannel, HttpStatus.OK);
   }
 
