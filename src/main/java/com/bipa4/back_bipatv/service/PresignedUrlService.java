@@ -45,7 +45,7 @@ public class PresignedUrlService {
 
     // 파일이름
     String fileId = UUID.randomUUID().toString();
-    String fileKey = folderName + "/" + fileName + "/" + fileId;
+    String fileKey = folderName + "/" + fileName + "/" + fileId + fileName;
 
     // 만료 기간 정하기
     Calendar calendar = Calendar.getInstance();
