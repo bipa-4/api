@@ -26,4 +26,5 @@ public class GetVideoResponseDto {
   private Integer readCount;
   private UUID videoId;
   private UUID channelId;
+  private boolean privateType;
 }
