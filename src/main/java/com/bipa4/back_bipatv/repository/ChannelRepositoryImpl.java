@@ -1,6 +1,7 @@
 package com.bipa4.back_bipatv.repository;
 
 import static com.querydsl.core.types.dsl.Expressions.asNumber;
+import static org.aspectj.runtime.internal.Conversions.intValue;
 
 import com.bipa4.back_bipatv.dataType.ErrorCode;
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
@@ -155,7 +156,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
     } catch (NullPointerException e) {
       throw new NoContentException();
     } catch (Exception e) {
-      throw new CustomApiException(ErrorCode.READ_NEXT_UUID_ERRROR);
+      throw new CustomApiException(ErrorCode.READ_LAST_UUID_ERRROR);
     }
 
     return lastUUID;
@@ -211,94 +212,131 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
 
   // 채널 검색
   @Override
-  public List<Integer> getSearchNextChannelVideoRank(Integer rank, UUID channelId,
+  public Integer getSearchNextChannelVideoRank(Integer rank, UUID channelId,
       String searchQuery, int pageSize, Integer page) {
+    List<Integer> resultList;
+
     if (page == null) {
       page = 1;
     }
-    List<Integer> resultList = entityManager.createNativeQuery(
-            "SELECT ROW_NUMBER() OVER () AS ranking\n"
-                + "FROM channels c\n"
-                + "LEFT JOIN videos v ON c.channel_id = v.channel_id \n"
-                + "WHERE v.channel_id = ? \n"
-                + "AND MATCH (v.title, v.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
-                + "AND v.private_type = false "
-                + "AND v.video_id IN (\n"
-                + "  SELECT video_id\n"
-                + "  FROM (\n"
-                + "    SELECT video_id, ROW_NUMBER() OVER () AS ranking\n"
-                + "    FROM videos\n"
-                + "    WHERE MATCH (title, content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
-                + "  ) AS ranked\n"
-                + "  WHERE ranking > ?\n"
-                + ")\n"
-                + "order by ranking asc \n"
-                + "LIMIT 1;"
-        ).setParameter(1, channelId)
-        .setParameter(2, searchQuery)
-        .setParameter(3, searchQuery)
-        .setParameter(4, ((page - 1) * pageSize) + rank)
-        .getResultList();
 
-    return resultList;
+    try {
+      resultList = entityManager.createNativeQuery(
+              "SELECT ROW_NUMBER() OVER () AS ranking\n"
+                  + "FROM channels c\n"
+                  + "LEFT JOIN videos v ON c.channel_id = v.channel_id \n"
+                  + "WHERE v.channel_id = ? \n"
+                  + "AND MATCH (v.title, v.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
+                  + "AND v.private_type = false "
+                  + "AND v.video_id IN (\n"
+                  + "  SELECT video_id\n"
+                  + "  FROM (\n"
+                  + "    SELECT video_id, ROW_NUMBER() OVER () AS ranking\n"
+                  + "    FROM videos\n"
+                  + "    WHERE MATCH (title, content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
+                  + "  ) AS ranked\n"
+                  + "  WHERE ranking > ?\n"
+                  + ")\n"
+                  + "order by ranking asc \n"
+                  + "LIMIT 1;"
+          ).setParameter(1, channelId)
+          .setParameter(2, searchQuery)
+          .setParameter(3, searchQuery)
+          .setParameter(4, ((page - 1) * pageSize) + rank)
+          .getResultList();
+
+      if (!resultList.isEmpty()) {
+        return intValue(resultList.get(0));
+      }
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_NEXT_UUID_ERRROR);
+    }
+    return null;
   }
 
   @Override
-  public List<Integer> getSearchNextMyChannelVideoRank(Integer rank, UUID channelId,
+  public Integer getSearchNextMyChannelVideoRank(Integer rank, UUID channelId,
       String searchQuery, int pageSize, Integer page) {
+    List<Integer> resultList;
+
     if (page == null) {
       page = 1;
     }
-    List<Integer> resultList = entityManager.createNativeQuery(
-            "SELECT ROW_NUMBER() OVER () AS ranking\n"
-                + "FROM channels c\n"
-                + "LEFT JOIN videos v ON c.channel_id = v.channel_id \n"
-                + "WHERE v.channel_id = ? \n"
-                + "AND MATCH (v.title, v.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
-                + "AND v.video_id IN (\n"
-                + "  SELECT video_id\n"
-                + "  FROM (\n"
-                + "    SELECT video_id, ROW_NUMBER() OVER () AS ranking\n"
-                + "    FROM videos\n"
-                + "    WHERE MATCH (title, content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
-                + "  ) AS ranked\n"
-                + "  WHERE ranking > ?\n"
-                + ")\n"
-                + "order by ranking asc \n"
-                + "LIMIT 1;"
-        ).setParameter(1, channelId)
-        .setParameter(2, searchQuery)
-        .setParameter(3, searchQuery)
-        .setParameter(4, ((page - 1) * pageSize) + rank)
-        .getResultList();
 
-    return resultList;
+    try {
+      resultList = entityManager.createNativeQuery(
+              "SELECT ROW_NUMBER() OVER () AS ranking\n"
+                  + "FROM channels c\n"
+                  + "LEFT JOIN videos v ON c.channel_id = v.channel_id \n"
+                  + "WHERE v.channel_id = ? \n"
+                  + "AND MATCH (v.title, v.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
+                  + "AND v.video_id IN (\n"
+                  + "  SELECT video_id\n"
+                  + "  FROM (\n"
+                  + "    SELECT video_id, ROW_NUMBER() OVER () AS ranking\n"
+                  + "    FROM videos\n"
+                  + "    WHERE MATCH (title, content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
+                  + "  ) AS ranked\n"
+                  + "  WHERE ranking > ?\n"
+                  + ")\n"
+                  + "order by ranking asc \n"
+                  + "LIMIT 1;"
+          ).setParameter(1, channelId)
+          .setParameter(2, searchQuery)
+          .setParameter(3, searchQuery)
+          .setParameter(4, ((page - 1) * pageSize) + rank)
+          .getResultList();
+      if (!resultList.isEmpty()) {
+        return intValue(resultList.get(0));
+      }
+    } catch (NullPointerException e) {
+      throw new NoContentException();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_NEXT_UUID_ERRROR);
+    }
+
+    return null;
   }
 
   @Override
-  public List<Integer> lastUUIDSearchChannel(String searchQuery) {
-    List<Integer> uuid = entityManager.createNativeQuery(
-            "SELECT ranking\n"
-                + "FROM (\n"
-                + "    SELECT ROW_NUMBER() OVER () AS ranking\n"
-                + "    FROM channels\n"
-                + "    WHERE MATCH (channels.name, channels.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
-                + "    ORDER BY ranking ASC\n"
-                + "    LIMIT 1\n"
-                + ") AS ranked_results;\n"
-        )
-        .setParameter(1, searchQuery)
-        .getResultList();
-    return uuid;
+  public Integer lastUUIDSearchChannel(String searchQuery) {
+    List<Integer> uuid = new ArrayList<>();
+
+    try {
+      uuid = entityManager.createNativeQuery(
+              "SELECT ranking\n"
+                  + "FROM (\n"
+                  + "    SELECT ROW_NUMBER() OVER () AS ranking\n"
+                  + "    FROM channels\n"
+                  + "    WHERE MATCH (channels.name, channels.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
+                  + "    ORDER BY ranking ASC\n"
+                  + "    LIMIT 1\n"
+                  + ") AS ranked_results;\n"
+          )
+          .setParameter(1, searchQuery)
+          .getResultList();
+
+      if (!uuid.isEmpty()) {
+        return intValue(uuid.get(0));
+      }
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_LAST_UUID_ERRROR);
+    }
+    return null;
   }
 
   @Override
   public List<GetSearchChannelDTO> getSearchChannel(Integer page, int pageSize,
       String searchQuery) {
+    List<GetSearchChannelDTO> searchList = new ArrayList<>();
+    List<Object[]> resultList = new ArrayList<>();
+    String sql;
+
     if (page == null) {
       page = 1;
     }
-    String sql =
+
+    sql =
         "select BIN_TO_UUID(channel_id) as channelId, name as channelName, content, private_type as privateType, profile_url as profileUrl, ROW_NUMBER() OVER () AS ranking\n"
             + "from channels \n"
             + "where MATCH (channels.name, channels.content) AGAINST ( ? IN NATURAL LANGUAGE MODE) \n"
@@ -314,55 +352,74 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
             + ")\n"
             + "order by ranking asc \n"
             + "LIMIT ?;";
-    List<Object[]> resultList = entityManager.createNativeQuery(sql)
-        .setParameter(1, searchQuery)
-        .setParameter(2, searchQuery)
-        .setParameter(3, 1 + ((page - 1) * pageSize))
-        .setParameter(4, pageSize).getResultList();
 
-    List<GetSearchChannelDTO> searchList = new ArrayList<>();
-    for (Object[] row : resultList) {
-      GetSearchChannelDTO dto = new GetSearchChannelDTO();//id, name, content, PT, url, ranking
-      dto.setChannelId(UUID.fromString((String) row[0]));
-      dto.setChannelName((String) row[1]);
-      dto.setContent((String) row[2]);
-      dto.setPrivateType((boolean) row[3]);
-      dto.setProfileUrl((String) row[4]);
-      dto.setRanking(((BigInteger) row[5]).intValue());
-      searchList.add(dto);
+    try {
+      resultList = entityManager.createNativeQuery(sql)
+          .setParameter(1, searchQuery)
+          .setParameter(2, searchQuery)
+          .setParameter(3, 1 + ((page - 1) * pageSize))
+          .setParameter(4, pageSize).getResultList();
+    } catch (NullPointerException e) {
+      throw new NoContentException();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_ERROR);
     }
-    System.out.println("searchList값:" + searchList);
+
+    try {
+      for (Object[] row : resultList) {
+        GetSearchChannelDTO dto = new GetSearchChannelDTO();//id, name, content, PT, url, ranking
+        dto.setChannelId(UUID.fromString((String) row[0]));
+        dto.setChannelName((String) row[1]);
+        dto.setContent((String) row[2]);
+        dto.setPrivateType((boolean) row[3]);
+        dto.setProfileUrl((String) row[4]);
+        dto.setRanking(((BigInteger) row[5]).intValue());
+        searchList.add(dto);
+      }
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.INSERT_DTO_ERROR);
+    }
     return searchList;
   }
 
   @Override
-  public List<Integer> getNextChannelRank(String searchQuery, Integer ranking, int pageSize,
+  public Integer getNextChannelRank(String searchQuery, Integer ranking, int pageSize,
       Integer page) {
+    List<Integer> list;
+
     if (page == null) {
       page = 1;
     }
-    List<Integer> list = entityManager.createNativeQuery(
-            "select ROW_NUMBER() OVER () AS ranking\n"
-                + "from channels\n"
-                + "where MATCH (channels.name, channels.content) AGAINST ( ? IN NATURAL LANGUAGE MODE)\n"
-                + "and channels.private_type = false\n"
-                + "and channels.channel_id IN (\n"
-                + "  SELECT channel_id\n"
-                + "  FROM ( \n"
-                + "  SELECT channel_id, ROW_NUMBER() OVER () AS ranking\n"
-                + "  FROM channels\n"
-                + "  WHERE MATCH (channels.name, channels.content) AGAINST ( ? IN NATURAL LANGUAGE MODE)\n"
-                + "  ) AS ranked\n"
-                + "  WHERE ranking > ?\n"
-                + ")\n"
-                + "order by ranking asc\n"
-                + "LIMIT 1;\n"
-        )
-        .setParameter(1, searchQuery)
-        .setParameter(2, searchQuery)
-        .setParameter(3, ((page - 1) * pageSize) + ranking)
-        .getResultList();
 
-    return list;
+    try {
+      list = entityManager.createNativeQuery(
+              "select ROW_NUMBER() OVER () AS ranking\n"
+                  + "from channels\n"
+                  + "where MATCH (channels.name, channels.content) AGAINST ( ? IN NATURAL LANGUAGE MODE)\n"
+                  + "and channels.private_type = false\n"
+                  + "and channels.channel_id IN (\n"
+                  + "  SELECT channel_id\n"
+                  + "  FROM ( \n"
+                  + "  SELECT channel_id, ROW_NUMBER() OVER () AS ranking\n"
+                  + "  FROM channels\n"
+                  + "  WHERE MATCH (channels.name, channels.content) AGAINST ( ? IN NATURAL LANGUAGE MODE)\n"
+                  + "  ) AS ranked\n"
+                  + "  WHERE ranking > ?\n"
+                  + ")\n"
+                  + "order by ranking asc\n"
+                  + "LIMIT 1;\n"
+          )
+          .setParameter(1, searchQuery)
+          .setParameter(2, searchQuery)
+          .setParameter(3, ((page - 1) * pageSize) + ranking)
+          .getResultList();
+
+      if (!list.isEmpty()) {
+        return intValue(list.get(0));
+      }
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_NEXT_UUID_ERRROR);
+    }
+    return null;
   }
 }
