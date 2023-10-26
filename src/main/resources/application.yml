@@ -1,6 +1,6 @@
 server:
-  address: localhost
-  port: 8080
+  #  address: localhost
+  port: 8081
 spring:
   redis:
     host: ${Redis_Host}
@@ -27,6 +27,8 @@ spring:
   h2:
     console:
       enabled: true
+
+
 
 oauth2:
   kakao:
@@ -63,11 +65,26 @@ cloud:
       keyPairId: ${KEY_PAIR_ID}
       distributionDomain: ${DISTRIBUTION_DOMAIN}
 management:
+  health:
+    redis:
+      enabled: false
+    diskspace:
+      enabled: false
   endpoints:
+    jmx:
+      exposure:
+        exclude: "*"
     web:
       exposure:
         include: health,info,beans,conditions
         exclude: threaddump, heapdump
+      base-path: /checking
+    enabled-by-default: false
+
   endpoint:
     health:
       show-details: "always"
+      enabled: true
+    info:
+      enabled: true
+
