@@ -13,7 +13,7 @@ public interface ChildCommentResponse {
     String getChannelName();
     String getContent();
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+9")
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     Date getCreateAt();
     Boolean getIsUpdated();
 
