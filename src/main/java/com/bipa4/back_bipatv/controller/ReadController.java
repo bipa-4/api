@@ -50,15 +50,14 @@ public class ReadController {
       @RequestParam(value = "page", required = false) UUID page,
       @RequestParam("pageSize") int pageSize) {
     UUID nextUUID = null;
-    GetInfiniteScrollRequestDto responseDto = null;
 
     List<GetVideoResponseDto> videos = videoService.getAllVideos(page, pageSize);
 
     if (!videos.isEmpty()) {
       nextUUID = videoService.getNextUUID(
           videos.get(videos.size() - 1).getVideoId()); // 마지막 page의 UUID 호출
-      responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
     }
+    GetInfiniteScrollRequestDto responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
     return ResponseEntity.ok().body(responseDto);
   }
 
@@ -71,7 +70,6 @@ public class ReadController {
       @RequestParam(value = "page", required = false) UUID page,
       @RequestParam("pageSize") int pageSize) {
     UUID nextUUID = null;
-    GetInfiniteScrollRequestDto responseDto = null;
 
     List<GetVideoResponseDto> videos = videoService.getCategoryVideos(category, page, pageSize);
 
@@ -79,7 +77,7 @@ public class ReadController {
       nextUUID = videoService.getNextCategoryUUID(
           videos.get(videos.size() - 1).getVideoId(), category); // 마지막 page의 UUID 호출
     }
-    responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
+    GetInfiniteScrollRequestDto responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
     return ResponseEntity.ok().body(responseDto);
   }
 
@@ -118,6 +116,7 @@ public class ReadController {
     GetDetailResponseDto video = videoService.getVideoDetail(id);
     return new ResponseEntity<>(video, HttpStatus.OK);
   }
+
 
   // 조회수 상승
   @ApiOperation(value = "조회수 상승", notes = "조회수 상승")
@@ -167,6 +166,7 @@ public class ReadController {
     return new ResponseEntity<>(responseDto, HttpStatus.OK);
   }
 
+
   // 인기 채널 top5 조회
   @ApiOperation(value = "실시간 인기 채널 5", notes = "가장 인기 있는 채널 TOP5을 들고온다")
   @GetMapping("/channel/top5")
@@ -183,16 +183,17 @@ public class ReadController {
       @RequestParam(value = "page", required = false) UUID page,
       @RequestParam("pageSize") int pageSize) {
     UUID nextUUID = null;
-    GetInfiniteScrollRequestChannelDto channelList = null;
 
     List<GetChannelDTO> list = channelService.getAllChannels(page, pageSize);
 
     if (!list.isEmpty()) {
       nextUUID = channelService.getChannelNextUUID(list.get(list.size() - 1).getChannelId());
     }
-    channelList = new GetInfiniteScrollRequestChannelDto(list, nextUUID);
-    return new ResponseEntity<>(channelList, HttpStatus.OK);
+    GetInfiniteScrollRequestChannelDto responseDto = new GetInfiniteScrollRequestChannelDto(list,
+        nextUUID);
+    return new ResponseEntity<>(responseDto, HttpStatus.OK);
   }
+
 
   @ApiOperation(value = "채널 내 영상 조회", notes = "최신순으로 전체 조회 (무한스크롤) / 처음엔 page 안넘겨주면 됨.")
   @GetMapping("/channel/video/{channelId}")
@@ -202,16 +203,16 @@ public class ReadController {
       @RequestParam("pageSize") int pageSize,
       @PathVariable("channelId") UUID channelId) {
     UUID nextUUID = null;
-    GetInfiniteScrollRequestDto responseDto = null;
 
-    List<GetVideoResponseDto> videos = channelService.getVideosInChannel(accessToken, channelId,
+    Accounts account = securityService.getSubjectAccount(accessToken);
+    List<GetVideoResponseDto> videos = channelService.getVideosInChannel(account, channelId,
         page, pageSize);
 
     if (!videos.isEmpty()) {
       nextUUID = channelService.getNextChannelVideoUUID(
-          videos.get(videos.size() - 1).getVideoId(), channelId, accessToken); // 마지막 page의 UUID 호출
+          videos.get(videos.size() - 1).getVideoId(), channelId, account); // 마지막 page의 UUID 호출
     }
-    responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
+    GetInfiniteScrollRequestDto responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
     return new ResponseEntity<>(responseDto, HttpStatus.OK);
   }
 }

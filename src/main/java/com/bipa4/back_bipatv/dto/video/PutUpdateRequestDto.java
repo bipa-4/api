@@ -17,6 +17,6 @@ public class PutUpdateRequestDto {
   private String thumbnailUrl;
   private String title;
   private String content;
-  private boolean private_type;
+  private boolean privateType;
   private List<UUID> category;
 }
