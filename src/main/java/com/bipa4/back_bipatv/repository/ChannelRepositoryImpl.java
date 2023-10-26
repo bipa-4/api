@@ -185,7 +185,9 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
   @Override
   public UUID getNextChannelVideoUUID(UUID videoId, UUID channelId, boolean flag) {
     UUID nextUUID;
+
     QVideos qVideos = QVideos.videos;
+
     try {
       if (flag) {
         nextUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)

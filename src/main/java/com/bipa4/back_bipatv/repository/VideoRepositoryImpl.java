@@ -33,7 +33,6 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import javax.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -60,6 +59,10 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
+
+    if (page == null) {
+      return new ArrayList<>();
+    }
 
     try {
       responseDtos = jpaQueryFactory.select(
@@ -138,6 +141,10 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QChannels qChannels = QChannels.channels;
     QCategorys qCategorys = QCategorys.categorys;
     QCategoryName qCategoryName = QCategoryName.categoryName;
+
+    if (page == null) {
+      return new ArrayList<>();
+    }
 
     try {
       responseDto = jpaQueryFactory.select(
@@ -458,7 +465,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     try {
       video.setContent(videoResponseDto.getContent());
       video.setCreateAt(Timestamp.valueOf(now));
-      video.setPrivateType(videoResponseDto.isPrivate_type());
+      video.setPrivateType(videoResponseDto.isPrivateType());
       video.setThumbnail(videoResponseDto.getThumbnailUrl());
       video.setTitle(videoResponseDto.getTitle());
       video.setVideoUrl(videoResponseDto.getVideoUrl());
@@ -665,12 +672,11 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
 
-    System.out.println("getVideosInChannel page : " + page);
-    try {
-      if (page == null) {
-        return new ArrayList<>();
-      }
+    if (page == null) {
+      return new ArrayList<>();
+    }
 
+    try {
       responseDtos = jpaQueryFactory.select(
               Projections.bean(
                   GetVideoResponseDto.class,
@@ -681,7 +687,8 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                   qVideos.title.as("videoTitle"),
                   qVideos.createAt,
                   qVideos.readCnt.as("readCount"),
-                  qVideos.videoId
+                  qVideos.videoId,
+                  qVideos.privateType
               )
           )
           .from(qVideos).leftJoin(qVideos.channelId, qChannels)
@@ -703,17 +710,12 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     UUID lastUUID = null;
 
     QVideos qVideos = QVideos.videos;
-    System.out.println("lastUUIDInChannel들어옴");
+
     try {
-      Optional<UUID> uuid = Optional.ofNullable(
-          jpaQueryFactory.select(qVideos.videoId).from(qVideos)
-              .where(qVideos.channelId.channelId.eq(channelId).and(qVideos.privateType.eq(false)))
-              .orderBy(qVideos.videoId.desc()).limit(1)
-              .fetchOne());
-      if (uuid.isPresent()) {
-        lastUUID = uuid.get();
-      }
-      System.out.println("lastUUID:" + lastUUID);
+      lastUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
+          .where(qVideos.channelId.channelId.eq(channelId).and(qVideos.privateType.eq(false)))
+          .orderBy(qVideos.videoId.desc()).limit(1)
+          .fetchOne();
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.READ_LAST_UUID_ERRROR);
     }
@@ -726,14 +728,10 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QVideos qVideos = QVideos.videos;
 
     try {
-      Optional<UUID> uuid = Optional.ofNullable(
-          jpaQueryFactory.select(qVideos.videoId).from(qVideos)
-              .where(qVideos.channelId.channelId.eq(channelId))
-              .orderBy(qVideos.videoId.desc()).limit(1)
-              .fetchOne());
-      if (uuid.isPresent()) {
-        lastUUID = uuid.get();
-      }
+      lastUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
+          .where(qVideos.channelId.channelId.eq(channelId))
+          .orderBy(qVideos.videoId.desc()).limit(1)
+          .fetchOne();
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.READ_LAST_UUID_ERRROR);
     }
@@ -761,8 +759,6 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   @Override
   public List<Integer> lastUUIDSearchVideoInChannel(UUID channelId, String searchQuery) {
-    System.out.println("lastUUIDSearchVideoInChannel 메소드 channelId값:" + channelId);
-    System.out.println("lastUUIDSearchVideoInChannel 메소드 searchQuery값:" + searchQuery);
     List<Integer> uuid = entityManager.createNativeQuery("SELECT ranking\n"
             + "FROM (\n"
             + "    SELECT ROW_NUMBER() OVER () AS ranking\n"
@@ -776,7 +772,6 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
         ).setParameter(1, channelId)
         .setParameter(2, searchQuery)
         .getResultList();
-    System.out.println(uuid);
 
     return uuid;
   }
@@ -788,10 +783,11 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
 
+    if (uuid == null) {
+      return new ArrayList<>();
+    }
+
     try {
-      if (uuid == null) {
-        return new ArrayList<>();
-      }
       responseDtos = jpaQueryFactory.select(
               Projections.bean(
                   GetVideoResponseDto.class,
@@ -802,7 +798,8 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                   qVideos.title.as("videoTitle"),
                   qVideos.createAt,
                   qVideos.readCnt.as("readCount"),
-                  qVideos.videoId
+                  qVideos.videoId,
+                  qVideos.privateType
               )
           )
           .from(qVideos).leftJoin(qVideos.channelId, qChannels)
@@ -862,7 +859,6 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
       // 나머지 필드 설정
       searchList.add(dto);
     }
-    System.out.println("searchList값:" + searchList);
     return searchList;
   }
 
@@ -912,7 +908,6 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
       // 나머지 필드 설정
       searchList.add(dto);
     }
-    System.out.println("searchList값:" + searchList);
     return searchList;
   }
 }
