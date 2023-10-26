@@ -41,11 +41,11 @@ public class PresignedUrlService {
 
   private final AmazonS3 amazonS3;
 
-  public GetFileUrlResponseDto getPreSignedUrl(String fileName) {
+  public GetFileUrlResponseDto getPreSignedUrl(String fileName, String folderName) {
 
     // 파일이름
     String fileId = UUID.randomUUID().toString();
-    String fileKey = fileId + fileName;
+    String fileKey = folderName + "/" + fileName + "/" + fileId;
 
     // 만료 기간 정하기
     Calendar calendar = Calendar.getInstance();

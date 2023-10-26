@@ -87,7 +87,6 @@ public class ChannelService {
     } else {
       uuid = page;
     }
-    System.out.println("Service getAllChannels Method uuid: " + uuid);
     return channelRepository.getNotPrivateChannel(uuid, pageSize);
   }
 
