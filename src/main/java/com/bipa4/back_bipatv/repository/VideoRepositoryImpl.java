@@ -33,6 +33,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import javax.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
@@ -659,12 +660,17 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   @Override
   public List<GetVideoResponseDto> getVideosInChannel(UUID channelId, UUID page, int pageSize) {
-    List<GetVideoResponseDto> responseDtos;
+    List<GetVideoResponseDto> responseDtos = null;
 
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
 
+    System.out.println("getVideosInChannel page : " + page);
     try {
+      if (page == null) {
+        return new ArrayList<>();
+      }
+
       responseDtos = jpaQueryFactory.select(
               Projections.bean(
                   GetVideoResponseDto.class,
@@ -694,17 +700,20 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   @Override
   public UUID lastUUIDInChannel(UUID channelId) {
-    UUID lastUUID;
+    UUID lastUUID = null;
 
     QVideos qVideos = QVideos.videos;
-
+    System.out.println("lastUUIDInChannel들어옴");
     try {
-      lastUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
-          .where(qVideos.channelId.channelId.eq(channelId).and(qVideos.privateType.eq(false)))
-          .orderBy(qVideos.videoId.desc()).limit(1)
-          .fetchOne();
-    } catch (NullPointerException e) {
-      throw new NoContentException();
+      Optional<UUID> uuid = Optional.ofNullable(
+          jpaQueryFactory.select(qVideos.videoId).from(qVideos)
+              .where(qVideos.channelId.channelId.eq(channelId).and(qVideos.privateType.eq(false)))
+              .orderBy(qVideos.videoId.desc()).limit(1)
+              .fetchOne());
+      if (uuid.isPresent()) {
+        lastUUID = uuid.get();
+      }
+      System.out.println("lastUUID:" + lastUUID);
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.READ_LAST_UUID_ERRROR);
     }
@@ -713,16 +722,18 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   @Override
   public UUID lastUUIDInMyChannel(UUID channelId) {
-    UUID lastUUID;
+    UUID lastUUID = null;
     QVideos qVideos = QVideos.videos;
 
     try {
-      lastUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
-          .where(qVideos.channelId.channelId.eq(channelId))
-          .orderBy(qVideos.videoId.desc()).limit(1)
-          .fetchOne();
-    } catch (NullPointerException e) {
-      throw new NoContentException();
+      Optional<UUID> uuid = Optional.ofNullable(
+          jpaQueryFactory.select(qVideos.videoId).from(qVideos)
+              .where(qVideos.channelId.channelId.eq(channelId))
+              .orderBy(qVideos.videoId.desc()).limit(1)
+              .fetchOne());
+      if (uuid.isPresent()) {
+        lastUUID = uuid.get();
+      }
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.READ_LAST_UUID_ERRROR);
     }
@@ -778,6 +789,9 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QChannels qChannels = QChannels.channels;
 
     try {
+      if (uuid == null) {
+        return new ArrayList<>();
+      }
       responseDtos = jpaQueryFactory.select(
               Projections.bean(
                   GetVideoResponseDto.class,

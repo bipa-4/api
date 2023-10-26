@@ -146,13 +146,14 @@ public class ChannelService {
     }
     UUID uuid = null;
     if (Objects.isNull(loginUser)) {
-      System.out.println("비회원");
+      System.out.println("getVideosInChannel user Status: 비회원");
+      System.out.println("getVideosInChannel page: " + page);
       if (page == null) {
         uuid = videoRepository.lastUUIDInChannel(channelId);
       } else {
         uuid = page;
       }
-      videoRepository.getVideosInChannel(channelId, uuid, pageSize).forEach(System.out::println);
+
       return videoRepository.getVideosInChannel(channelId, uuid, pageSize);
     }
     if (loginUser.getAccountId().equals(channelRepository.findByChannelId(channelId).getAccounts()

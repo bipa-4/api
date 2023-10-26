@@ -1,6 +1,6 @@
 server:
-  address: localhost
-  port: 8080
+  #  address: localhost
+  port: 8081
 spring:
   redis:
     host: ${Redis_Host}
@@ -64,15 +64,27 @@ cloud:
     cloudFront:
       keyPairId: ${KEY_PAIR_ID}
       distributionDomain: ${DISTRIBUTION_DOMAIN}
+management:
+  health:
+    redis:
+      enabled: false
+    diskspace:
+      enabled: false
+  endpoints:
+    jmx:
+      exposure:
+        exclude: "*"
+    web:
+      exposure:
+        include: health,info,beans,conditions
+        exclude: threaddump, heapdump
+      base-path: /checking
+    enabled-by-default: false
 
-
-
-
-
-
-
-
-
-
-
+  endpoint:
+    health:
+      show-details: "always"
+      enabled: true
+    info:
+      enabled: true
 
