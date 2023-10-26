@@ -68,6 +68,10 @@ dependencies {
 //validaition
     implementation group: 'org.springframework.boot', name: 'spring-boot-starter-validation'
 
+// slf4j & logback
+    implementation('org.slf4j:jcl-over-slf4j')
+    implementation('ch.qos.logback:logback-classic')
+
 }
 
 tasks.named('test') {

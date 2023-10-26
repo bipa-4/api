@@ -80,7 +80,8 @@ public class UserController {
       @RequestBody @Validated Accounts accounts) {
 
     Accounts loginAccount = securityService.getSubjectAccount(code);
-    Accounts updatedAccount = userService.updateAccount(loginAccount.getAccountId(), accounts);
+    Accounts updatedAccount = userService.updateAccount(loginAccount, accounts);
+
     return new ResponseEntity<>(updatedAccount, HttpStatus.OK);
   }
 
@@ -91,7 +92,7 @@ public class UserController {
       @CookieValue(name = "accessToken", required = false) String accessToken,
       HttpServletRequest request) {
     GetAccountCheckDTO getAccountCheckDTO = null;
-    
+
     String nat = (String) request.getAttribute("newAccessToken");
     if (nat != null) {
       accessToken = nat;
