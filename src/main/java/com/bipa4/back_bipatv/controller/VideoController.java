@@ -67,16 +67,16 @@ public class VideoController {
   @ApiOperation(value = "S3 presigned-image-url 발급", notes = "비디오 및 이미지 업로드를 위한 임시 url 발급")
   @PostMapping("/presigned/image")
   public ResponseEntity<GetFileUrlResponseDto> saveImage(
-      @RequestParam("imageName") String imageName) {
-    GetFileUrlResponseDto responseDto = presignedUrlService.getPreSignedUrl(imageName);
+      @RequestParam("imageName") String imageName, @RequestParam("folderName") String folderName) {
+    GetFileUrlResponseDto responseDto = presignedUrlService.getPreSignedUrl(imageName, folderName);
     return new ResponseEntity<>(responseDto, HttpStatus.OK);
   }
 
   @ApiOperation(value = "S3 presigned-video-url 발급", notes = "비디오 및 이미지 업로드를 위한 임시 url 발급")
   @PostMapping("/presigned/video")
   public ResponseEntity<GetFileUrlResponseDto> saveVideo(
-      @RequestParam("videoName") String videoName) {
-    GetFileUrlResponseDto responseDto = presignedUrlService.getPreSignedUrl(videoName);
+      @RequestParam("videoName") String videoName, @RequestParam("folderName") String folderName) {
+    GetFileUrlResponseDto responseDto = presignedUrlService.getPreSignedUrl(videoName, folderName);
     return new ResponseEntity<>(responseDto, HttpStatus.OK);
   }
 
