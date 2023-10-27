@@ -817,45 +817,47 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   @Override
   public List<GetSearchVideoINChannelDTO> getSearchVideoInMyChannel(UUID channelId,
-      Integer currentPage,
+      Integer nextRank,
       int pageSize, String searchQuery) {
-    if (currentPage == null) {
-      currentPage = 0;
+    if (nextRank == null) {
+      nextRank = 1;
     }
     List<Object[]> resultList = entityManager.createNativeQuery(
-            "SELECT c.name AS channelName, BIN_TO_UUID(c.channel_id) as channelId, c.profile_url AS channelProfileUrl, v.thumbnail AS thumbnail, v.title AS videoTitle, v.create_at AS createAt, v.read_cnt AS readCnt, BIN_TO_UUID(v.video_id) AS videoId, ROW_NUMBER() OVER () AS ranking\n"
-                + "FROM channels c\n"
-                + "LEFT JOIN videos v ON c.channel_id = v.channel_id \n"
-                + "WHERE v.channel_id = ? \n"
-                + "AND MATCH (v.title, v.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
-                + "AND v.video_id IN (\n"
-                + "  SELECT video_id\n"
-                + "  FROM (\n"
-                + "    SELECT video_id, ROW_NUMBER() OVER () AS ranking\n"
-                + "    FROM videos\n"
-                + "    WHERE MATCH (title, content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
-                + "  ) AS ranked\n"
-                + "  WHERE ranking >= ?\n"
-                + ")\n"
-                + "order by ranking asc \n"
-                + "LIMIT ?;"
+            "SELECT ranking, videoId, videoTitle, channelId, channelName, channelProfileUrl, thumbnail, createAt, readCount\n"
+                + "FROM (\n"
+                + "SELECT ROW_NUMBER() OVER () AS ranking, videos.video_id as videoId, videos.title as videoTitle, channels.channel_id as channelId, videos.read_cnt as readCount, videos.create_at as createAt, videos.thumbnail as thumbnail, channels.profile_url as channelProfileUrl, channels.name as channelName\n"
+                + "FROM videos \n"
+                + "join channels \n"
+                + "on videos.channel_id = channels.channel_id\n"
+                + "WHERE videos.channel_id = ?\n"
+                + "and MATCH (videos.title, videos.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
+                + ")as ranked\n"
+                + "where ranking >= ?\n"
+                + "order by ranking asc\n"
+                + "limit ?;"
         ).setParameter(1, channelId)
         .setParameter(2, searchQuery)
-        .setParameter(3, searchQuery)
-        .setParameter(4, 1 + ((currentPage - 1) * pageSize))
-        .setParameter(5, pageSize).getResultList();
+        .setParameter(3, nextRank)
+        .setParameter(4, pageSize).getResultList();
+
     List<GetSearchVideoINChannelDTO> searchList = new ArrayList<>();
     for (Object[] row : resultList) {
-      GetSearchVideoINChannelDTO dto = new GetSearchVideoINChannelDTO();
-      dto.setChannelName((String) row[0]);
-      dto.setChannelId(UUID.fromString((String) row[1]));
-      dto.setChannelProfileUrl((String) row[2]);
-      dto.setThumbnail((String) row[3]);
-      dto.setVideoTitle((String) row[4]);
-      dto.setCreateAt((Timestamp) row[5]);
-      dto.setReadCount((int) row[6]);
-      dto.setVideoId(UUID.fromString((String) row[7]));
-      dto.setRanking(((BigInteger) row[8]).intValue());
+      GetSearchVideoINChannelDTO dto = new GetSearchVideoINChannelDTO();//
+      dto.setRanking(((BigInteger) row[0]).intValue());
+      byte[] byteData = (byte[]) row[1];
+      UUID videoId = UUID.nameUUIDFromBytes(byteData);
+      dto.setVideoId(videoId);
+
+      dto.setVideoTitle((String) row[2]);
+      byteData = (byte[]) row[3];
+      UUID channeled = UUID.nameUUIDFromBytes(byteData);
+      dto.setChannelId(channeled);
+
+      dto.setChannelName((String) row[4]);
+      dto.setChannelProfileUrl((String) row[5]);
+      dto.setThumbnail((String) row[6]);
+      dto.setCreateAt((Timestamp) row[7]);
+      dto.setReadCount((int) row[8]);
       // 나머지 필드 설정
       searchList.add(dto);
     }
@@ -864,47 +866,48 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   @Override
   public List<GetSearchVideoINChannelDTO> getSearchVideoInChannel(UUID channelId,
-      Integer currentPage,
+      Integer nextRank,
       int pageSize, String searchQuery) {
-    if (currentPage == null) {
-      currentPage = 0;
+    if (nextRank == null) {
+      nextRank = 1;
     }
     List<Object[]> resultList = entityManager.createNativeQuery(
-            "SELECT c.name AS channelName, BIN_TO_UUID(c.channel_id) as channelId, c.profile_url AS channelProfileUrl, v.thumbnail AS thumbnail, v.title AS videoTitle, v.create_at AS createAt, v.read_cnt AS readCount, BIN_TO_UUID(v.video_id) AS videoId, ROW_NUMBER() OVER () AS ranking\n"
-                + "FROM channels c\n"
-                + "LEFT JOIN videos v ON c.channel_id = v.channel_id \n"
-                + "WHERE v.channel_id = ? \n"
-                + "AND MATCH (v.title, v.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
-                + "AND v.private_type = false "
-                + "AND v.video_id IN (\n"
-                + "  SELECT video_id\n"
-                + "  FROM (\n"
-                + "    SELECT video_id, ROW_NUMBER() OVER () AS ranking\n"
-                + "    FROM videos\n"
-                + "    WHERE MATCH (title, content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
-                + "  ) AS ranked\n"
-                + "  WHERE ranking >= ?\n"
-                + ")\n"
-                + "order by ranking asc \n"
-                + "LIMIT ?;"
+            "SELECT ranking, videoId, videoTitle, channelId, channelName, channelProfileUrl, thumbnail, createAt, readCount\n"
+                + "FROM (\n"
+                + "SELECT ROW_NUMBER() OVER () AS ranking, videos.video_id as videoId, videos.title as videoTitle, channels.channel_id as channelId, videos.read_cnt as readCount, videos.create_at as createAt, videos.thumbnail as thumbnail, channels.profile_url as channelProfileUrl, channels.name as channelName\n"
+                + "FROM videos \n"
+                + "join channels \n"
+                + "on videos.channel_id = channels.channel_id\n"
+                + "WHERE videos.channel_id = ?\n"
+                + "and MATCH (videos.title, videos.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
+                + "AND videos.private_type = false\n"
+                + ")as ranked\n"
+                + "where ranking >= ?\n"
+                + "order by ranking asc\n"
+                + "limit ?;"
         ).setParameter(1, channelId)
         .setParameter(2, searchQuery)
-        .setParameter(3, searchQuery)
-        .setParameter(4, 1 + ((currentPage - 1) * pageSize))
-        .setParameter(5, pageSize).getResultList();
+        .setParameter(3, nextRank)
+        .setParameter(4, pageSize).getResultList();
 
     List<GetSearchVideoINChannelDTO> searchList = new ArrayList<>();
     for (Object[] row : resultList) {
-      GetSearchVideoINChannelDTO dto = new GetSearchVideoINChannelDTO();
-      dto.setChannelName((String) row[0]);
-      dto.setChannelId(UUID.fromString((String) row[1]));
-      dto.setChannelProfileUrl((String) row[2]);
-      dto.setThumbnail((String) row[3]);
-      dto.setVideoTitle((String) row[4]);
-      dto.setCreateAt((Timestamp) row[5]);
-      dto.setReadCount((int) row[6]);
-      dto.setVideoId(UUID.fromString((String) row[7]));
-      dto.setRanking(((BigInteger) row[8]).intValue());
+      GetSearchVideoINChannelDTO dto = new GetSearchVideoINChannelDTO();//
+      dto.setRanking(((BigInteger) row[0]).intValue());
+      byte[] byteData = (byte[]) row[1];
+      UUID videoId = UUID.nameUUIDFromBytes(byteData);
+      dto.setVideoId(videoId);
+
+      dto.setVideoTitle((String) row[2]);
+      byteData = (byte[]) row[3];
+      UUID channeled = UUID.nameUUIDFromBytes(byteData);
+      dto.setChannelId(channeled);
+
+      dto.setChannelName((String) row[4]);
+      dto.setChannelProfileUrl((String) row[5]);
+      dto.setThumbnail((String) row[6]);
+      dto.setCreateAt((Timestamp) row[7]);
+      dto.setReadCount((int) row[8]);
       // 나머지 필드 설정
       searchList.add(dto);
     }

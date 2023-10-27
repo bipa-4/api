@@ -44,7 +44,7 @@ public class ChannelController {
     Accounts loginAccount = securityService.getSubjectAccount(code);
     Channels putChannel = channelService.findbyChannelId(channelId);
     Channels updatedChannel = channelService.updateChannel(loginAccount, putChannel, putChannelDTO);
-    
+
     return new ResponseEntity<>(updatedChannel, HttpStatus.OK);
   }
 
@@ -53,7 +53,7 @@ public class ChannelController {
   @GetMapping("/{channelId}/video")
   public ResponseEntity<GetInfiniteScrollSearchVideoInChannelDTO> searchVideoInChannel(
       @CookieValue(value = "accessToken", required = false) String accessToken,
-      @RequestParam(value = "page", required = false) Integer page,
+      @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
       @RequestParam("page_size") int pageSize,
       @RequestParam("search_query") String searchQuery,
       @PathVariable("channelId") UUID channelId) {
@@ -62,7 +62,7 @@ public class ChannelController {
     Accounts loginAccount = securityService.getSubjectAccount(accessToken);
     List<GetSearchVideoINChannelDTO> videos = channelService.searchVideoInChannel(loginAccount,
         channelId, page, pageSize, searchQuery);
-
+    videos.forEach(System.out::println);
     if (!videos.isEmpty()) {
       nextRank = channelService.getSearchNextChannelVideoUUID(
           videos.get(videos.size() - 1).getRanking(), channelId, searchQuery,

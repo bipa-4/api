@@ -168,7 +168,7 @@ public class ChannelService {
     }
     if (Objects.isNull(loginUser)) {
       nextVideoInChannelRank = channelRepository.getSearchNextChannelVideoRank(rank,
-          channelId, searchQuery, pageSize, page);
+          channelId, searchQuery, pageSize);
       if (nextVideoInChannelRank.isEmpty()) {
         return null;//null로 바꾸기
       } else {
@@ -178,7 +178,7 @@ public class ChannelService {
     if (loginUser.getAccountId().equals(channelRepository.findByChannelId(channelId).getAccounts()
         .getAccountId())) {//채널 주인이 로그인한 사람이면 채널 내 비공개 영상도 조회 가능해야 함
       nextVideoInChannelRank = channelRepository.getSearchNextMyChannelVideoRank(rank,
-          channelId, searchQuery, pageSize, page);
+          channelId, searchQuery, pageSize);
       if (nextVideoInChannelRank.isEmpty()) {
         return null;//null로 바꾸기
       } else {
@@ -186,7 +186,7 @@ public class ChannelService {
       }
     } else {
       nextVideoInChannelRank = channelRepository.getSearchNextChannelVideoRank(rank,
-          channelId, searchQuery, pageSize, page);
+          channelId, searchQuery, pageSize);
       if (nextVideoInChannelRank.isEmpty()) {
         return null;//null로 바꾸기
       } else {
