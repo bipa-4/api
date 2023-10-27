@@ -53,6 +53,6 @@ public class Interceptor implements HandlerInterceptor {
       // 예외가 발생하지 않은 경우 HTTP 응답 코드를 로그로 남깁니다.
       log.info("afterCompletion Response status: " + response.getStatus());
     }
-
+    HandlerInterceptor.super.afterCompletion(request, response, handler, ex);
   }
 }
