@@ -1,6 +1,7 @@
 package com.bipa4.back_bipatv.repository;
 
 import static com.querydsl.core.types.dsl.Expressions.asNumber;
+import static org.aspectj.runtime.internal.Conversions.intValue;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.bipa4.back_bipatv.dataType.ErrorCode;
@@ -452,10 +453,10 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     }
 
     // S3 삭제
-    if (video.getVideoUrl() != videoResponseDto.getVideoUrl()) {
+    if (!video.getVideoUrl().equals(videoResponseDto.getVideoUrl())) {
       deleteS3(video.getVideoUrl());
     }
-    if (video.getThumbnail() != videoResponseDto.getThumbnailUrl()) {
+    if (!video.getThumbnail().equals(videoResponseDto.getThumbnailUrl())) {
       deleteS3(video.getThumbnail());
     }
 
@@ -740,40 +741,58 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
   }
 
   @Override
-  public List<Integer> lastUUIDSearchVideoInMyChannel(UUID channelId, String searchQuery) {
-    List<Integer> uuid = entityManager.createNativeQuery(
-            "SELECT ranking\n"
-                + "FROM (\n"
-                + "    SELECT ROW_NUMBER() OVER () AS ranking\n"
-                + "    FROM videos\n"
-                + "    WHERE videos.channel_id = ?\n"
-                + "    AND MATCH (videos.title, videos.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
-                + "    ORDER BY ranking ASC \n"
-                + "    LIMIT 1\n"
-                + ") AS ranked_results;\n"
-        ).setParameter(1, channelId)
-        .setParameter(2, searchQuery)
-        .getResultList();
-    return uuid;
+  public Integer lastUUIDSearchVideoInMyChannel(UUID channelId, String searchQuery) {
+    List<Integer> uuid = new ArrayList<>();
+
+    try {
+      uuid = entityManager.createNativeQuery(
+              "SELECT ranking\n"
+                  + "FROM (\n"
+                  + "    SELECT ROW_NUMBER() OVER () AS ranking\n"
+                  + "    FROM videos\n"
+                  + "    WHERE videos.channel_id = ?\n"
+                  + "    AND MATCH (videos.title, videos.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
+                  + "    ORDER BY ranking ASC \n"
+                  + "    LIMIT 1\n"
+                  + ") AS ranked_results;\n"
+          ).setParameter(1, channelId)
+          .setParameter(2, searchQuery)
+          .getResultList();
+
+      if (!uuid.isEmpty()) {
+        return intValue(uuid.get(0));
+      }
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_LAST_UUID_ERRROR);
+    }
+    return null;
   }
 
   @Override
-  public List<Integer> lastUUIDSearchVideoInChannel(UUID channelId, String searchQuery) {
-    List<Integer> uuid = entityManager.createNativeQuery("SELECT ranking\n"
-            + "FROM (\n"
-            + "    SELECT ROW_NUMBER() OVER () AS ranking\n"
-            + "    FROM videos\n"
-            + "    WHERE videos.channel_id = ?\n"
-            + "    AND MATCH (videos.title, videos.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
-            + "    AND videos.private_type = false\n"
-            + "    ORDER BY ranking ASC \n"
-            + "    LIMIT 1\n"
-            + ") AS ranked_results;\n "
-        ).setParameter(1, channelId)
-        .setParameter(2, searchQuery)
-        .getResultList();
+  public Integer lastUUIDSearchVideoInChannel(UUID channelId, String searchQuery) {
+    List<Integer> uuid = new ArrayList<>();
+    try {
+      uuid = entityManager.createNativeQuery("SELECT ranking\n"
+              + "FROM (\n"
+              + "    SELECT ROW_NUMBER() OVER () AS ranking\n"
+              + "    FROM videos\n"
+              + "    WHERE videos.channel_id = ?\n"
+              + "    AND MATCH (videos.title, videos.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
+              + "    AND videos.private_type = false\n"
+              + "    ORDER BY ranking ASC \n"
+              + "    LIMIT 1\n"
+              + ") AS ranked_results;\n "
+          ).setParameter(1, channelId)
+          .setParameter(2, searchQuery)
+          .getResultList();
 
-    return uuid;
+      if (!uuid.isEmpty()) {
+        return intValue(uuid.get(0));
+      }
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_LAST_UUID_ERRROR);
+    }
+    return null;
   }
 
   @Override
@@ -860,6 +879,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
       dto.setReadCount((int) row[8]);
       // 나머지 필드 설정
       searchList.add(dto);
+
     }
     return searchList;
   }
@@ -868,6 +888,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
   public List<GetSearchVideoINChannelDTO> getSearchVideoInChannel(UUID channelId,
       Integer nextRank,
       int pageSize, String searchQuery) {
+
     if (nextRank == null) {
       nextRank = 1;
     }
