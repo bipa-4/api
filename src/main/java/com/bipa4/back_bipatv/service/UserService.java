@@ -246,7 +246,7 @@ public class UserService {
     }
 
     // 2. Access Token 에서 authentication 을 가져옵니다.
-    Accounts accounts = securityService.getSubjectAccount(accessToken);
+//    Accounts accounts = securityService.getSubjectAccount(accessToken);
 
     // 3. DB에 저장된 Refresh Token 제거
     boolean flag1 = redisRepository.delete(refreshToken);
