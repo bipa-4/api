@@ -159,19 +159,18 @@ public class ChannelService {
   }
 
   public Integer getSearchNextChannelVideoUUID(Integer rank, UUID channelId,
-      String searchQuery,
-      Accounts account, int pageSize, Integer page) {
+      String searchQuery, Accounts account, int pageSize) {
     if (account == null) {
       return channelRepository.getSearchNextChannelVideoRank(rank,
-          channelId, searchQuery, pageSize, page);
+          channelId, searchQuery, pageSize);
     }
     if (account.getAccountId().equals(channelRepository.findByChannelId(channelId).getAccounts()
         .getAccountId())) {//채널 주인이 로그인한 사람이면 채널 내 비공개 영상도 조회 가능해야 함
       return channelRepository.getSearchNextMyChannelVideoRank(rank,
-          channelId, searchQuery, pageSize, page);
+          channelId, searchQuery, pageSize);
     }
     return channelRepository.getSearchNextChannelVideoRank(rank,
-        channelId, searchQuery, pageSize, page);
+        channelId, searchQuery, pageSize);
   }
 
   public Integer getNextChannelRank(String searchQuery, Integer ranking, int pageSize,
@@ -195,7 +194,7 @@ public class ChannelService {
     if (account.getAccountId().equals(channelRepository.findByChannelId(channelId).getAccounts()
         .getAccountId())) {
       if (page == null) {
-        page = videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery);
+        page = videoRepository.lastUUIDSearchVideoInMyChannel(channelId, searchQuery);
       }
       return videoRepository.getSearchVideoInMyChannel(channelId, page, pageSize, searchQuery);
     }

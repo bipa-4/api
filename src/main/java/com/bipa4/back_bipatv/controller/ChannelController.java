@@ -44,7 +44,7 @@ public class ChannelController {
     Accounts loginAccount = securityService.getSubjectAccount(code);
     Channels putChannel = channelService.findbyChannelId(channelId);
     Channels updatedChannel = channelService.updateChannel(loginAccount, putChannel, putChannelDTO);
-    
+
     return new ResponseEntity<>(updatedChannel, HttpStatus.OK);
   }
 
@@ -62,11 +62,11 @@ public class ChannelController {
     Accounts loginAccount = securityService.getSubjectAccount(accessToken);
     List<GetSearchVideoINChannelDTO> videos = channelService.searchVideoInChannel(loginAccount,
         channelId, page, pageSize, searchQuery);
-
+    videos.forEach(System.out::println);
     if (!videos.isEmpty()) {
       nextRank =
           channelService.getSearchNextChannelVideoUUID(videos.get(videos.size() - 1).getRanking(),
-              channelId, searchQuery, loginAccount, pageSize, page) == null ? null : page + 1;
+              channelId, searchQuery, loginAccount, pageSize) == null ? null : page + 1;
     }
 
     GetInfiniteScrollSearchVideoInChannelDTO responseDto = new GetInfiniteScrollSearchVideoInChannelDTO(

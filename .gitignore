@@ -36,3 +36,4 @@ out/
 ### VS Code ###
 .vscode/
 bipa4.pem
+.log
