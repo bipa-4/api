@@ -194,7 +194,7 @@ public class ChannelService {
     if (account.getAccountId().equals(channelRepository.findByChannelId(channelId).getAccounts()
         .getAccountId())) {
       if (page == null) {
-        page = videoRepository.lastUUIDSearchVideoInChannel(channelId, searchQuery);
+        page = videoRepository.lastUUIDSearchVideoInMyChannel(channelId, searchQuery);
       }
       return videoRepository.getSearchVideoInMyChannel(channelId, page, pageSize, searchQuery);
     }

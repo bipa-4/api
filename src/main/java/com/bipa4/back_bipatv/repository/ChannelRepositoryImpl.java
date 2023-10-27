@@ -236,10 +236,10 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
         .getResultList();
     Integer result = null;
     if (!resultList.isEmpty()) {
-      result = Integer.parseInt(resultList.get(0) + "");
+      return intValue(resultList.get(0));
     }
     System.out.println(result);
-    return result;
+    return null;
   }
 
   @Override
@@ -266,10 +266,10 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
         .getResultList();
     Integer result = null;
     if (!resultList.isEmpty()) {
-      result = Integer.parseInt(resultList.get(0) + "");
+      return intValue(resultList.get(0));
     }
     System.out.println(result);
-    return result;
+    return null;
   }
 
   @Override
