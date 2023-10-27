@@ -1,6 +1,7 @@
 package com.bipa4.back_bipatv.entity;
 
 import java.sql.Timestamp;
+import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -20,7 +21,7 @@ public class Logs {
   @Id
   @Column(name = "log_id", columnDefinition = "BINARY(16)")
   @GenericGenerator(name = "uuid2", strategy = "uuid2")
-  private Long logId;
+  private UUID logId;
   @Column(name = "date", nullable = false)
   private Timestamp date;
   @Column(name = "content", nullable = false, length = 400)
