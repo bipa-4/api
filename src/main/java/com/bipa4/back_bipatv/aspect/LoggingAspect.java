@@ -47,7 +47,9 @@ public class LoggingAspect {
 
     HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
     HttpServletResponse httpServletResponse = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getResponse();
-    logService.saveLog(request, httpServletResponse, "생성");
+    if (!request.getRequestURI().contains("logout")) {
+      logService.saveLog(request, httpServletResponse, "요청");
+    }
 
   }
 }

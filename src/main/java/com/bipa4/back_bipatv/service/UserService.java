@@ -62,7 +62,7 @@ public class UserService {
     Channels channels = new Channels();
     UUID uuid = UUID.randomUUID();
     channels.setChannelId(uuid);
-    channels.setChannelName(accounts.getLoginId() + "_Channel");
+    channels.setChannelName(accounts.getLoginId() + "-Channel");
     channels.setPrivateType(false);
     channels.setAccounts(accounts);
     channels.setProfileUrl(accounts.getProfileUrl());
@@ -131,13 +131,13 @@ public class UserService {
 
     switch (registrationId) {
       case "google": {
-        accounts.setLoginId("google_" + userResourceNode.get("id").asText());
+        accounts.setLoginId("google-" + userResourceNode.get("id").asText());
         accounts.setEMail(userResourceNode.get("email").asText());
         JsonNode nameNode = userResourceNode.get("name");
         if (nameNode != null && !nameNode.isNull()) {
           accounts.setName(nameNode.asText());
         } else {
-          accounts.setName("google_" + userResourceNode.get("id").asText());
+          accounts.setName("google-" + userResourceNode.get("id").asText());
         }
 
         accounts.setProfileUrl(userResourceNode.get("picture").asText());
@@ -146,7 +146,7 @@ public class UserService {
         break;
       }
       case "kakao": {
-        accounts.setLoginId("kakao_" + userResourceNode.get("id").asText());
+        accounts.setLoginId("kakao-" + userResourceNode.get("id").asText());
         if (userResourceNode.get("kakao_account").get("email_needs_agreement")
             .asBoolean()) {//사용자가 사용 동의하면 false값이 들어옴
           accounts.setEMail("");
@@ -155,7 +155,7 @@ public class UserService {
         }
         if (userResourceNode.get("kakao_account").get("profile_nickname_needs_agreement")
             .asBoolean()) {
-          accounts.setName("kakao_" + userResourceNode.get("id").asText());
+          accounts.setName("kakao-" + userResourceNode.get("id").asText());
         } else {
           accounts.setName(
               userResourceNode.get("kakao_account").get("profile").get("nickname").asText());
@@ -246,7 +246,7 @@ public class UserService {
     }
 
     // 2. Access Token 에서 authentication 을 가져옵니다.
-//    Accounts accounts = securityService.getSubjectAccount(accessToken);
+    Accounts accounts = securityService.getSubjectAccount(accessToken);
 
     // 3. DB에 저장된 Refresh Token 제거
     boolean flag1 = redisRepository.delete(refreshToken);
