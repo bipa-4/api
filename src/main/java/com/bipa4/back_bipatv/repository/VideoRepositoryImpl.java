@@ -27,6 +27,7 @@ import com.bipa4.back_bipatv.exception.AuthorizationException;
 import com.bipa4.back_bipatv.exception.CustomApiException;
 import com.bipa4.back_bipatv.exception.NoContentException;
 import com.querydsl.core.types.Projections;
+import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.io.File;
 import java.math.BigInteger;
@@ -264,6 +265,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
     QViewLog qViewLog = QViewLog.viewLog;
+    QFavorite qFavorite = QFavorite.favorite;
 
     try {
       responseDtos = jpaQueryFactory.select(
@@ -282,11 +284,13 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
           .from(qViewLog)
           .leftJoin(qViewLog.videoId, qVideos)
           .leftJoin(qVideos.channelId, qChannels)
-          .where(qVideos.privateType.eq(false))
-          .orderBy(
-              asNumber(qVideos.readCnt.subtract(qViewLog.viewCnt)).doubleValue().desc()
-          )
-          .limit(10).fetch();
+          .leftJoin(qFavorite).on(qFavorite.favoritePK.videos.videoId.eq(qVideos.videoId)).where(qVideos.privateType.eq(false))
+              .orderBy(
+                      qVideos.readCnt.subtract(qViewLog.viewCnt).multiply(10)
+                              .add(qFavorite.favoritePK.videos.videoId.count().coalesce(0l)).desc()
+              )
+              .groupBy(qVideos.videoId)
+              .limit(10).fetch();
     } catch (NullPointerException e) {
       throw new NoContentException();
     } catch (Exception e) {
