@@ -81,7 +81,6 @@ public class ReadController {
     return ResponseEntity.ok().body(responseDto);
   }
 
-
   // 카테고리 이름 리스트 조회
   @ApiOperation(value = "카테고리 리스트 조회", notes = "카테고리 메뉴 등을 위한 카테고리 이름 추출")
   @GetMapping("/video/category")

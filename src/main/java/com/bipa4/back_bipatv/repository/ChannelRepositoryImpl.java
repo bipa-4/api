@@ -359,6 +359,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
     return searchList;
   }
 
+
   @Override
   public Integer getNextChannelRank(String searchQuery, Integer ranking, int pageSize,
       Integer page) {

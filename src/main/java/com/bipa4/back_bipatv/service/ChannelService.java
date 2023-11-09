@@ -71,11 +71,13 @@ public class ChannelService {
     return channelRepository.getChannelNextUUID(uuid);
   }
 
+
   public List<GetChannelDTO> getAllChannels(UUID page, int pageSize) {
     if (page == null) {
       page = channelRepository.lastUUID();
     }
     return channelRepository.getNotPrivateChannel(page, pageSize);
+
   }
 
   @Transactional
@@ -229,4 +231,5 @@ public class ChannelService {
   public Boolean getChannelNameCheck(String channelName) {
     return channelRepository.findByChannelName(channelName).isEmpty();
   }
+
 }

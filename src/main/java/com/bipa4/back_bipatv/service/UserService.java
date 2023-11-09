@@ -174,6 +174,7 @@ public class UserService {
         throw new RuntimeException("UNSUPPORTED SOCIAL TYPE");
       }
     }
+    System.out.println("loaginAccount" + accounts);
     //유저 아이디에 대한 리프레쉬 토큰 검샘
     if (!findAccount(accounts)) {//
       insertUser(accounts);

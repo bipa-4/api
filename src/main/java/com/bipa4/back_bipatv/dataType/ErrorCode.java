@@ -41,5 +41,6 @@ public enum ErrorCode {
   READ_CHANNEL_TOP5_ERROR("READ_CHANNEL_TOP5_ERROR"),
   READ_CHANNEL_NAME_CHECK_ERROR("READ_CHANNEL_NAME_CHECK_ERROR");
 
+
   private final String code;
 }

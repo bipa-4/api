@@ -290,6 +290,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
           )
           .groupBy(qVideos.videoId)
           .limit(10).fetch();
+
     } catch (NullPointerException e) {
       throw new NoContentException();
     } catch (Exception e) {

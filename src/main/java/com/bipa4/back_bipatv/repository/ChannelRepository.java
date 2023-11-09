@@ -15,6 +15,7 @@ public interface ChannelRepository extends JpaRepository<Channels, UUID>, Channe
       + "where b.account_id = :accountId", nativeQuery = true)
   Optional<Channels> findByChannelToAccountId(Long accountId);
 
+
   Channels findByChannelId(UUID channelId);
 
   Optional<Channels> findByChannelName(String ChannelName);
