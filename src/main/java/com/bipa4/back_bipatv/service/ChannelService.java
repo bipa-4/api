@@ -4,6 +4,8 @@ import com.bipa4.back_bipatv.dataType.ErrorCode;
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
 import com.bipa4.back_bipatv.dto.channel.GetSearchChannelDTO;
+import com.bipa4.back_bipatv.dto.channel.GetSumCommentNumGroupChannelDTO;
+import com.bipa4.back_bipatv.dto.channel.GetSumVideoViewNumGroupChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.PutChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.SelectChannelDTO;
 import com.bipa4.back_bipatv.dto.video.GetSearchVideoINChannelDTO;
@@ -65,13 +67,6 @@ public class ChannelService {
     return channelRepository.findByChannelId(channelId);
   }
 
-  public List<GetChannelTop5DTO> findLimitTimeSumCnt() {
-    List<GetChannelTop5DTO> list = channelRepository.findTop5Channels();
-
-    IntStream.range(0, list.size())
-        .forEach(i -> list.get(i).setRanking(i + 1));
-    return list;
-  }
 
   public UUID getChannelNextUUID(UUID uuid) {
     return channelRepository.getChannelNextUUID(uuid);
@@ -211,5 +206,22 @@ public class ChannelService {
       page = channelRepository.lastUUIDSearchChannel(searchQuery);
     }
     return channelRepository.getSearchChannel(page, pageSize, searchQuery);
+  }
+
+  private List<GetSumCommentNumGroupChannelDTO> getSumCommentNumGroupChannelDTOList() {
+    return channelRepository.getSumCommentNumGroupChannel();
+  }
+
+  private List<GetSumVideoViewNumGroupChannelDTO> getSumVideoViewNumGroupChannelList() {
+    return channelRepository.getSumVideoViewNumGroupChannel();
+  }
+
+  public List<GetChannelTop5DTO> findLimitTimeSumCnt() {
+    List<GetChannelTop5DTO> list = channelRepository.findTop5Channels();
+//    List<GetSumCommentNumGroupChannelDTO> commentNumInChannelGroup = getSumCommentNumGroupChannelDTOList();
+
+    IntStream.range(0, list.size())
+        .forEach(i -> list.get(i).setRanking(i + 1));
+    return list;
   }
 }

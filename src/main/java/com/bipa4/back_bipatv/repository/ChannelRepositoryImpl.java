@@ -7,8 +7,11 @@ import com.bipa4.back_bipatv.dataType.ErrorCode;
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
 import com.bipa4.back_bipatv.dto.channel.GetSearchChannelDTO;
+import com.bipa4.back_bipatv.dto.channel.GetSumCommentNumGroupChannelDTO;
+import com.bipa4.back_bipatv.dto.channel.GetSumVideoViewNumGroupChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.SelectChannelDTO;
 import com.bipa4.back_bipatv.entity.QChannels;
+import com.bipa4.back_bipatv.entity.QComments;
 import com.bipa4.back_bipatv.entity.QVideos;
 import com.bipa4.back_bipatv.entity.QViewLog;
 import com.bipa4.back_bipatv.exception.CustomApiException;
@@ -395,5 +398,74 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
       throw new CustomApiException(ErrorCode.READ_NEXT_UUID_ERRROR);
     }
     return null;
+  }
+
+  @Override
+  public List<GetSumCommentNumGroupChannelDTO> getSumCommentNumGroupChannel() {
+    List<GetSumCommentNumGroupChannelDTO> responseDtos;
+    QVideos qVideos = QVideos.videos;
+    QChannels qChannels = QChannels.channels;
+    QComments qComments = QComments.comments;
+
+    try {
+      responseDtos = jpaQueryFactory.select(
+              Projections.bean(
+                  GetSumCommentNumGroupChannelDTO.class,
+                  qChannels.channelId,
+                  asNumber(qComments.commentId.count()).as("sumCommentNum")
+              )
+          )
+          .from(qChannels)
+          .leftJoin(qVideos).on(qChannels.channelId.eq(qVideos.videoId))
+          .leftJoin(qComments).on(qVideos.videoId.eq(qComments.videos.videoId))
+          .where(
+              qChannels.privateType.eq(false)
+                  .and(qChannels.accounts.deleteAt.isNull())
+          )
+          .groupBy(qChannels.channelId)
+          .fetch();
+
+    } catch (NullPointerException e) {
+      throw new NoContentException();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_CHANNEL_TOP5_ERROR);
+    }
+    responseDtos.forEach(System.out::println);
+    return responseDtos;
+  }
+
+  @Override
+  public List<GetSumVideoViewNumGroupChannelDTO> getSumVideoViewNumGroupChannel() {
+    List<GetSumVideoViewNumGroupChannelDTO> responseDtos;
+
+    QVideos qVideos = QVideos.videos;
+    QChannels qChannels = QChannels.channels;
+    QViewLog qViewLog = QViewLog.viewLog;
+
+    try {
+      responseDtos = jpaQueryFactory.select(
+              Projections.bean(
+                  GetSumVideoViewNumGroupChannelDTO.class,
+                  qChannels.channelId,
+                  asNumber(qVideos.readCnt.subtract(qViewLog.viewCnt)).as("sumViewLogNum")
+              )
+          )
+          .from(qViewLog)
+          .leftJoin(qViewLog.videoId, qVideos)
+          .leftJoin(qVideos.channelId, qChannels)
+          .where(
+              qChannels.privateType.eq(false)
+                  .and(qChannels.accounts.deleteAt.isNull())
+          )
+          .groupBy(qChannels.channelId)
+          .fetch();
+
+    } catch (NullPointerException e) {
+      throw new NoContentException();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_CHANNEL_TOP5_ERROR);
+    }
+    responseDtos.forEach(System.out::println);
+    return responseDtos;
   }
 }

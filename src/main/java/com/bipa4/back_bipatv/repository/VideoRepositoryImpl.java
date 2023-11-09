@@ -842,7 +842,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
       nextRank = 1;
     }
     List<Object[]> resultList = entityManager.createNativeQuery(
-            "SELECT ranking, videoId, videoTitle, channelId, channelName, channelProfileUrl, thumbnail, createAt, readCount\n"
+            "SELECT ranking, BIN_TO_UUID(videoId) as videoId, videoTitle, BIN_TO_UUID(channelId) as channelId, channelName, channelProfileUrl, thumbnail, createAt, readCount\n"
                 + "FROM (\n"
                 + "SELECT ROW_NUMBER() OVER () AS ranking, videos.video_id as videoId, videos.title as videoTitle, channels.channel_id as channelId, videos.read_cnt as readCount, videos.create_at as createAt, videos.thumbnail as thumbnail, channels.profile_url as channelProfileUrl, channels.name as channelName\n"
                 + "FROM videos \n"
@@ -863,14 +863,12 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     for (Object[] row : resultList) {
       GetSearchVideoINChannelDTO dto = new GetSearchVideoINChannelDTO();//
       dto.setRanking(((BigInteger) row[0]).intValue());
-      byte[] byteData = (byte[]) row[1];
-      UUID videoId = UUID.nameUUIDFromBytes(byteData);
+      UUID videoId = UUID.fromString((String) row[1]);
       dto.setVideoId(videoId);
-
       dto.setVideoTitle((String) row[2]);
-      byteData = (byte[]) row[3];
-      UUID channeled = UUID.nameUUIDFromBytes(byteData);
-      dto.setChannelId(channeled);
+
+      UUID channelUUID = UUID.fromString((String) row[3]);
+      dto.setChannelId(channelUUID);
 
       dto.setChannelName((String) row[4]);
       dto.setChannelProfileUrl((String) row[5]);
@@ -893,7 +891,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
       nextRank = 1;
     }
     List<Object[]> resultList = entityManager.createNativeQuery(
-            "SELECT ranking, videoId, videoTitle, channelId, channelName, channelProfileUrl, thumbnail, createAt, readCount\n"
+            "SELECT ranking, BIN_TO_UUID(videoId) as videoId, videoTitle, BIN_TO_UUID(channelId) as channelId, channelName, channelProfileUrl, thumbnail, createAt, readCount\n"
                 + "FROM (\n"
                 + "SELECT ROW_NUMBER() OVER () AS ranking, videos.video_id as videoId, videos.title as videoTitle, channels.channel_id as channelId, videos.read_cnt as readCount, videos.create_at as createAt, videos.thumbnail as thumbnail, channels.profile_url as channelProfileUrl, channels.name as channelName\n"
                 + "FROM videos \n"
@@ -915,14 +913,13 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     for (Object[] row : resultList) {
       GetSearchVideoINChannelDTO dto = new GetSearchVideoINChannelDTO();//
       dto.setRanking(((BigInteger) row[0]).intValue());
-      byte[] byteData = (byte[]) row[1];
-      UUID videoId = UUID.nameUUIDFromBytes(byteData);
-      dto.setVideoId(videoId);
 
+      UUID videoId = UUID.fromString((String) row[1]);
+      dto.setVideoId(videoId);
       dto.setVideoTitle((String) row[2]);
-      byteData = (byte[]) row[3];
-      UUID channeled = UUID.nameUUIDFromBytes(byteData);
-      dto.setChannelId(channeled);
+
+      UUID channelUUID = UUID.fromString((String) row[3]);
+      dto.setChannelId(channelUUID);
 
       dto.setChannelName((String) row[4]);
       dto.setChannelProfileUrl((String) row[5]);
