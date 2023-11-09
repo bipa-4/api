@@ -4,7 +4,6 @@ import com.bipa4.back_bipatv.dataType.ErrorCode;
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
 import com.bipa4.back_bipatv.dto.channel.GetSearchChannelDTO;
-import com.bipa4.back_bipatv.dto.channel.GetSumCommentNumGroupChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetSumVideoViewNumGroupChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.PutChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.SelectChannelDTO;
@@ -17,10 +16,10 @@ import com.bipa4.back_bipatv.exception.CustomApiException;
 import com.bipa4.back_bipatv.repository.ChannelRepository;
 import com.bipa4.back_bipatv.repository.VideoRepository;
 import com.bipa4.back_bipatv.security.SecurityService;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
-import java.util.stream.IntStream;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -208,20 +207,26 @@ public class ChannelService {
     return channelRepository.getSearchChannel(page, pageSize, searchQuery);
   }
 
-  private List<GetSumCommentNumGroupChannelDTO> getSumCommentNumGroupChannelDTOList() {
-    return channelRepository.getSumCommentNumGroupChannel();
-  }
-
-  private List<GetSumVideoViewNumGroupChannelDTO> getSumVideoViewNumGroupChannelList() {
-    return channelRepository.getSumVideoViewNumGroupChannel();
-  }
-
   public List<GetChannelTop5DTO> findLimitTimeSumCnt() {
-    List<GetChannelTop5DTO> list = channelRepository.findTop5Channels();
-//    List<GetSumCommentNumGroupChannelDTO> commentNumInChannelGroup = getSumCommentNumGroupChannelDTOList();
+    List<GetChannelTop5DTO> list = new ArrayList<>();
+    List<GetSumVideoViewNumGroupChannelDTO> videoViewNumGroupChannel = channelRepository.getSumVideoViewNumGroupChannel();
+    int i = 0;
+    for (GetSumVideoViewNumGroupChannelDTO item : videoViewNumGroupChannel) {
+      GetChannelTop5DTO getChannelTop5DTO = new GetChannelTop5DTO();
+      Channels findChannel = channelRepository.findByChannelId(item.getChannelId());
 
-    IntStream.range(0, list.size())
-        .forEach(i -> list.get(i).setRanking(i + 1));
+      getChannelTop5DTO.setChannelId(findChannel.getChannelId());
+      getChannelTop5DTO.setChannelName(findChannel.getChannelName());
+      getChannelTop5DTO.setProfileUrl(findChannel.getProfileUrl());
+      getChannelTop5DTO.setContent(findChannel.getContent());
+      getChannelTop5DTO.setRanking(++i);
+      list.add(getChannelTop5DTO);
+    }
+
     return list;
+  }
+
+  public Boolean getChannelNameCheck(String channelName) {
+    return channelRepository.findByChannelName(channelName).isEmpty();
   }
 }

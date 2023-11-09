@@ -1,15 +1,14 @@
 package com.bipa4.back_bipatv.dto.channel;
 
-import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.ToString;
 
-@AllArgsConstructor
-@ToString
+import java.util.UUID;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor
 @Data
 public class GetSumCommentNumGroupChannelDTO {
 
   private UUID channelId;
-  private int sumCommentNum;
+  private Integer sumCommentNum;//댓글 총 합
 }

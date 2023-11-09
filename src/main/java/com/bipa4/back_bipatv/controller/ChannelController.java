@@ -105,4 +105,11 @@ public class ChannelController {
     return new ResponseEntity<>(channelService.getUpdateFlag(loginAccount, channelId),
         HttpStatus.OK);
   }
+
+  @ApiOperation(value = "채널명 중복 확인", notes = "채널명 중복 확인")
+  @GetMapping("/check/name")
+  public ResponseEntity<Boolean> getCheckChannelName(
+      @RequestParam("channelName") String channelName) {
+    return new ResponseEntity<>(channelService.getChannelNameCheck(channelName), HttpStatus.OK);
+  }
 }

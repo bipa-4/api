@@ -412,11 +412,11 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
               Projections.bean(
                   GetSumCommentNumGroupChannelDTO.class,
                   qChannels.channelId,
-                  asNumber(qComments.commentId.count()).as("sumCommentNum")
+                  qComments.commentId.count().intValue().as("sumCommentNum")
               )
           )
           .from(qChannels)
-          .leftJoin(qVideos).on(qChannels.channelId.eq(qVideos.videoId))
+          .leftJoin(qVideos).on(qChannels.channelId.eq(qVideos.channelId.channelId))
           .leftJoin(qComments).on(qVideos.videoId.eq(qComments.videos.videoId))
           .where(
               qChannels.privateType.eq(false)
@@ -441,23 +441,31 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
     QViewLog qViewLog = QViewLog.viewLog;
+    QComments qComments = QComments.comments;
 
     try {
+
       responseDtos = jpaQueryFactory.select(
               Projections.bean(
                   GetSumVideoViewNumGroupChannelDTO.class,
                   qChannels.channelId,
-                  asNumber(qVideos.readCnt.subtract(qViewLog.viewCnt)).as("sumViewLogNum")
+                  qVideos.readCnt.subtract(qViewLog.viewCnt).multiply(10)
+                      .add(qComments.commentId.count())
+                      .as("totalScore")
               )
           )
           .from(qViewLog)
-          .leftJoin(qViewLog.videoId, qVideos)
-          .leftJoin(qVideos.channelId, qChannels)
+          .leftJoin(qVideos).on(qViewLog.videoId.videoId.eq(qVideos.videoId))
+          .leftJoin(qChannels).on(qChannels.channelId.eq(qVideos.channelId.channelId))
+          .leftJoin(qComments).on(qVideos.videoId.eq(qComments.videos.videoId))
           .where(
               qChannels.privateType.eq(false)
                   .and(qChannels.accounts.deleteAt.isNull())
           )
           .groupBy(qChannels.channelId)
+          .orderBy(qVideos.readCnt.subtract(qViewLog.viewCnt).multiply(10)
+              .add(qComments.commentId.count()).desc())
+          .limit(5)
           .fetch();
 
     } catch (NullPointerException e) {
@@ -468,4 +476,6 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
     responseDtos.forEach(System.out::println);
     return responseDtos;
   }
+
+
 }

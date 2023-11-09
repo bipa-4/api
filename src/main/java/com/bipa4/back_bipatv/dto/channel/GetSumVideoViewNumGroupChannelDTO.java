@@ -1,15 +1,14 @@
 package com.bipa4.back_bipatv.dto.channel;
 
-import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.ToString;
 
+import java.util.UUID;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor
 @Data
-@AllArgsConstructor
-@ToString
 public class GetSumVideoViewNumGroupChannelDTO {
 
   private UUID channelId;
-  private int sumViewLogNum;
+  private Integer totalScore;//1시간 동안 본 시청 수 합
 }

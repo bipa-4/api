@@ -1,5 +1,6 @@
 package com.bipa4.back_bipatv.repository;
 
+
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
 import com.bipa4.back_bipatv.dto.channel.GetSearchChannelDTO;
@@ -33,9 +34,11 @@ public interface ChannelRepositoryCustom {
 
   List<GetSearchChannelDTO> getSearchChannel(Integer uuid, int pageSize, String searchQuery);
 
+
   Integer getNextChannelRank(String searchQuery, Integer ranking, int pageSize, Integer page);
 
   List<GetSumCommentNumGroupChannelDTO> getSumCommentNumGroupChannel();
 
   List<GetSumVideoViewNumGroupChannelDTO> getSumVideoViewNumGroupChannel();
+
 }

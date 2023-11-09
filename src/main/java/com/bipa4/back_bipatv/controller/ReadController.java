@@ -170,7 +170,7 @@ public class ReadController {
   // 인기 채널 top5 조회
   @ApiOperation(value = "실시간 인기 채널 5", notes = "가장 인기 있는 채널 TOP5을 들고온다")
   @GetMapping("/channel/top5")
-  public ResponseEntity<List<GetChannelTop5DTO>> getViewsTop10Channels() {
+  public ResponseEntity<List<GetChannelTop5DTO>> getViewsTop5Channels() {
     List<GetChannelTop5DTO> channels = channelService.findLimitTimeSumCnt();
     return new ResponseEntity<List<GetChannelTop5DTO>>(channels, HttpStatus.OK);
   }

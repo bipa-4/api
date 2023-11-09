@@ -1,6 +1,5 @@
 package com.bipa4.back_bipatv.repository;
 
-import static com.querydsl.core.types.dsl.Expressions.asNumber;
 import static org.aspectj.runtime.internal.Conversions.intValue;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -264,6 +263,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
     QViewLog qViewLog = QViewLog.viewLog;
+    QFavorite qFavorite = QFavorite.favorite;
 
     try {
       responseDtos = jpaQueryFactory.select(
@@ -282,10 +282,13 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
           .from(qViewLog)
           .leftJoin(qViewLog.videoId, qVideos)
           .leftJoin(qVideos.channelId, qChannels)
+          .leftJoin(qFavorite).on(qFavorite.favoritePK.videos.videoId.eq(qVideos.videoId))
           .where(qVideos.privateType.eq(false))
           .orderBy(
-              asNumber(qVideos.readCnt.subtract(qViewLog.viewCnt)).doubleValue().desc()
+              qVideos.readCnt.subtract(qViewLog.viewCnt).multiply(10)
+                  .add(qFavorite.favoritePK.videos.videoId.count().coalesce(0l)).desc()
           )
+          .groupBy(qVideos.videoId)
           .limit(10).fetch();
     } catch (NullPointerException e) {
       throw new NoContentException();
@@ -863,12 +866,14 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     for (Object[] row : resultList) {
       GetSearchVideoINChannelDTO dto = new GetSearchVideoINChannelDTO();//
       dto.setRanking(((BigInteger) row[0]).intValue());
+
       UUID videoId = UUID.fromString((String) row[1]);
       dto.setVideoId(videoId);
+
       dto.setVideoTitle((String) row[2]);
 
-      UUID channelUUID = UUID.fromString((String) row[3]);
-      dto.setChannelId(channelUUID);
+      UUID channeled = UUID.fromString((String) row[3]);
+      dto.setChannelId(channeled);
 
       dto.setChannelName((String) row[4]);
       dto.setChannelProfileUrl((String) row[5]);
@@ -916,10 +921,11 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
       UUID videoId = UUID.fromString((String) row[1]);
       dto.setVideoId(videoId);
+
       dto.setVideoTitle((String) row[2]);
 
-      UUID channelUUID = UUID.fromString((String) row[3]);
-      dto.setChannelId(channelUUID);
+      UUID channeled = UUID.fromString((String) row[3]);
+      dto.setChannelId(channeled);
 
       dto.setChannelName((String) row[4]);
       dto.setChannelProfileUrl((String) row[5]);
