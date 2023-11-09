@@ -1,6 +1,5 @@
 package com.bipa4.back_bipatv.repository;
 
-import static com.querydsl.core.types.dsl.Expressions.asNumber;
 import static org.aspectj.runtime.internal.Conversions.intValue;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -27,7 +26,6 @@ import com.bipa4.back_bipatv.exception.AuthorizationException;
 import com.bipa4.back_bipatv.exception.CustomApiException;
 import com.bipa4.back_bipatv.exception.NoContentException;
 import com.querydsl.core.types.Projections;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.io.File;
 import java.math.BigInteger;
@@ -284,13 +282,15 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
           .from(qViewLog)
           .leftJoin(qViewLog.videoId, qVideos)
           .leftJoin(qVideos.channelId, qChannels)
-          .leftJoin(qFavorite).on(qFavorite.favoritePK.videos.videoId.eq(qVideos.videoId)).where(qVideos.privateType.eq(false))
-              .orderBy(
-                      qVideos.readCnt.subtract(qViewLog.viewCnt).multiply(10)
-                              .add(qFavorite.favoritePK.videos.videoId.count().coalesce(0l)).desc()
-              )
-              .groupBy(qVideos.videoId)
-              .limit(10).fetch();
+          .leftJoin(qFavorite).on(qFavorite.favoritePK.videos.videoId.eq(qVideos.videoId))
+          .where(qVideos.privateType.eq(false))
+          .orderBy(
+              qVideos.readCnt.subtract(qViewLog.viewCnt).multiply(10)
+                  .add(qFavorite.favoritePK.videos.videoId.count().coalesce(0l)).desc()
+          )
+          .groupBy(qVideos.videoId)
+          .limit(10).fetch();
+
     } catch (NullPointerException e) {
       throw new NoContentException();
     } catch (Exception e) {
@@ -846,7 +846,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
       nextRank = 1;
     }
     List<Object[]> resultList = entityManager.createNativeQuery(
-            "SELECT ranking, videoId, videoTitle, channelId, channelName, channelProfileUrl, thumbnail, createAt, readCount\n"
+            "SELECT ranking, BIN_TO_UUID(videoId) as videoId, videoTitle, BIN_TO_UUID(channelId) as channelId, channelName, channelProfileUrl, thumbnail, createAt, readCount\n"
                 + "FROM (\n"
                 + "SELECT ROW_NUMBER() OVER () AS ranking, videos.video_id as videoId, videos.title as videoTitle, channels.channel_id as channelId, videos.read_cnt as readCount, videos.create_at as createAt, videos.thumbnail as thumbnail, channels.profile_url as channelProfileUrl, channels.name as channelName\n"
                 + "FROM videos \n"
@@ -867,13 +867,13 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     for (Object[] row : resultList) {
       GetSearchVideoINChannelDTO dto = new GetSearchVideoINChannelDTO();//
       dto.setRanking(((BigInteger) row[0]).intValue());
-      byte[] byteData = (byte[]) row[1];
-      UUID videoId = UUID.nameUUIDFromBytes(byteData);
+
+      UUID videoId = UUID.fromString((String) row[1]);
       dto.setVideoId(videoId);
 
       dto.setVideoTitle((String) row[2]);
-      byteData = (byte[]) row[3];
-      UUID channeled = UUID.nameUUIDFromBytes(byteData);
+
+      UUID channeled = UUID.fromString((String) row[3]);
       dto.setChannelId(channeled);
 
       dto.setChannelName((String) row[4]);
@@ -897,7 +897,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
       nextRank = 1;
     }
     List<Object[]> resultList = entityManager.createNativeQuery(
-            "SELECT ranking, videoId, videoTitle, channelId, channelName, channelProfileUrl, thumbnail, createAt, readCount\n"
+            "SELECT ranking, BIN_TO_UUID(videoId) as videoId, videoTitle, BIN_TO_UUID(channelId) as channelId, channelName, channelProfileUrl, thumbnail, createAt, readCount\n"
                 + "FROM (\n"
                 + "SELECT ROW_NUMBER() OVER () AS ranking, videos.video_id as videoId, videos.title as videoTitle, channels.channel_id as channelId, videos.read_cnt as readCount, videos.create_at as createAt, videos.thumbnail as thumbnail, channels.profile_url as channelProfileUrl, channels.name as channelName\n"
                 + "FROM videos \n"
@@ -919,13 +919,13 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     for (Object[] row : resultList) {
       GetSearchVideoINChannelDTO dto = new GetSearchVideoINChannelDTO();//
       dto.setRanking(((BigInteger) row[0]).intValue());
-      byte[] byteData = (byte[]) row[1];
-      UUID videoId = UUID.nameUUIDFromBytes(byteData);
+
+      UUID videoId = UUID.fromString((String) row[1]);
       dto.setVideoId(videoId);
 
       dto.setVideoTitle((String) row[2]);
-      byteData = (byte[]) row[3];
-      UUID channeled = UUID.nameUUIDFromBytes(byteData);
+
+      UUID channeled = UUID.fromString((String) row[3]);
       dto.setChannelId(channeled);
 
       dto.setChannelName((String) row[4]);
