@@ -128,13 +128,31 @@ public class ReadController {
     return new ResponseEntity<>(videoService.getLike(id, account), HttpStatus.OK);
   }
 
-
-  //부모 댓글 조회
-  @ApiOperation(value = "부모 댓글 조회", notes = "부모 댓글 조회")
-  @GetMapping("/comment/{videoId}/comment-parent")
+  //부모 댓글 조회 최신순
+  @ApiOperation(value = "부모 댓글 조회 최신순", notes = "부모 댓글 조회 최신순")
+  @GetMapping("/comment/{videoId}/comment-parent/new")
   public ResponseEntity<List<CommentResponse>> findParentComments(@PathVariable UUID videoId,
       CommentResponse commentResponse) {
     List<CommentResponse> responseDtos = commentService.findParentComments(videoId);
+    return new ResponseEntity<>(responseDtos, HttpStatus.OK);
+  }
+
+  //부모 댓글 조회 오래된순
+  @ApiOperation(value = "부모 댓글 조회 오래된순", notes = "부모 댓글 조회 오래된순")
+  @GetMapping("/comment/{videoId}/comment-parent/old")
+  public ResponseEntity<List<CommentResponse>> findOldParentComments(@PathVariable UUID videoId,
+      CommentResponse commentResponse) {
+    List<CommentResponse> responseDtos = commentService.findOldParentComments(videoId);
+    return new ResponseEntity<>(responseDtos, HttpStatus.OK);
+  }
+
+  //부모 댓글 조회 인기순
+  @ApiOperation(value = "부모 댓글 조회 인기순", notes = "부모 댓글 조회 인기순")
+  @GetMapping("/comment/{videoId}/comment-parent/popularity")
+  public ResponseEntity<List<CommentResponse>> findPopularityParentComments(
+      @PathVariable UUID videoId,
+      CommentResponse commentResponse) {
+    List<CommentResponse> responseDtos = commentService.findPopularityParentComments(videoId);
     return new ResponseEntity<>(responseDtos, HttpStatus.OK);
   }
 
