@@ -16,131 +16,129 @@ import javax.sql.DataSource;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.apache.mahout.cf.taste.model.JDBCDataModel;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
 @Service
 public class VideoService {
 
-  private final VideoRepository videoRepository;
-  private final SecurityService securityService;
-  private final VideoChannelRepository videoChannelRepository;
-  private final DataSource dataSource;
+	private final VideoRepository videoRepository;
+	private final SecurityService securityService;
+	private final VideoChannelRepository videoChannelRepository;
+	private final DataSource dataSource;
 
 
-  @Transactional
-  public List<GetSearchResponseDto> search(String searchQuery) {
-    return videoChannelRepository.findBySearchQuery(searchQuery);
-  }
+	@Transactional
+	public List<GetSearchResponseDto> search(String searchQuery) {
+		return videoChannelRepository.findBySearchQuery(searchQuery);
+	}
 
-  public Boolean check(Accounts account, UUID videoId) {
-    return videoRepository.checkOwner(account, videoId);
-  }
+	public Boolean check(Accounts account, UUID videoId) {
+		return videoRepository.checkOwner(account, videoId);
+	}
 
-  @Transactional
-  public boolean removeVideo(UUID videoId, Accounts account) {
-    return videoRepository.remove(videoId, account);
-  }
+	@Transactional
+	public boolean removeVideo(UUID videoId, Accounts account) {
+		return videoRepository.remove(videoId, account);
+	}
 
-  @Transactional
-  public boolean uploadVideo(PostUploadRequestDto requestdto, Accounts account) {
-    UUID uuid = generateUUIDv1(requestdto.getContent());
-    return videoRepository.insert(requestdto, account, uuid);
-  }
+	@Transactional
+	public boolean uploadVideo(PostUploadRequestDto requestdto, Accounts account) {
+		UUID uuid = generateUUIDv1(requestdto.getContent());
+		return videoRepository.insert(requestdto, account, uuid);
+	}
 
-  @Transactional
-  public boolean updateVideo(UUID id, PutUpdateRequestDto requestDto, Accounts account) {
-    return videoRepository.update(id, requestDto, account);
-  }
+	@Transactional
+	public boolean updateVideo(UUID id, PutUpdateRequestDto requestDto, Accounts account) {
+		return videoRepository.update(id, requestDto, account);
+	}
 
-  public List<GetVideoResponseDto> getAllVideos(UUID page, int pageSize) {
-    if (page == null) {
-      page = videoRepository.lastUUID();
-    }
-    return videoRepository.getAllVideos(page, pageSize);
-  }
+	public List<GetVideoResponseDto> getAllVideos(UUID page, int pageSize) {
+		if (page == null) {
+			page = videoRepository.lastUUID();
+		}
+		return videoRepository.getAllVideos(page, pageSize);
+	}
 
-  public UUID getNextUUID(UUID uuid) {
-    return videoRepository.getNextUUID(uuid);
-  }
+	public UUID getNextUUID(UUID uuid) {
+		return videoRepository.getNextUUID(uuid);
+	}
 
-  public UUID getNextCategoryUUID(UUID uuid, UUID category) {
-    return videoRepository.getNextCategoryUUID(uuid, category);
-  }
-
-
-  public List<GetVideoResponseDto> getCategoryVideos(UUID category, UUID page,
-      int pageSize) {
-    if (page == null) {
-      page = videoRepository.lastCategoryUUID(category);
-    }
-    return (List<GetVideoResponseDto>) videoRepository.findByCategory(category, page, pageSize);
-  }
-
-  public List<GetCategoryNameRequestDto> getCategoryNames() {
-    return videoRepository.getCategoryNames();
-  }
+	public UUID getNextCategoryUUID(UUID uuid, UUID category) {
+		return videoRepository.getNextCategoryUUID(uuid, category);
+	}
 
 
-  public List<GetVideoResponseDto> getViewsTop10Videos() {
-    return videoRepository.findByViews();
-  }
+	public List<GetVideoResponseDto> getCategoryVideos(UUID category, UUID page, int pageSize) {
+		if (page == null) {
+			page = videoRepository.lastCategoryUUID(category);
+		}
+		return (List<GetVideoResponseDto>) videoRepository.findByCategory(category, page, pageSize);
+	}
 
-  @Transactional
-  public boolean updateViews() {
-    return videoRepository.updateViews();
-  }
-
-  @Transactional
-  public GetDetailResponseDto getVideoDetail(UUID id, JDBCDataModel dataModel) {
-    return videoRepository.getDetail(id, dataModel);
-  }
+	public List<GetCategoryNameRequestDto> getCategoryNames() {
+		return videoRepository.getCategoryNames();
+	}
 
 
-  @Transactional
-  public boolean plusViews(UUID videoId, Accounts account) {
-    boolean response = videoRepository.plusViews(videoId);
-    if(account!=null){
-      response = response && videoRepository.plusViewsCount(videoId, account);
-    }
-    return response;
-  }
+	public List<GetVideoResponseDto> getViewsTop10Videos() {
+		return videoRepository.findByViews();
+	}
 
-  @Transactional
-  public boolean plusViewsCount(UUID videoId, Accounts account) {
-    return videoRepository.plusViews(videoId);
-  }
+	@Transactional
+	public boolean updateViews() {
+		return videoRepository.updateViews();
+	}
 
-  public boolean getLike(UUID videoId, Accounts account) {
-    return videoRepository.getFavorite(videoId, account);
-  }
+	@Transactional
+	public GetDetailResponseDto getVideoDetail(UUID id, JDBCDataModel dataModel) {
+		return videoRepository.getDetail(id, dataModel);
+	}
 
-  @Transactional
-  public boolean like(UUID videoId, Accounts account) {
-    return videoRepository.plusLike(videoId, account);
-  }
 
-  @Transactional
-  public boolean cancelLike(UUID videoId, Accounts account) {
-    return videoRepository.minusLike(videoId, account);
-  }
+	@Transactional
+	public boolean plusViews(UUID videoId, Accounts account) {
+		boolean response = videoRepository.plusViews(videoId);
+		if (account != null) {
+			response = response && videoRepository.plusViewsCount(videoId, account);
+		}
+		return response;
+	}
 
-  public UUID generateUUIDv1(String content) {
-    // Generate a UUID version 1 using current time and MAC address
-    long timestamp = System.currentTimeMillis();
-    long timeLow = timestamp & 0xFFFFFFFFL;
-    long timeMid = (timestamp >> 32) & 0xFFFFL;
-    long timeHigh = (timestamp >> 48) & 0x0FFF0L;
-    long customNode = content.hashCode() & 0xFFFFFFFFFFFFL;
+	@Transactional
+	public boolean plusViewsCount(UUID videoId, Accounts account) {
+		return videoRepository.plusViews(videoId);
+	}
 
-    long mostSigBits = (timeLow << 32) | (timeMid << 16) | timeHigh | 0x1000L;
-    long leastSigBits = (customNode << 16) | 0x800000000000L;
+	public boolean getLike(UUID videoId, Accounts account) {
+		return videoRepository.getFavorite(videoId, account);
+	}
 
-    return new UUID(mostSigBits, leastSigBits);
-  }
+	@Transactional
+	public boolean like(UUID videoId, Accounts account) {
+		return videoRepository.plusLike(videoId, account);
+	}
 
-  // Upload to storage.
+	@Transactional
+	public boolean cancelLike(UUID videoId, Accounts account) {
+		return videoRepository.minusLike(videoId, account);
+	}
+
+	public UUID generateUUIDv1(String content) {
+		// Generate a UUID version 1 using current time and MAC address
+		long timestamp = System.currentTimeMillis();
+		long timeLow = timestamp & 0xFFFFFFFFL;
+		long timeMid = (timestamp >> 32) & 0xFFFFL;
+		long timeHigh = (timestamp >> 48) & 0x0FFF0L;
+		long customNode = content.hashCode() & 0xFFFFFFFFFFFFL;
+
+		long mostSigBits = (timeLow << 32) | (timeMid << 16) | timeHigh | 0x1000L;
+		long leastSigBits = (customNode << 16) | 0x800000000000L;
+
+		return new UUID(mostSigBits, leastSigBits);
+	}
+
+	// Upload to storage.
 //  public String uploadFile(MultipartFile file, String dirName, String fileName) throws IOException {
 //    String filePath = dirName + "/" + fileName;
 //

@@ -1,6 +1,5 @@
 package com.bipa4.back_bipatv.repository;
 
-import static com.querydsl.core.types.dsl.Expressions.asNumber;
 import static org.aspectj.runtime.internal.Conversions.intValue;
 
 import com.amazonaws.services.s3.AmazonS3;
@@ -24,20 +23,17 @@ import com.bipa4.back_bipatv.entity.QFavorite;
 import com.bipa4.back_bipatv.entity.QRecommend;
 import com.bipa4.back_bipatv.entity.QVideos;
 import com.bipa4.back_bipatv.entity.QViewLog;
-import com.bipa4.back_bipatv.entity.Recommend;
 import com.bipa4.back_bipatv.entity.Videos;
 import com.bipa4.back_bipatv.exception.AuthorizationException;
 import com.bipa4.back_bipatv.exception.CustomApiException;
 import com.bipa4.back_bipatv.exception.NoContentException;
 import com.querydsl.core.types.Projections;
-import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.io.File;
 import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import javax.persistence.EntityManager;
@@ -45,7 +41,6 @@ import lombok.RequiredArgsConstructor;
 import org.apache.mahout.cf.taste.impl.recommender.GenericItemBasedRecommender;
 import org.apache.mahout.cf.taste.impl.similarity.LogLikelihoodSimilarity;
 import org.apache.mahout.cf.taste.model.JDBCDataModel;
-import org.apache.mahout.cf.taste.recommender.ItemBasedRecommender;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.apache.mahout.cf.taste.similarity.ItemSimilarity;
 import org.springframework.beans.factory.annotation.Value;
@@ -78,22 +73,12 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
     try {
       responseDtos = jpaQueryFactory.select(
-              Projections.bean(
-                  GetVideoResponseDto.class,
-                  qChannels.channelName.as("channelName"),
-                  qChannels.profileUrl.as("channelProfileUrl"),
-                  qChannels.channelId,
-                  qVideos.thumbnail,
-                  qVideos.title.as("videoTitle"),
-                  qVideos.createAt,
-                  qVideos.readCnt.as("readCount"),
-                  qVideos.videoId
-              )
-          )
-          .from(qVideos).leftJoin(qVideos.channelId, qChannels)
-          .where(qVideos.videoId.loe(page).and(qVideos.privateType.eq(false))
-              .and(qVideos.channelId.privateType.eq(false)))
-          .orderBy(qVideos.videoId.desc())
+							Projections.bean(GetVideoResponseDto.class, qChannels.channelName.as("channelName"),
+									qChannels.profileUrl.as("channelProfileUrl"), qChannels.channelId, qVideos.thumbnail,
+									qVideos.title.as("videoTitle"), qVideos.createAt, qVideos.readCnt.as("readCount"),
+									qVideos.videoId)).from(qVideos).leftJoin(qVideos.channelId, qChannels).where(
+							qVideos.videoId.loe(page).and(qVideos.privateType.eq(false))
+									.and(qVideos.channelId.privateType.eq(false))).orderBy(qVideos.videoId.desc())
           .limit(pageSize).fetch();
     } catch (NullPointerException e) {
       throw new NoContentException();
@@ -112,8 +97,9 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QVideos qVideos = QVideos.videos;
 
     try {
-      defaultUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
-          .where(qVideos.privateType.eq(false).and(qVideos.channelId.privateType.eq(false))).orderBy(qVideos.videoId.desc()).limit(1).fetchOne();
+			defaultUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
+					.where(qVideos.privateType.eq(false).and(qVideos.channelId.privateType.eq(false)))
+					.orderBy(qVideos.videoId.desc()).limit(1).fetchOne();
     } catch (NullPointerException e) {
       throw new NoContentException();
     } catch (Exception e) {
@@ -131,10 +117,11 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     UUID nextUUID = null;
 
     try {
-      nextUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
-          .where(qVideos.videoId.lt(uuid).and(qVideos.privateType.eq(false)).and(qVideos.channelId.privateType.eq(false)))
-          .orderBy(qVideos.videoId.desc()).limit(1).fetchOne();
-    } catch (NullPointerException e) {
+			nextUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos).where(
+							qVideos.videoId.lt(uuid).and(qVideos.privateType.eq(false))
+									.and(qVideos.channelId.privateType.eq(false))).orderBy(qVideos.videoId.desc())
+					.limit(1).fetchOne();
+		} catch (NullPointerException e) {
       throw new NoContentException();
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.READ_NEXT_UUID_ERRROR);
@@ -159,30 +146,15 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     }
 
     try {
-      responseDto = jpaQueryFactory.select(
-              Projections.bean(
-                  GetVideoResponseDto.class,
-                  qChannels.channelName.as("channelName"),
-                  qChannels.profileUrl.as("channelProfileUrl"),
-                  qChannels.channelId,
-                  qVideos.thumbnail,
-                  qVideos.title.as("videoTitle"),
-                  qVideos.createAt,
-                  qVideos.readCnt.as("readCount"),
-                  qVideos.videoId
-              )
-          )
-          .from(qCategorys)
-          .leftJoin(qCategorys.videoId, qVideos)
-          .leftJoin(qVideos.channelId, qChannels)
-          .leftJoin(qCategorys.categoryNameId, qCategoryName)
-          .where(
-              qCategoryName.categoryNameId.eq(category)
-                  .and(qVideos.videoId.loe(page))
-                  .and(qVideos.privateType.eq(false)
-                      .and(qChannels.privateType.eq(false))))
-          .orderBy(qVideos.videoId.desc())
-          .limit(pageSize).fetch();
+			responseDto = jpaQueryFactory.select(
+							Projections.bean(GetVideoResponseDto.class, qChannels.channelName.as("channelName"),
+									qChannels.profileUrl.as("channelProfileUrl"), qChannels.channelId, qVideos.thumbnail,
+									qVideos.title.as("videoTitle"), qVideos.createAt, qVideos.readCnt.as("readCount"),
+									qVideos.videoId)).from(qCategorys).leftJoin(qCategorys.videoId, qVideos)
+					.leftJoin(qVideos.channelId, qChannels).leftJoin(qCategorys.categoryNameId, qCategoryName)
+					.where(qCategoryName.categoryNameId.eq(category).and(qVideos.videoId.loe(page))
+							.and(qVideos.privateType.eq(false).and(qChannels.privateType.eq(false))))
+					.orderBy(qVideos.videoId.desc()).limit(pageSize).fetch();
     } catch (NullPointerException e) {
       throw new NoContentException(HandleCode.NO_CONTENT);
     } catch (Exception e) {
@@ -201,15 +173,11 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QCategoryName qCategoryName = QCategoryName.categoryName;
 
     try {
-      defaultUUID = jpaQueryFactory.select(qVideos.videoId).from(qCategorys)
-          .leftJoin(qCategorys.videoId, qVideos)
-          .leftJoin(qCategorys.categoryNameId, qCategoryName)
-          .where(
-              qCategoryName.categoryNameId.eq(category)
-                  .and(qVideos.privateType.eq(false))
-                  .and(qVideos.channelId.privateType.eq(false))
-          )
-          .orderBy(qVideos.videoId.desc()).limit(1).fetchOne();
+			defaultUUID = jpaQueryFactory.select(qVideos.videoId).from(qCategorys)
+					.leftJoin(qCategorys.videoId, qVideos).leftJoin(qCategorys.categoryNameId, qCategoryName)
+					.where(qCategoryName.categoryNameId.eq(category).and(qVideos.privateType.eq(false))
+							.and(qVideos.channelId.privateType.eq(false))).orderBy(qVideos.videoId.desc())
+					.limit(1).fetchOne();
     } catch (NullPointerException e) {
       throw new NoContentException();
     } catch (Exception e) {
@@ -230,8 +198,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
     try {
       nextUUID = jpaQueryFactory.select(qVideos.videoId).from(qCategorys)
-          .leftJoin(qCategorys.videoId, qVideos)
-          .leftJoin(qCategorys.categoryNameId, qCategoryName)
+					.leftJoin(qCategorys.videoId, qVideos).leftJoin(qCategorys.categoryNameId, qCategoryName)
           .where(qCategoryName.categoryNameId.eq(category).and(qVideos.videoId.lt(uuid))
               .and(qVideos.privateType.eq(false)).and(qVideos.channelId.privateType.eq(false)))
           .orderBy(qVideos.videoId.desc()).limit(1).fetchOne();
@@ -252,13 +219,9 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QCategoryName qCategoryName = QCategoryName.categoryName;
 
     try {
-      responseDtos = jpaQueryFactory.select(
-          Projections.bean(
-              GetCategoryNameRequestDto.class,
-              qCategoryName.categoryNameId,
-              qCategoryName.name.as("categoryName")
-          )
-      ).from(qCategoryName).fetch();
+			responseDtos = jpaQueryFactory.select(
+					Projections.bean(GetCategoryNameRequestDto.class, qCategoryName.categoryNameId,
+							qCategoryName.name.as("categoryName"))).from(qCategoryName).fetch();
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.READ_CATEGORY_ERROR);
     }
@@ -278,29 +241,17 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QFavorite qFavorite = QFavorite.favorite;
 
     try {
-      responseDtos = jpaQueryFactory.select(
-              Projections.bean(
-                  GetVideoResponseDto.class,
-                  qChannels.channelName.as("channelName"),
-                  qChannels.profileUrl.as("channelProfileUrl"),
-                  qChannels.channelId,
-                  qVideos.thumbnail,
-                  qVideos.title.as("videoTitle"),
-                  qVideos.createAt,
-                  qVideos.readCnt.as("readCount"),
-                  qVideos.videoId
-              )
-          )
-          .from(qViewLog)
-          .leftJoin(qViewLog.videoId, qVideos)
-          .leftJoin(qVideos.channelId, qChannels)
-          .leftJoin(qFavorite).on(qFavorite.favoritePK.videos.videoId.eq(qVideos.videoId)).where(qVideos.privateType.eq(false).and(qVideos.channelId.privateType.eq(false)))
-              .orderBy(
-                      qVideos.readCnt.subtract(qViewLog.viewCnt).multiply(10)
-                              .add(qFavorite.favoritePK.videos.videoId.count().coalesce(0l)).desc()
-              )
-              .groupBy(qVideos.videoId)
-              .limit(10).fetch();
+			responseDtos = jpaQueryFactory.select(
+							Projections.bean(GetVideoResponseDto.class, qChannels.channelName.as("channelName"),
+									qChannels.profileUrl.as("channelProfileUrl"), qChannels.channelId, qVideos.thumbnail,
+									qVideos.title.as("videoTitle"), qVideos.createAt, qVideos.readCnt.as("readCount"),
+									qVideos.videoId)).from(qViewLog).leftJoin(qViewLog.videoId, qVideos)
+					.leftJoin(qVideos.channelId, qChannels).leftJoin(qFavorite)
+					.on(qFavorite.favoritePK.videos.videoId.eq(qVideos.videoId))
+					.where(qVideos.privateType.eq(false).and(qVideos.channelId.privateType.eq(false)))
+					.orderBy(qVideos.readCnt.subtract(qViewLog.viewCnt).multiply(10)
+							.add(qFavorite.favoritePK.videos.videoId.count().coalesce(0l)).desc())
+					.groupBy(qVideos.videoId).limit(10).fetch();
     } catch (NullPointerException e) {
       throw new NoContentException();
     } catch (Exception e) {
@@ -315,9 +266,9 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     int result;
 
     try {
-      result = entityManager.createNativeQuery(
-          "update view_log vl join videos v on vl.video_id = v.video_id set view_cnt = read_cnt where v.video_id = vl.video_id"
-      ).executeUpdate();
+			result = entityManager.createNativeQuery(
+							"update view_log vl join videos v on vl.video_id = v.video_id set view_cnt = read_cnt where v.video_id = vl.video_id")
+					.executeUpdate();
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.UPDATE_ERROR);
     }
@@ -339,89 +290,77 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QFavorite qFavorite = QFavorite.favorite;
     QCategorys qCategorys = QCategorys.categorys;
 
-    try {
-      responseDto = jpaQueryFactory.select(
-              Projections.bean(
-                  GetDetailResponseDto.class,
-                  qChannels.channelName.as("channelName"),
-                  qChannels.profileUrl.as("channelProfileUrl"),
-                  qChannels.channelId,
-                  qVideos.videoUrl,
-                  qVideos.title.as("videoTitle"),
-                  qVideos.content,
-                  qVideos.createAt,
-                  qVideos.readCnt.as("readCount"),
-                  qVideos.videoId,
-                  qVideos.thumbnail
-              )).from(qVideos)
-          .leftJoin(qVideos.channelId, qChannels)
-          .where(qVideos.videoId.eq(id).and(qVideos.privateType.eq(false)).and(qChannels.privateType.eq(false)))
-          .fetchOne();
-    } catch (AuthorizationException e){
-      throw new AuthorizationException();
-    }
-    catch (Exception e) {
-      throw new CustomApiException(ErrorCode.READ_DETAIL_ERROR);
-    }
+		try {
+			responseDto = jpaQueryFactory.select(
+							Projections.bean(GetDetailResponseDto.class, qChannels.channelName.as("channelName"),
+									qChannels.profileUrl.as("channelProfileUrl"), qChannels.channelId, qVideos.videoUrl,
+									qVideos.title.as("videoTitle"), qVideos.content, qVideos.createAt,
+									qVideos.readCnt.as("readCount"), qVideos.videoId, qVideos.thumbnail)).from(qVideos)
+					.leftJoin(qVideos.channelId, qChannels).where(
+							qVideos.videoId.eq(id).and(qVideos.privateType.eq(false))
+									.and(qChannels.privateType.eq(false))).fetchOne();
+		} catch (AuthorizationException e) {
+			throw new AuthorizationException();
+		} catch (Exception e) {
+			throw new CustomApiException(ErrorCode.READ_DETAIL_ERROR);
+		}
 
-    if (responseDto == null) {
-      throw new CustomApiException(ErrorCode.NO_EXIST_VIDEO);
-    }
+		if (responseDto == null) {
+			throw new CustomApiException(ErrorCode.NO_EXIST_VIDEO);
+		}
 
-    // 추천 영상 리스트 추출
-    long modelData = jpaQueryFactory.select(qRecommend.recommendId.count()).from(qRecommend).where(qRecommend.videoUUIDId.videoId.eq(id)).fetchOne();
-    if(modelData >= 5){ // 데이터가 충분하다면
-      try {
-        List<Videos> itemIDs = new ArrayList<>();
-        long videoNumberId  = uuidToLong(id);
-        System.out.println(videoNumberId);
+		// 추천 영상 리스트 추출
+		long modelData = jpaQueryFactory.select(qRecommend.recommendId.count()).from(qRecommend)
+				.where(qRecommend.videoUUIDId.videoId.eq(id)).fetchOne();
+		if (modelData >= 5) { // 데이터가 충분하다면
+			try {
+				List<Videos> itemIDs = new ArrayList<>();
+				long videoNumberId = uuidToLong(id);
+				System.out.println(videoNumberId);
 
-        ItemSimilarity itemSimilarity = new LogLikelihoodSimilarity(dataModel);
-        GenericItemBasedRecommender recommender = new GenericItemBasedRecommender(dataModel, itemSimilarity);
+				ItemSimilarity itemSimilarity = new LogLikelihoodSimilarity(dataModel);
+				GenericItemBasedRecommender recommender = new GenericItemBasedRecommender(dataModel,
+						itemSimilarity);
 
-        List<RecommendedItem> recommendations = recommender.mostSimilarItems(videoNumberId, 10);
+				List<RecommendedItem> recommendations = recommender.mostSimilarItems(videoNumberId, 10);
 
-        for (RecommendedItem recommendation : recommendations) {
-          GetVideoResponseDto dto = new GetVideoResponseDto();
-          Videos recommendVideo = jpaQueryFactory.select(qRecommend.videoUUIDId).from(qVideos).leftJoin(qRecommend).on(qRecommend.videoUUIDId.eq(qVideos)).leftJoin(qChannels).on(qChannels.channelId.eq(qVideos.channelId.channelId)).where(qRecommend.videoId.eq(recommendation.getItemID())).fetchOne();
+				for (RecommendedItem recommendation : recommendations) {
+					GetVideoResponseDto dto = new GetVideoResponseDto();
+					Videos recommendVideo = jpaQueryFactory.select(qRecommend.videoUUIDId).from(qVideos)
+							.leftJoin(qRecommend).on(qRecommend.videoUUIDId.eq(qVideos)).leftJoin(qChannels)
+							.on(qChannels.channelId.eq(qVideos.channelId.channelId))
+							.where(qRecommend.videoId.eq(recommendation.getItemID())).fetchOne();
 
-          if(recommendVideo.getPrivateType() == false && recommendVideo.getChannelId().getPrivateType() == false){
-            dto.setVideoId(recommendVideo.getVideoId());
-            dto.setVideoTitle(recommendVideo.getTitle());
-            dto.setThumbnail(recommendVideo.getThumbnail());
-            dto.setPrivateType(recommendVideo.getPrivateType());
-            dto.setChannelId(recommendVideo.getChannelId().getChannelId());
-            dto.setChannelName(recommendVideo.getChannelId().getChannelName());
-            dto.setReadCount(recommendVideo.getReadCnt());
-            dto.setCreateAt(recommendVideo.getCreateAt());
-            dto.setChannelProfileUrl(recommendVideo.getChannelId().getProfileUrl());
-            recommendedVideos.add(dto);
-          }
-        }
-      } catch (NullPointerException e) {
-        throw new NoContentException();
-      } catch (Exception e) {
-        throw new CustomApiException(ErrorCode.READ_RECOMMEND_ERROR);
-      }
-    }else{ // 충분하지 않다면
-      try {
-        recommendedVideos = jpaQueryFactory.select(
-                Projections.bean(
-                    GetVideoResponseDto.class,
-                    qChannels.channelName.as("channelName"),
-                    qChannels.profileUrl.as("channelProfileUrl"),
-                    qChannels.channelId,
-                    qVideos.thumbnail,
-                    qVideos.title.as("videoTitle"),
-                    qVideos.createAt,
-                    qVideos.readCnt.as("readCount"),
-                    qVideos.videoId
-                )
-            )
-            .from(qVideos).leftJoin(qVideos.channelId, qChannels)
-            .where(qVideos.channelId.channelId.eq(responseDto.getChannelId())
-                .and(qVideos.videoId.ne(responseDto.getVideoId())))
-            .orderBy(qVideos.readCnt.desc()).limit(10).fetch();
+					if (recommendVideo.getPrivateType() == false
+							&& recommendVideo.getChannelId().getPrivateType() == false) {
+						dto.setVideoId(recommendVideo.getVideoId());
+						dto.setVideoTitle(recommendVideo.getTitle());
+						dto.setThumbnail(recommendVideo.getThumbnail());
+						dto.setPrivateType(recommendVideo.getPrivateType());
+						dto.setChannelId(recommendVideo.getChannelId().getChannelId());
+						dto.setChannelName(recommendVideo.getChannelId().getChannelName());
+						dto.setReadCount(recommendVideo.getReadCnt());
+						dto.setCreateAt(recommendVideo.getCreateAt());
+						dto.setChannelProfileUrl(recommendVideo.getChannelId().getProfileUrl());
+						recommendedVideos.add(dto);
+					}
+				}
+			} catch (NullPointerException e) {
+				throw new NoContentException();
+			} catch (Exception e) {
+				throw new CustomApiException(ErrorCode.READ_RECOMMEND_ERROR);
+			}
+		} else { // 충분하지 않다면
+			try {
+				recommendedVideos = jpaQueryFactory.select(
+								Projections.bean(GetVideoResponseDto.class, qChannels.channelName.as("channelName"),
+										qChannels.profileUrl.as("channelProfileUrl"), qChannels.channelId,
+										qVideos.thumbnail, qVideos.title.as("videoTitle"), qVideos.createAt,
+										qVideos.readCnt.as("readCount"), qVideos.videoId)).from(qVideos)
+						.leftJoin(qVideos.channelId, qChannels).where(
+								qVideos.channelId.channelId.eq(responseDto.getChannelId())
+										.and(qVideos.videoId.ne(responseDto.getVideoId())))
+						.orderBy(qVideos.readCnt.desc()).limit(10).fetch();
       } catch (NullPointerException e) {
         throw new NoContentException();
       } catch (Exception e) {
@@ -442,9 +381,8 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
     // 영상의 카테고리 저장
     try {
-      List<UUID> uuid = jpaQueryFactory.select(qCategorys.categoryNameId.categoryNameId)
-          .from(qCategorys)
-          .where(qCategorys.videoId.videoId.eq(responseDto.getVideoId())).fetch();
+			List<UUID> uuid = jpaQueryFactory.select(qCategorys.categoryNameId.categoryNameId)
+					.from(qCategorys).where(qCategorys.videoId.videoId.eq(responseDto.getVideoId())).fetch();
       responseDto.setCategoryId(uuid);
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.READ_CATEGORY_ERROR);
@@ -535,25 +473,25 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
   // 영상 본인 글인지 확인하기
   @Override
   public boolean checkOwner(Accounts account, UUID videoId) {
-    QVideos qVideos = QVideos.videos;
-    QChannels qChannels = QChannels.channels;
+		QVideos qVideos = QVideos.videos;
+		QChannels qChannels = QChannels.channels;
 
-    if (account == null) {
-      return false;
-    }
+		if (account == null) {
+			return false;
+		}
 
-    Videos requestVideo = jpaQueryFactory.selectFrom(qVideos)
-        .where(qVideos.videoId.eq(videoId)).fetchOne();
+		Videos requestVideo = jpaQueryFactory.selectFrom(qVideos).where(qVideos.videoId.eq(videoId))
+				.fetchOne();
 
-    // 해당 영상이 존재하지 않는다면.
-    if (requestVideo == null) {
-      throw new CustomApiException(ErrorCode.NO_EXIST_VIDEO);
-    }
+		// 해당 영상이 존재하지 않는다면.
+		if (requestVideo == null) {
+			throw new CustomApiException(ErrorCode.NO_EXIST_VIDEO);
+		}
 
-    Channels channel = accountToChannel(account);
+		Channels channel = accountToChannel(account);
 
-    if (channel.getChannelId().equals(requestVideo.getChannelId().getChannelId())) {
-      return true;
+		if (channel.getChannelId().equals(requestVideo.getChannelId().getChannelId())) {
+			return true;
     }
     return false;
   }
@@ -567,17 +505,14 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     Channels channel = accountToChannel(account);
 
     // video 테이블 create.
-    int videoFlag = entityManager.createNativeQuery(
-            "INSERT INTO videos (video_url, thumbnail, title, content, private_type, create_at, channel_id, read_cnt, video_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
-        .setParameter(1, videoResponseDto.getVideoUrl())
-        .setParameter(2, videoResponseDto.getThumbnailUrl())
-        .setParameter(3, videoResponseDto.getTitle())
-        .setParameter(4, videoResponseDto.getContent())
-        .setParameter(5, videoResponseDto.getPrivateType())
-        .setParameter(6, new Timestamp(System.currentTimeMillis()))
-        .setParameter(7, channel)
-        .setParameter(8, 0)
-        .setParameter(9, uuid).executeUpdate();
+		int videoFlag = entityManager.createNativeQuery(
+						"INSERT INTO videos (video_url, thumbnail, title, content, private_type, create_at, channel_id, read_cnt, video_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
+				.setParameter(1, videoResponseDto.getVideoUrl())
+				.setParameter(2, videoResponseDto.getThumbnailUrl())
+				.setParameter(3, videoResponseDto.getTitle()).setParameter(4, videoResponseDto.getContent())
+				.setParameter(5, videoResponseDto.getPrivateType())
+				.setParameter(6, new Timestamp(System.currentTimeMillis())).setParameter(7, channel)
+				.setParameter(8, 0).setParameter(9, uuid).executeUpdate();
 
     if (videoFlag == 0) {
       throw new CustomApiException(ErrorCode.UPLOAD_ERROR);
@@ -585,8 +520,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
     // view log 테이블 create.
     int viewLogFlag = entityManager.createNativeQuery(
-            "INSERT INTO view_log (video_id, view_cnt) VALUES (?, ?);")
-        .setParameter(1, uuid)
+						"INSERT INTO view_log (video_id, view_cnt) VALUES (?, ?);").setParameter(1, uuid)
         .setParameter(2, 0).executeUpdate();
 
     if (viewLogFlag == 0) {
@@ -596,11 +530,9 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     // category 테이블 create.
     int categoryFlag;
     for (int i = 0; i < videoResponseDto.getCategory().size(); i++) {
-      categoryFlag = entityManager.createNativeQuery(
-              "INSERT INTO categorys (video_id, category_name_id) VALUES (?, ?)")
-          .setParameter(1, uuid)
-          .setParameter(2, UUID.fromString(videoResponseDto.getCategory().get(i)))
-          .executeUpdate();
+			categoryFlag = entityManager.createNativeQuery(
+							"INSERT INTO categorys (video_id, category_name_id) VALUES (?, ?)").setParameter(1, uuid)
+					.setParameter(2, UUID.fromString(videoResponseDto.getCategory().get(i))).executeUpdate();
 
       if (categoryFlag == 0) {
         throw new CustomApiException(ErrorCode.CATEGORY_CREATE_ERROR);
@@ -608,12 +540,10 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     }
 
     // recommend 테이블 create.
-    int viewRecommendFlag = entityManager.createNativeQuery(
-            "INSERT INTO recommend (account_id, video_id, video_uuid_id, rating) VALUES (?, ?, ?, ?);")
-        .setParameter(1, uuidToLong(account.getAccountId()))
-        .setParameter(2,  uuidToLong(uuid))
-        .setParameter(3, uuid)
-        .setParameter(4, 1).executeUpdate();
+		int viewRecommendFlag = entityManager.createNativeQuery(
+						"INSERT INTO recommend (account_id, video_id, video_uuid_id, rating) VALUES (?, ?, ?, ?);")
+				.setParameter(1, uuidToLong(account.getAccountId())).setParameter(2, uuidToLong(uuid))
+				.setParameter(3, uuid).setParameter(4, 1).executeUpdate();
 
     if (viewRecommendFlag == 0) {
       throw new CustomApiException(ErrorCode.VIEW_RECOMMEND_CREATE_ERROR);
@@ -643,26 +573,23 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
   // 추천 영상을 위한 조회수 상승
   @Override
   public boolean plusViewsCount(UUID videoId, Accounts account) {
-    try{
-      int viewLogFlag = entityManager.createNativeQuery(
-              "UPDATE recommend SET rating = rating+1\n"
-                  + "WHERE video_uuid_id=?\n"
-                  + "AND account_id=?;")
-          .setParameter(1, videoId)
-          .setParameter(2, uuidToLong(account.getAccountId())).executeUpdate();
+		try {
+			int viewLogFlag = entityManager.createNativeQuery(
+							"UPDATE recommend SET rating = rating+1\n" + "WHERE video_uuid_id=?\n"
+									+ "AND account_id=?;").setParameter(1, videoId)
+					.setParameter(2, uuidToLong(account.getAccountId())).executeUpdate();
 
-      if(viewLogFlag == 0){
-        int viewRecommendFlag = entityManager.createNativeQuery(
-                "INSERT INTO recommend (account_id, video_id, video_uuid_id, rating) VALUES (?, ?, ?, ?);")
-            .setParameter(1, uuidToLong(account.getAccountId()))
-            .setParameter(2,  uuidToLong(videoId))
-            .setParameter(3, videoId)
-            .setParameter(4, 1).executeUpdate();
+			if (viewLogFlag == 0) {
+				int viewRecommendFlag = entityManager.createNativeQuery(
+								"INSERT INTO recommend (account_id, video_id, video_uuid_id, rating) VALUES (?, ?, ?, ?);")
+						.setParameter(1, uuidToLong(account.getAccountId()))
+						.setParameter(2, uuidToLong(videoId)).setParameter(3, videoId).setParameter(4, 1)
+						.executeUpdate();
 
-        if (viewRecommendFlag == 0) {
-          throw new CustomApiException(ErrorCode.VIEW_RECOMMEND_CREATE_ERROR);
-        }
-        return true;
+				if (viewRecommendFlag == 0) {
+					throw new CustomApiException(ErrorCode.VIEW_RECOMMEND_CREATE_ERROR);
+				}
+				return true;
       }
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.UPDATE_RECOMMEND_ERROR);
@@ -684,12 +611,10 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     }
 
     try {
-      result = jpaQueryFactory.select(qFavorite.count()).from(qFavorite)
-          .where(
-              qFavorite.favoritePK.videos.videoId.eq(videoId)
-                  .and(qFavorite.favoritePK.accounts.eq(account)))
-          .fetchFirst();
-    } catch (Exception e) {
+			result = jpaQueryFactory.select(qFavorite.count()).from(qFavorite).where(
+					qFavorite.favoritePK.videos.videoId.eq(videoId)
+							.and(qFavorite.favoritePK.accounts.eq(account))).fetchFirst();
+		} catch (Exception e) {
       throw new CustomApiException(ErrorCode.READ_LIKE_ERROR);
     }
 
@@ -700,12 +625,9 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
   @Override
   public boolean plusLike(UUID videoId, Accounts account) {
     try {
-      entityManager.createNativeQuery(
-              "INSERT INTO favorite VALUES (?, ?)")
-          .setParameter(1, account.getAccountId())
-          .setParameter(2, videoId)
-          .executeUpdate();
-    } catch (Exception e) {
+			entityManager.createNativeQuery("INSERT INTO favorite VALUES (?, ?)")
+					.setParameter(1, account.getAccountId()).setParameter(2, videoId).executeUpdate();
+		} catch (Exception e) {
       throw new CustomApiException(ErrorCode.LIKE_ERROR);
     }
     return true;
@@ -743,13 +665,11 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   //Account to Channel
   private Channels accountToChannel(Accounts account) {
-    QChannels qChannels = QChannels.channels;
+		QChannels qChannels = QChannels.channels;
 
-    return jpaQueryFactory.selectFrom(qChannels)
-        .leftJoin(qChannels.accounts).fetchJoin()
-        .where(qChannels.accounts.eq(account))
-        .fetchOne();
-  }
+		return jpaQueryFactory.selectFrom(qChannels).leftJoin(qChannels.accounts).fetchJoin()
+				.where(qChannels.accounts.eq(account)).fetchOne();
+	}
 
   //Delete S3 File
   private void deleteS3(String videoUrl) {
@@ -782,23 +702,13 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
     try {
       responseDtos = jpaQueryFactory.select(
-              Projections.bean(
-                  GetVideoResponseDto.class,
-                  qChannels.channelName.as("channelName"),
-                  qChannels.profileUrl.as("channelProfileUrl"),
-                  qChannels.channelId,
-                  qVideos.thumbnail,
-                  qVideos.title.as("videoTitle"),
-                  qVideos.createAt,
-                  qVideos.readCnt.as("readCount"),
-                  qVideos.videoId,
-                  qVideos.privateType
-              )
-          )
-          .from(qVideos).leftJoin(qVideos.channelId, qChannels)
-          .where(qVideos.channelId.channelId.eq(channelId).and(qVideos.videoId.loe(page))
-              .and(qVideos.privateType.eq(false)))
-          .orderBy(qVideos.videoId.desc())
+							Projections.bean(GetVideoResponseDto.class, qChannels.channelName.as("channelName"),
+									qChannels.profileUrl.as("channelProfileUrl"), qChannels.channelId, qVideos.thumbnail,
+									qVideos.title.as("videoTitle"), qVideos.createAt, qVideos.readCnt.as("readCount"),
+									qVideos.videoId, qVideos.privateType)).from(qVideos)
+					.leftJoin(qVideos.channelId, qChannels).where(
+							qVideos.channelId.channelId.eq(channelId).and(qVideos.videoId.loe(page))
+									.and(qVideos.privateType.eq(false))).orderBy(qVideos.videoId.desc())
           .limit(pageSize).fetch();
     } catch (NullPointerException e) {
       throw new NoContentException();
@@ -816,10 +726,9 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     QVideos qVideos = QVideos.videos;
 
     try {
-      lastUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
-          .where(qVideos.channelId.channelId.eq(channelId).and(qVideos.privateType.eq(false)))
-          .orderBy(qVideos.videoId.desc()).limit(1)
-          .fetchOne();
+			lastUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
+					.where(qVideos.channelId.channelId.eq(channelId).and(qVideos.privateType.eq(false)))
+					.orderBy(qVideos.videoId.desc()).limit(1).fetchOne();
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.READ_LAST_UUID_ERRROR);
     }
@@ -833,8 +742,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
     try {
       lastUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
-          .where(qVideos.channelId.channelId.eq(channelId))
-          .orderBy(qVideos.videoId.desc()).limit(1)
+					.where(qVideos.channelId.channelId.eq(channelId)).orderBy(qVideos.videoId.desc()).limit(1)
           .fetchOne();
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.READ_LAST_UUID_ERRROR);
@@ -848,19 +756,12 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     List<Integer> uuid = new ArrayList<>();
 
     try {
-      uuid = entityManager.createNativeQuery(
-              "SELECT ranking\n"
-                  + "FROM (\n"
-                  + "    SELECT ROW_NUMBER() OVER () AS ranking\n"
-                  + "    FROM videos\n"
-                  + "    WHERE videos.channel_id = ?\n"
-                  + "    AND MATCH (videos.title, videos.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
-                  + "    ORDER BY ranking ASC \n"
-                  + "    LIMIT 1\n"
-                  + ") AS ranked_results;\n"
-          ).setParameter(1, channelId)
-          .setParameter(2, searchQuery)
-          .getResultList();
+			uuid = entityManager.createNativeQuery(
+							"SELECT ranking\n" + "FROM (\n" + "    SELECT ROW_NUMBER() OVER () AS ranking\n"
+									+ "    FROM videos\n" + "    WHERE videos.channel_id = ?\n"
+									+ "    AND MATCH (videos.title, videos.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
+									+ "    ORDER BY ranking ASC \n" + "    LIMIT 1\n" + ") AS ranked_results;\n")
+					.setParameter(1, channelId).setParameter(2, searchQuery).getResultList();
 
       if (!uuid.isEmpty()) {
         return intValue(uuid.get(0));
@@ -875,24 +776,18 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
   public Integer lastUUIDSearchVideoInChannel(UUID channelId, String searchQuery) {
     List<Integer> uuid = new ArrayList<>();
     try {
-      uuid = entityManager.createNativeQuery("SELECT ranking\n"
-              + "FROM (\n"
-              + "    SELECT ROW_NUMBER() OVER () AS ranking\n"
-              + "    FROM videos\n"
-              + "    WHERE videos.channel_id = ?\n"
-              + "    AND MATCH (videos.title, videos.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
-              + "    AND videos.private_type = false\n"
-              + "    ORDER BY ranking ASC \n"
-              + "    LIMIT 1\n"
-              + ") AS ranked_results;\n "
-          ).setParameter(1, channelId)
-          .setParameter(2, searchQuery)
-          .getResultList();
+			uuid = entityManager.createNativeQuery(
+							"SELECT ranking\n" + "FROM (\n" + "    SELECT ROW_NUMBER() OVER () AS ranking\n"
+									+ "    FROM videos\n" + "    WHERE videos.channel_id = ?\n"
+									+ "    AND MATCH (videos.title, videos.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
+									+ "    AND videos.private_type = false\n" + "    ORDER BY ranking ASC \n"
+									+ "    LIMIT 1\n" + ") AS ranked_results;\n ").setParameter(1, channelId)
+					.setParameter(2, searchQuery).getResultList();
 
-      if (!uuid.isEmpty()) {
-        return intValue(uuid.get(0));
-      }
-    } catch (Exception e) {
+			if (!uuid.isEmpty()) {
+				return intValue(uuid.get(0));
+			}
+		} catch (Exception e) {
       throw new CustomApiException(ErrorCode.READ_LAST_UUID_ERRROR);
     }
     return null;
@@ -910,24 +805,14 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     }
 
     try {
-      responseDtos = jpaQueryFactory.select(
-              Projections.bean(
-                  GetVideoResponseDto.class,
-                  qChannels.channelName.as("channelName"),
-                  qChannels.profileUrl.as("channelProfileUrl"),
-                  qChannels.channelId,
-                  qVideos.thumbnail,
-                  qVideos.title.as("videoTitle"),
-                  qVideos.createAt,
-                  qVideos.readCnt.as("readCount"),
-                  qVideos.videoId,
-                  qVideos.privateType
-              )
-          )
-          .from(qVideos).leftJoin(qVideos.channelId, qChannels)
-          .where(qVideos.channelId.channelId.eq(channelId).and(qVideos.videoId.loe(uuid)))
-          .orderBy(qVideos.videoId.desc())
-          .limit(pageSize).fetch();
+			responseDtos = jpaQueryFactory.select(
+							Projections.bean(GetVideoResponseDto.class, qChannels.channelName.as("channelName"),
+									qChannels.profileUrl.as("channelProfileUrl"), qChannels.channelId, qVideos.thumbnail,
+									qVideos.title.as("videoTitle"), qVideos.createAt, qVideos.readCnt.as("readCount"),
+									qVideos.videoId, qVideos.privateType)).from(qVideos)
+					.leftJoin(qVideos.channelId, qChannels)
+					.where(qVideos.channelId.channelId.eq(channelId).and(qVideos.videoId.loe(uuid)))
+					.orderBy(qVideos.videoId.desc()).limit(pageSize).fetch();
     } catch (NullPointerException e) {
       throw new NoContentException();
     } catch (Exception e) {
@@ -937,29 +822,21 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     return responseDtos;
   }
 
-  @Override
-  public List<GetSearchVideoINChannelDTO> getSearchVideoInMyChannel(UUID channelId,
-      Integer nextRank,
-      int pageSize, String searchQuery) {
-    if (nextRank == null) {
-      nextRank = 1;
-    }
-    List<Object[]> resultList = entityManager.createNativeQuery(
-            "SELECT ranking, videoId, videoTitle, channelId, channelName, channelProfileUrl, thumbnail, createAt, readCount\n"
-                + "FROM (\n"
-                + "SELECT ROW_NUMBER() OVER () AS ranking, videos.video_id as videoId, videos.title as videoTitle, channels.channel_id as channelId, videos.read_cnt as readCount, videos.create_at as createAt, videos.thumbnail as thumbnail, channels.profile_url as channelProfileUrl, channels.name as channelName\n"
-                + "FROM videos \n"
-                + "join channels \n"
-                + "on videos.channel_id = channels.channel_id\n"
-                + "WHERE videos.channel_id = ?\n"
-                + "and MATCH (videos.title, videos.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
-                + ")as ranked\n"
-                + "where ranking >= ?\n"
-                + "order by ranking asc\n"
-                + "limit ?;"
-        ).setParameter(1, channelId)
-        .setParameter(2, searchQuery)
-        .setParameter(3, nextRank)
+	@Override
+	public List<GetSearchVideoINChannelDTO> getSearchVideoInMyChannel(UUID channelId,
+			Integer nextRank, int pageSize, String searchQuery) {
+		if (nextRank == null) {
+			nextRank = 1;
+		}
+		List<Object[]> resultList = entityManager.createNativeQuery(
+						"SELECT ranking, videoId, videoTitle, channelId, channelName, channelProfileUrl, thumbnail, createAt, readCount\n"
+								+ "FROM (\n"
+								+ "SELECT ROW_NUMBER() OVER () AS ranking, videos.video_id as videoId, videos.title as videoTitle, channels.channel_id as channelId, videos.read_cnt as readCount, videos.create_at as createAt, videos.thumbnail as thumbnail, channels.profile_url as channelProfileUrl, channels.name as channelName\n"
+								+ "FROM videos \n" + "join channels \n" + "on videos.channel_id = channels.channel_id\n"
+								+ "WHERE videos.channel_id = ?\n"
+								+ "and MATCH (videos.title, videos.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
+								+ ")as ranked\n" + "where ranking >= ?\n" + "order by ranking asc\n" + "limit ?;")
+				.setParameter(1, channelId).setParameter(2, searchQuery).setParameter(3, nextRank)
         .setParameter(4, pageSize).getResultList();
 
     List<GetSearchVideoINChannelDTO> searchList = new ArrayList<>();
@@ -987,32 +864,24 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     return searchList;
   }
 
-  @Override
-  public List<GetSearchVideoINChannelDTO> getSearchVideoInChannel(UUID channelId,
-      Integer nextRank,
-      int pageSize, String searchQuery) {
+	@Override
+	public List<GetSearchVideoINChannelDTO> getSearchVideoInChannel(UUID channelId, Integer nextRank,
+			int pageSize, String searchQuery) {
 
-    if (nextRank == null) {
-      nextRank = 1;
-    }
-    List<Object[]> resultList = entityManager.createNativeQuery(
-            "SELECT ranking, videoId, videoTitle, channelId, channelName, channelProfileUrl, thumbnail, createAt, readCount\n"
-                + "FROM (\n"
-                + "SELECT ROW_NUMBER() OVER () AS ranking, videos.video_id as videoId, videos.title as videoTitle, channels.channel_id as channelId, videos.read_cnt as readCount, videos.create_at as createAt, videos.thumbnail as thumbnail, channels.profile_url as channelProfileUrl, channels.name as channelName\n"
-                + "FROM videos \n"
-                + "join channels \n"
-                + "on videos.channel_id = channels.channel_id\n"
-                + "WHERE videos.channel_id = ?\n"
-                + "and MATCH (videos.title, videos.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
-                + "AND videos.private_type = false\n"
-                + ")as ranked\n"
-                + "where ranking >= ?\n"
-                + "order by ranking asc\n"
-                + "limit ?;"
-        ).setParameter(1, channelId)
-        .setParameter(2, searchQuery)
-        .setParameter(3, nextRank)
-        .setParameter(4, pageSize).getResultList();
+		if (nextRank == null) {
+			nextRank = 1;
+		}
+		List<Object[]> resultList = entityManager.createNativeQuery(
+						"SELECT ranking, videoId, videoTitle, channelId, channelName, channelProfileUrl, thumbnail, createAt, readCount\n"
+								+ "FROM (\n"
+								+ "SELECT ROW_NUMBER() OVER () AS ranking, videos.video_id as videoId, videos.title as videoTitle, channels.channel_id as channelId, videos.read_cnt as readCount, videos.create_at as createAt, videos.thumbnail as thumbnail, channels.profile_url as channelProfileUrl, channels.name as channelName\n"
+								+ "FROM videos \n" + "join channels \n" + "on videos.channel_id = channels.channel_id\n"
+								+ "WHERE videos.channel_id = ?\n"
+								+ "and MATCH (videos.title, videos.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
+								+ "AND videos.private_type = false\n" + ")as ranked\n" + "where ranking >= ?\n"
+								+ "order by ranking asc\n" + "limit ?;").setParameter(1, channelId)
+				.setParameter(2, searchQuery).setParameter(3, nextRank).setParameter(4, pageSize)
+				.getResultList();
 
     List<GetSearchVideoINChannelDTO> searchList = new ArrayList<>();
     for (Object[] row : resultList) {
