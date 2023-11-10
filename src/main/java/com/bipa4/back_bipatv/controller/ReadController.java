@@ -30,7 +30,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 @Api(tags = {"ReadController"})
@@ -117,16 +116,6 @@ public class ReadController {
     JDBCDataModel dataModel = recommendationService.getDataModel();
     GetDetailResponseDto video = videoService.getVideoDetail(id, dataModel);
     return new ResponseEntity<>(video, HttpStatus.OK);
-  }
-
-  // 조회수 상승
-  @ApiOperation(value = "조회수 상승", notes = "조회수 상승")
-  @PutMapping("/video/updateViews/{videoId}")
-  public ResponseEntity<Boolean> getPlusViews(@PathVariable("videoId") UUID id,
-      @CookieValue(name = "accessToken", required = false) String accessToken) {
-    Accounts account = securityService.getSubjectAccount(accessToken);
-    boolean response = videoService.plusViews(id, account);
-    return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
 
