@@ -85,7 +85,8 @@ public class CommentService {
       throw new AuthorizationException();
     }
 
-    return commentDAO.deleteParentComment(comment.getVideos().getVideoId(),comment.getGroupIndex());
+    return commentDAO.deleteParentComment(comment.getVideos().getVideoId(),
+        comment.getGroupIndex());
   }
 
   @Transactional
