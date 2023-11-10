@@ -48,6 +48,12 @@ dependencies {
     implementation "com.querydsl:querydsl-jpa:${queryDslVersion}"
     implementation "com.querydsl:querydsl-apt:${queryDslVersion}"
 
+    //mahout
+    implementation('org.apache.mahout:mahout-integration:0.13.0') {
+        exclude group: 'log4j', module: 'log4j'
+        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+    }
+
 //  구글로그인
 //    implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 

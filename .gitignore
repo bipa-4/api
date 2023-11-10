@@ -37,3 +37,4 @@ out/
 .vscode/
 bipa4.pem
 .log
+log/bipa4RestAPI.log

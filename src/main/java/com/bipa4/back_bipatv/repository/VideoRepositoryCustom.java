@@ -9,6 +9,7 @@ import com.bipa4.back_bipatv.dto.video.PutUpdateRequestDto;
 import com.bipa4.back_bipatv.entity.Accounts;
 import java.util.List;
 import java.util.UUID;
+import org.apache.mahout.cf.taste.model.JDBCDataModel;
 
 public interface VideoRepositoryCustom {
 
@@ -28,7 +29,9 @@ public interface VideoRepositoryCustom {
 
   boolean updateViews();
 
-  GetDetailResponseDto getDetail(UUID id);
+  GetDetailResponseDto getDetail(UUID id, JDBCDataModel dataModel);
+
+  boolean plusViewsCount(UUID videoId, Accounts account);
 
   boolean remove(UUID id, Accounts account);
 
