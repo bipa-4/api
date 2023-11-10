@@ -58,26 +58,8 @@ public class ChannelService {
     return true;
   }
 
-  public SelectChannelDTO findChannel(UUID channelId, String accessToken) {
-    Accounts loginUser = securityService.getSubjectAccount(accessToken);
-    Channels loginUserChannel = null;
-    SelectChannelDTO selectChannel = channelRepository.selectChannel(channelId);
-
-    if (loginUser != null) {
-      loginUserChannel = channelRepository.findByChannelToAccountId(
-          loginUser.getAccountId()).orElse(null);
-    }
-
-    if (loginUser == null && selectChannel.isPrivateType()) {// 비회원이 private으로 설정된 채널 들어가려할때
-      throw new AuthorizationException();
-    }
-
-    if (loginUserChannel != null && !loginUserChannel.getChannelId()
-        .equals(selectChannel.getChannelId())
-        && selectChannel.isPrivateType()) {//채널 주인이 아닌 경우
-      throw new AuthorizationException();
-    }
-    return selectChannel;
+  public SelectChannelDTO findChannel(UUID channelId) {
+    return channelRepository.selectChannel(channelId);
   }
 
   public Channels findbyChannelId(UUID channelId) {
