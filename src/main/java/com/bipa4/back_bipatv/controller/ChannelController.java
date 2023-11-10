@@ -33,8 +33,8 @@ public class ChannelController {
     @ApiOperation(value = "updateMyChannel", notes = "채널 정보 수정")
     @PutMapping("/{channelId}")
     public ResponseEntity<Channels> updateMyChannelInfo(@PathVariable UUID channelId,
-                                                        @CookieValue(value = "accessToken", required = false) String code,
-                                                        @RequestBody PutChannelDTO putChannelDTO) {
+        @CookieValue(value = "accessToken", required = false) String code,
+        @RequestBody PutChannelDTO putChannelDTO) {
         Accounts loginAccount = securityService.getSubjectAccount(code);
         Channels putChannel = channelService.findbyChannelId(channelId);
         Channels updatedChannel = channelService.updateChannel(loginAccount, putChannel, putChannelDTO);
@@ -46,25 +46,25 @@ public class ChannelController {
     @ApiOperation(value = "채널 내 영상 검색", notes = "채널 안의 영상 검색")
     @GetMapping("/{channelId}/video")
     public ResponseEntity<GetInfiniteScrollSearchVideoInChannelDTO> searchVideoInChannel(
-            @CookieValue(value = "accessToken", required = false) String accessToken,
-            @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
-            @RequestParam("page_size") int pageSize,
-            @RequestParam("search_query") String searchQuery,
-            @PathVariable("channelId") UUID channelId) {
+        @CookieValue(value = "accessToken", required = false) String accessToken,
+        @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
+        @RequestParam("page_size") int pageSize,
+        @RequestParam("search_query") String searchQuery,
+        @PathVariable("channelId") UUID channelId) {
         Integer nextRank = null;
 
         Accounts loginAccount = securityService.getSubjectAccount(accessToken);
         List<GetSearchVideoINChannelDTO> videos = channelService.searchVideoInChannel(loginAccount,
-                channelId, page, pageSize, searchQuery);
+            channelId, page, pageSize, searchQuery);
         videos.forEach(System.out::println);
         if (!videos.isEmpty()) {
             nextRank =
-                    channelService.getSearchNextChannelVideoUUID(videos.get(videos.size() - 1).getRanking(),
-                            channelId, searchQuery, loginAccount, pageSize) == null ? null : page + 1;
+                channelService.getSearchNextChannelVideoUUID(videos.get(videos.size() - 1).getRanking(),
+                    channelId, searchQuery, loginAccount, pageSize) == null ? null : page + 1;
         }
 
         GetInfiniteScrollSearchVideoInChannelDTO responseDto = new GetInfiniteScrollSearchVideoInChannelDTO(
-                videos, nextRank);
+            videos, nextRank);
 
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
@@ -72,20 +72,20 @@ public class ChannelController {
     @ApiOperation(value = "채널 검색", notes = "채널 검색")
     @GetMapping("/search")
     public ResponseEntity<GetInfiniteScrollSearchChannelDTO> searchChannel(
-            @RequestParam(value = "page", required = false) Integer page,
-            @RequestParam("page_size") int pageSize,
-            @RequestParam("search_query") String searchQuery) {
+        @RequestParam(value = "page", required = false) Integer page,
+        @RequestParam("page_size") int pageSize,
+        @RequestParam("search_query") String searchQuery) {
         Integer nextRank = null;
 
         List<GetSearchChannelDTO> channels = channelService.searchChannel(page, pageSize, searchQuery);
 
         if (!channels.isEmpty()) {
             nextRank = channelService.getNextChannelRank(searchQuery,
-                    channels.get(channels.size() - 1).getRanking(), pageSize, page);
+                channels.get(channels.size() - 1).getRanking(), pageSize, page);
         }
 
         GetInfiniteScrollSearchChannelDTO responseDto = new GetInfiniteScrollSearchChannelDTO(
-                channels, nextRank);
+            channels, nextRank);
 
         return new ResponseEntity<>(responseDto, HttpStatus.OK);
     }
@@ -93,11 +93,11 @@ public class ChannelController {
     @ApiOperation(value = "getUpdateFlag", notes = "업데이트 플레그 얻기")
     @GetMapping("/flag/{channelId}")
     public ResponseEntity<Boolean> getUpdateFlag(
-            @CookieValue(value = "accessToken", required = false) String accessToken,
-            @PathVariable("channelId") UUID channelId) {
+        @CookieValue(value = "accessToken", required = false) String accessToken,
+        @PathVariable("channelId") UUID channelId) {
         Accounts loginAccount = securityService.getSubjectAccount(accessToken);
         return new ResponseEntity<>(channelService.getUpdateFlag(loginAccount, channelId),
-                HttpStatus.OK);
+            HttpStatus.OK);
     }
 
     @ApiOperation(value = "채널명 중복 확인", notes = "채널명 중복 확인")
