@@ -8,6 +8,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class GetAccountCheckDTO {
 
+  private UUID accountId;
+  private String loginId;
+  private String userName;
+  private String userProfileUrl;
+  private String eMail;
   private UUID channelId;
   private String channelName;
   private String channelProfileUrl;

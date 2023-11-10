@@ -160,9 +160,8 @@ public class ReadController {
   @ApiOperation(value = "채널 상세 조회", notes = "채널 상세 조회")
   @GetMapping("/channel/{channelId}")
   public ResponseEntity<SelectChannelDTO> getMyChannelInfo(
-      @CookieValue(value = "accessToken", required = false) String accessToken,
       @PathVariable("channelId") UUID channelId) {
-    SelectChannelDTO responseDto = channelService.findChannel(channelId, accessToken);
+    SelectChannelDTO responseDto = channelService.findChannel(channelId);
     return new ResponseEntity<>(responseDto, HttpStatus.OK);
   }
 
