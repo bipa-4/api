@@ -11,32 +11,32 @@ import java.util.UUID;
 
 public interface ChannelRepositoryCustom {
 
-	List<GetChannelDTO> getNotPrivateChannel(UUID page, int pageSize);
+  List<GetChannelDTO> getNotPrivateChannel(UUID page, int pageSize);
 
-	List<GetChannelTop5DTO> findTop5Channels();
+  List<GetChannelTop5DTO> findTop5Channels();
 
-	SelectChannelDTO selectChannel(UUID channelId);
+  SelectChannelDTO selectChannel(UUID channelId);
 
-	UUID lastUUID();
+  UUID lastUUID();
 
-	UUID getChannelNextUUID(UUID uuid);
+  UUID getChannelNextUUID(UUID uuid);
 
-	UUID getNextChannelVideoUUID(UUID videoId, UUID channelId, boolean flag);
+  UUID getNextChannelVideoUUID(UUID videoId, UUID channelId, boolean flag);
 
-	Integer getSearchNextChannelVideoRank(Integer rank, UUID channelId, String searchQuery,
-			int pageSize);
+  Integer getSearchNextChannelVideoRank(Integer rank, UUID channelId, String searchQuery,
+      int pageSize);
 
-	Integer getSearchNextMyChannelVideoRank(Integer rank, UUID channelId, String searchQuery,
-			int pageSize);
+  Integer getSearchNextMyChannelVideoRank(Integer rank, UUID channelId, String searchQuery,
+      int pageSize);
 
-	Integer lastUUIDSearchChannel(String searchQuery);
+  Integer lastUUIDSearchChannel(String searchQuery);
 
-	List<GetSearchChannelDTO> getSearchChannel(Integer uuid, int pageSize, String searchQuery);
+  List<GetSearchChannelDTO> getSearchChannel(Integer uuid, int pageSize, String searchQuery);
 
-	Integer getNextChannelRank(String searchQuery, Integer ranking, int pageSize, Integer page);
+  Integer getNextChannelRank(String searchQuery, Integer ranking, int pageSize, Integer page);
 
-	List<GetSumCommentNumGroupChannelDTO> getSumCommentNumGroupChannel();
+  List<GetSumCommentNumGroupChannelDTO> getSumCommentNumGroupChannel();
 
-	List<GetSumVideoViewNumGroupChannelDTO> getSumVideoViewNumGroupChannel();
+  List<GetSumVideoViewNumGroupChannelDTO> getSumVideoViewNumGroupChannel();
 
 }
