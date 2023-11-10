@@ -149,4 +149,22 @@ public class VideoController {
     boolean response = videoService.cancelLike(videoId, account);
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
+
+  // 조회수 상승
+  @ApiOperation(value = "조회수 상승", notes = "조회수 상승")
+  @PutMapping("/updateViews/{videoId}")
+  public ResponseEntity<Boolean> getPlusViews(@PathVariable("videoId") UUID id) {
+    boolean response = videoService.plusViews(id);
+    return new ResponseEntity<>(response, HttpStatus.OK);
+  }
+
+  // 영상 추천 데이터 조회수 상승
+  @ApiOperation(value = "영상 추천 데이터 조회수 상승", notes = "영상 추천 조회수 상승")
+  @PutMapping("/updateRecommend/{videoId}")
+  public ResponseEntity<Boolean> getPlusRecommend(@PathVariable("videoId") UUID id,
+      @CookieValue(name = "accessToken", required = false) String accessToken) {
+    Accounts account = securityService.getSubjectAccount(accessToken);
+    boolean response = videoService.plusRecommend(id, account);
+    return new ResponseEntity<>(response, HttpStatus.OK);
+  }
 }

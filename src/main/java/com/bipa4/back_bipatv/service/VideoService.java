@@ -97,12 +97,16 @@ public class VideoService {
 
 
   @Transactional
-  public boolean plusViews(UUID videoId, Accounts account) {
-    boolean response = videoRepository.plusViews(videoId);
+  public boolean plusViews(UUID videoId) {
+    return videoRepository.plusViews(videoId);
+  }
+
+  @Transactional
+  public boolean plusRecommend(UUID videoId, Accounts account) {
     if (account != null) {
-      response = response && videoRepository.plusViewsCount(videoId, account);
+      return videoRepository.plusViewsCount(videoId, account);
     }
-    return response;
+    return true;
   }
 
   @Transactional
