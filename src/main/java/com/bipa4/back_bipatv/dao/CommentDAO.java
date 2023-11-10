@@ -32,6 +32,33 @@ public class CommentDAO {
     return list;
   }
 
+  public List<CommentResponse> findOldParentComments(UUID videoId) {
+    List<CommentResponse> list;
+
+    try {
+      list = commentRepository.findOldParentComments(videoId);
+    } catch (NullPointerException e) {
+      throw new NoContentException();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_RECOMMEND_ERROR);
+    }
+    return list;
+  }
+
+  public List<CommentResponse> findPopularityParentComments(UUID videoId) {
+    List<CommentResponse> list;
+
+    try {
+      list = commentRepository.findPopularityParentComments(videoId);
+    } catch (NullPointerException e) {
+      throw new NoContentException();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_RECOMMEND_ERROR);
+    }
+    return list;
+  }
+
+
   public List<ChildCommentResponse> findChildComments(UUID videoId, int groupIndex) {
     List<ChildCommentResponse> list;
 

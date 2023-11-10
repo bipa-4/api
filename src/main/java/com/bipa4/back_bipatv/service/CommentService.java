@@ -36,6 +36,16 @@ public class CommentService {
     return list;
   }
 
+  public List<CommentResponse> findOldParentComments(UUID videoId) {
+    List<CommentResponse> list = commentDAO.findOldParentComments(videoId);
+    return list;
+  }
+
+  public List<CommentResponse> findPopularityParentComments(UUID videoId) {
+    List<CommentResponse> list = commentDAO.findPopularityParentComments(videoId);
+    return list;
+  }
+
 
   public List<ChildCommentResponse> findChildComments(UUID videoId, int groupIndex) {
     List<ChildCommentResponse> list = commentDAO.findChildComments(videoId, groupIndex);
