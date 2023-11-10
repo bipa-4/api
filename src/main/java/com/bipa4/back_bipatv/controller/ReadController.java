@@ -15,10 +15,12 @@ import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.security.SecurityService;
 import com.bipa4.back_bipatv.service.ChannelService;
 import com.bipa4.back_bipatv.service.CommentService;
+import com.bipa4.back_bipatv.service.RecommendationService;
 import com.bipa4.back_bipatv.service.VideoService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.RequiredArgsConstructor;
+import org.apache.mahout.cf.taste.model.JDBCDataModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -37,9 +39,9 @@ public class ReadController {
     private final CommentService commentService;
     private final ChannelService channelService;
     private final SecurityService securityService;
+    private final RecommendationService recommendationService;
 
 
-    // 전체 조회 (최신 순으로)
     // 전체 조회 (최신 순으로)
     @ApiOperation(value = "전체 조회", notes = "최신순으로 전체 조회 (무한스크롤) / 처음엔 page 안넘겨주면 됨.")
     @GetMapping("/video/latest")
@@ -110,16 +112,17 @@ public class ReadController {
     @GetMapping("/video/detail/{videoId}")
     public ResponseEntity<GetDetailResponseDto> getVideoDetail(
             @PathVariable("videoId") UUID id) {
-        GetDetailResponseDto video = videoService.getVideoDetail(id);
+        JDBCDataModel dataModel = recommendationService.getDataModel();
+        GetDetailResponseDto video = videoService.getVideoDetail(id, dataModel);
         return new ResponseEntity<>(video, HttpStatus.OK);
     }
-
 
     // 조회수 상승
     @ApiOperation(value = "조회수 상승", notes = "조회수 상승")
     @PutMapping("/video/updateViews/{videoId}")
-    public ResponseEntity<Boolean> getPlusViews(@PathVariable("videoId") UUID id) {
-        boolean response = videoService.plusViews(id); //  조회수 상승
+    public ResponseEntity<Boolean> getPlusViews(@PathVariable("videoId") UUID id, @CookieValue(name = "accessToken", required = false) String accessToken) {
+        Accounts account = securityService.getSubjectAccount(accessToken);
+        boolean response = videoService.plusViews(id, account);
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 

@@ -12,8 +12,11 @@ import com.bipa4.back_bipatv.repository.VideoRepository;
 import com.bipa4.back_bipatv.security.SecurityService;
 import java.util.List;
 import java.util.UUID;
+import javax.sql.DataSource;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.mahout.cf.taste.model.JDBCDataModel;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @RequiredArgsConstructor
@@ -23,6 +26,8 @@ public class VideoService {
   private final VideoRepository videoRepository;
   private final SecurityService securityService;
   private final VideoChannelRepository videoChannelRepository;
+  private final DataSource dataSource;
+
 
   @Transactional
   public List<GetSearchResponseDto> search(String searchQuery) {
@@ -87,12 +92,23 @@ public class VideoService {
     return videoRepository.updateViews();
   }
 
-  public GetDetailResponseDto getVideoDetail(UUID id) {
-    return videoRepository.getDetail(id);
+  @Transactional
+  public GetDetailResponseDto getVideoDetail(UUID id, JDBCDataModel dataModel) {
+    return videoRepository.getDetail(id, dataModel);
+  }
+
+
+  @Transactional
+  public boolean plusViews(UUID videoId, Accounts account) {
+    boolean response = videoRepository.plusViews(videoId);
+    if(account!=null){
+      response = response && videoRepository.plusViewsCount(videoId, account);
+    }
+    return response;
   }
 
   @Transactional
-  public boolean plusViews(UUID videoId) {
+  public boolean plusViewsCount(UUID videoId, Accounts account) {
     return videoRepository.plusViews(videoId);
   }
 

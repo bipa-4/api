@@ -16,12 +16,15 @@ import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.entity.Channels;
 import com.bipa4.back_bipatv.entity.Favorite;
 import com.bipa4.back_bipatv.entity.FavoritePK;
+import com.bipa4.back_bipatv.entity.QAccounts;
 import com.bipa4.back_bipatv.entity.QCategoryName;
 import com.bipa4.back_bipatv.entity.QCategorys;
 import com.bipa4.back_bipatv.entity.QChannels;
 import com.bipa4.back_bipatv.entity.QFavorite;
+import com.bipa4.back_bipatv.entity.QRecommend;
 import com.bipa4.back_bipatv.entity.QVideos;
 import com.bipa4.back_bipatv.entity.QViewLog;
+import com.bipa4.back_bipatv.entity.Recommend;
 import com.bipa4.back_bipatv.entity.Videos;
 import com.bipa4.back_bipatv.exception.AuthorizationException;
 import com.bipa4.back_bipatv.exception.CustomApiException;
@@ -34,10 +37,17 @@ import java.math.BigInteger;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import javax.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
+import org.apache.mahout.cf.taste.impl.recommender.GenericItemBasedRecommender;
+import org.apache.mahout.cf.taste.impl.similarity.LogLikelihoodSimilarity;
+import org.apache.mahout.cf.taste.model.JDBCDataModel;
+import org.apache.mahout.cf.taste.recommender.ItemBasedRecommender;
+import org.apache.mahout.cf.taste.recommender.RecommendedItem;
+import org.apache.mahout.cf.taste.similarity.ItemSimilarity;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 
@@ -103,7 +113,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
     try {
       defaultUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
-          .where(qVideos.privateType.eq(false)).orderBy(qVideos.videoId.desc()).limit(1).fetchOne();
+          .where(qVideos.privateType.eq(false).and(qVideos.channelId.privateType.eq(false))).orderBy(qVideos.videoId.desc()).limit(1).fetchOne();
     } catch (NullPointerException e) {
       throw new NoContentException();
     } catch (Exception e) {
@@ -122,7 +132,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
     try {
       nextUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
-          .where(qVideos.videoId.lt(uuid).and(qVideos.privateType.eq(false)))
+          .where(qVideos.videoId.lt(uuid).and(qVideos.privateType.eq(false)).and(qVideos.channelId.privateType.eq(false)))
           .orderBy(qVideos.videoId.desc()).limit(1).fetchOne();
     } catch (NullPointerException e) {
       throw new NoContentException();
@@ -223,7 +233,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
           .leftJoin(qCategorys.videoId, qVideos)
           .leftJoin(qCategorys.categoryNameId, qCategoryName)
           .where(qCategoryName.categoryNameId.eq(category).and(qVideos.videoId.lt(uuid))
-              .and(qVideos.privateType.eq(false)))
+              .and(qVideos.privateType.eq(false)).and(qVideos.channelId.privateType.eq(false)))
           .orderBy(qVideos.videoId.desc()).limit(1).fetchOne();
     } catch (NullPointerException e) {
       throw new NoContentException();
@@ -284,7 +294,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
           .from(qViewLog)
           .leftJoin(qViewLog.videoId, qVideos)
           .leftJoin(qVideos.channelId, qChannels)
-          .leftJoin(qFavorite).on(qFavorite.favoritePK.videos.videoId.eq(qVideos.videoId)).where(qVideos.privateType.eq(false))
+          .leftJoin(qFavorite).on(qFavorite.favoritePK.videos.videoId.eq(qVideos.videoId)).where(qVideos.privateType.eq(false).and(qVideos.channelId.privateType.eq(false)))
               .orderBy(
                       qVideos.readCnt.subtract(qViewLog.viewCnt).multiply(10)
                               .add(qFavorite.favoritePK.videos.videoId.count().coalesce(0l)).desc()
@@ -318,11 +328,14 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 상세보기
   @Override
-  public GetDetailResponseDto getDetail(UUID id) {
+  public GetDetailResponseDto getDetail(UUID id, JDBCDataModel dataModel) {
     GetDetailResponseDto responseDto = null;
+    List<GetVideoResponseDto> recommendedVideos = new ArrayList<>();
 
     QVideos qVideos = QVideos.videos;
+    QAccounts qAccounts = QAccounts.accounts;
     QChannels qChannels = QChannels.channels;
+    QRecommend qRecommend = QRecommend.recommend;
     QFavorite qFavorite = QFavorite.favorite;
     QCategorys qCategorys = QCategorys.categorys;
 
@@ -344,7 +357,10 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
           .leftJoin(qVideos.channelId, qChannels)
           .where(qVideos.videoId.eq(id))
           .fetchOne();
-    } catch (Exception e) {
+    } catch (AuthorizationException e){
+      throw new AuthorizationException();
+    }
+    catch (Exception e) {
       throw new CustomApiException(ErrorCode.READ_DETAIL_ERROR);
     }
 
@@ -353,32 +369,67 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     }
 
     // 추천 영상 리스트 추출
-    try {
-      List<GetVideoResponseDto> recommendedVideos = jpaQueryFactory.select(
-              Projections.bean(
-                  GetVideoResponseDto.class,
-                  qChannels.channelName.as("channelName"),
-                  qChannels.profileUrl.as("channelProfileUrl"),
-                  qChannels.channelId,
-                  qVideos.thumbnail,
-                  qVideos.title.as("videoTitle"),
-                  qVideos.createAt,
-                  qVideos.readCnt.as("readCount"),
-                  qVideos.videoId
-              )
-          )
-          .from(qVideos).leftJoin(qVideos.channelId, qChannels)
-          .where(qVideos.channelId.channelId.eq(responseDto.getChannelId())
-              .and(qVideos.videoId.ne(responseDto.getVideoId())))
-          .orderBy(qVideos.readCnt.desc())
-          .limit(10).fetch();
+    long modelData = jpaQueryFactory.select(qRecommend.recommendId.count()).from(qRecommend).where(qRecommend.videoUUIDId.videoId.eq(id)).fetchOne();
+    if(modelData >= 5){ // 데이터가 충분하다면
+      try {
+        List<Videos> itemIDs = new ArrayList<>();
+        long videoNumberId  = uuidToLong(id);
+        System.out.println(videoNumberId);
 
-      responseDto.setRecommendedList(recommendedVideos);
-    } catch (NullPointerException e) {
-      throw new NoContentException();
-    } catch (Exception e) {
-      throw new CustomApiException(ErrorCode.READ_RECOMMEND_ERROR);
+        ItemSimilarity itemSimilarity = new LogLikelihoodSimilarity(dataModel);
+        GenericItemBasedRecommender recommender = new GenericItemBasedRecommender(dataModel, itemSimilarity);
+
+        List<RecommendedItem> recommendations = recommender.mostSimilarItems(videoNumberId, 10);
+
+        for (RecommendedItem recommendation : recommendations) {
+          GetVideoResponseDto dto = new GetVideoResponseDto();
+          Videos recommendVideo = jpaQueryFactory.select(qRecommend.videoUUIDId).from(qVideos).leftJoin(qRecommend).on(qRecommend.videoUUIDId.eq(qVideos)).leftJoin(qChannels).on(qChannels.channelId.eq(qVideos.channelId.channelId)).where(qRecommend.videoId.eq(recommendation.getItemID())).fetchOne();
+
+          if(recommendVideo.getPrivateType() == false && recommendVideo.getChannelId().getPrivateType() == false){
+            dto.setVideoId(recommendVideo.getVideoId());
+            dto.setVideoTitle(recommendVideo.getTitle());
+            dto.setThumbnail(recommendVideo.getThumbnail());
+            dto.setPrivateType(recommendVideo.getPrivateType());
+            dto.setChannelId(recommendVideo.getChannelId().getChannelId());
+            dto.setChannelName(recommendVideo.getChannelId().getChannelName());
+            dto.setReadCount(recommendVideo.getReadCnt());
+            dto.setCreateAt(recommendVideo.getCreateAt());
+            dto.setChannelProfileUrl(recommendVideo.getChannelId().getProfileUrl());
+            recommendedVideos.add(dto);
+          }
+        }
+      } catch (NullPointerException e) {
+        throw new NoContentException();
+      } catch (Exception e) {
+        throw new CustomApiException(ErrorCode.READ_RECOMMEND_ERROR);
+      }
+    }else{ // 충분하지 않다면
+      try {
+        recommendedVideos = jpaQueryFactory.select(
+                Projections.bean(
+                    GetVideoResponseDto.class,
+                    qChannels.channelName.as("channelName"),
+                    qChannels.profileUrl.as("channelProfileUrl"),
+                    qChannels.channelId,
+                    qVideos.thumbnail,
+                    qVideos.title.as("videoTitle"),
+                    qVideos.createAt,
+                    qVideos.readCnt.as("readCount"),
+                    qVideos.videoId
+                )
+            )
+            .from(qVideos).leftJoin(qVideos.channelId, qChannels)
+            .where(qVideos.channelId.channelId.eq(responseDto.getChannelId())
+                .and(qVideos.videoId.ne(responseDto.getVideoId())))
+            .orderBy(qVideos.readCnt.desc()).limit(10).fetch();
+      } catch (NullPointerException e) {
+        throw new NoContentException();
+      } catch (Exception e) {
+        throw new CustomApiException(ErrorCode.READ_RECOMMEND_ERROR);
+      }
     }
+
+    responseDto.setRecommendedList(recommendedVideos);
 
     // 영상의 좋아요 총 개수
     try {
@@ -555,6 +606,18 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
         throw new CustomApiException(ErrorCode.CATEGORY_CREATE_ERROR);
       }
     }
+
+    // recommend 테이블 create.
+    int viewRecommendFlag = entityManager.createNativeQuery(
+            "INSERT INTO recommend (account_id, video_id, video_uuid_id, rating) VALUES (?, ?, ?, ?);")
+        .setParameter(1, uuidToLong(account.getAccountId()))
+        .setParameter(2,  uuidToLong(uuid))
+        .setParameter(3, uuid)
+        .setParameter(4, 1).executeUpdate();
+
+    if (viewRecommendFlag == 0) {
+      throw new CustomApiException(ErrorCode.VIEW_RECOMMEND_CREATE_ERROR);
+    }
     return true;
   }
 
@@ -572,6 +635,37 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
       video.setReadCnt(video.getReadCnt() + 1);
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.UPDATE_VIEW_ERROR);
+    }
+
+    return true;
+  }
+
+  // 추천 영상을 위한 조회수 상승
+  @Override
+  public boolean plusViewsCount(UUID videoId, Accounts account) {
+    try{
+      int viewLogFlag = entityManager.createNativeQuery(
+              "UPDATE recommend SET rating = rating+1\n"
+                  + "WHERE video_uuid_id=?\n"
+                  + "AND account_id=?;")
+          .setParameter(1, videoId)
+          .setParameter(2, uuidToLong(account.getAccountId())).executeUpdate();
+
+      if(viewLogFlag == 0){
+        int viewRecommendFlag = entityManager.createNativeQuery(
+                "INSERT INTO recommend (account_id, video_id, video_uuid_id, rating) VALUES (?, ?, ?, ?);")
+            .setParameter(1, uuidToLong(account.getAccountId()))
+            .setParameter(2,  uuidToLong(videoId))
+            .setParameter(3, videoId)
+            .setParameter(4, 1).executeUpdate();
+
+        if (viewRecommendFlag == 0) {
+          throw new CustomApiException(ErrorCode.VIEW_RECOMMEND_CREATE_ERROR);
+        }
+        return true;
+      }
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.UPDATE_RECOMMEND_ERROR);
     }
 
     return true;
@@ -665,6 +759,11 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.NO_EXIST_VIDEO);
     }
+  }
+
+  //UUID to long
+  public long uuidToLong(UUID uuid) {
+    return uuid.getMostSignificantBits() + uuid.getLeastSignificantBits();
   }
 
   //----------------------------------------------CHANNEL----------------------------------------

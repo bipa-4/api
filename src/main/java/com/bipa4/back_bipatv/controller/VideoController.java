@@ -8,6 +8,7 @@ import com.bipa4.back_bipatv.dto.video.PutUpdateRequestDto;
 import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.security.SecurityService;
 import com.bipa4.back_bipatv.service.PresignedUrlService;
+import com.bipa4.back_bipatv.service.RecommendationService;
 import com.bipa4.back_bipatv.service.VideoService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -16,6 +17,20 @@ import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.mahout.cf.taste.common.TasteException;
+import org.apache.mahout.cf.taste.impl.model.jdbc.MySQLJDBCDataModel;
+import org.apache.mahout.cf.taste.impl.neighborhood.NearestNUserNeighborhood;
+import org.apache.mahout.cf.taste.impl.neighborhood.ThresholdUserNeighborhood;
+import org.apache.mahout.cf.taste.impl.recommender.GenericItemBasedRecommender;
+import org.apache.mahout.cf.taste.impl.recommender.GenericUserBasedRecommender;
+import org.apache.mahout.cf.taste.impl.similarity.LogLikelihoodSimilarity;
+import org.apache.mahout.cf.taste.impl.similarity.PearsonCorrelationSimilarity;
+import org.apache.mahout.cf.taste.model.JDBCDataModel;
+import org.apache.mahout.cf.taste.neighborhood.UserNeighborhood;
+import org.apache.mahout.cf.taste.recommender.RecommendedItem;
+import org.apache.mahout.cf.taste.recommender.UserBasedRecommender;
+import org.apache.mahout.cf.taste.similarity.ItemSimilarity;
+import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -39,6 +54,7 @@ public class VideoController {
   private final VideoService videoService;
   private final PresignedUrlService presignedUrlService;
   private final SecurityService securityService;
+  private final RecommendationService recommendationService;
 
   // 본인 영상인지 확인
   @ApiOperation(value = "본인의 영상이 맞는지 확인", notes = "토큰을 통해 본인의 영상이 맞는지 확인 (삭제 또는 업로드 등애 사용)")
