@@ -30,6 +30,7 @@ public interface VideoRepositoryCustom {
   boolean updateViews();
 
   GetDetailResponseDto getDetail(UUID id, JDBCDataModel dataModel);
+
   boolean plusViewsCount(UUID videoId, Accounts account);
 
   boolean remove(UUID id, Accounts account);
