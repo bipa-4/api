@@ -17,22 +17,22 @@ import org.hibernate.annotations.OnDeleteAction;
 @Table(name = "Recommend")
 public class Recommend {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	@Column(name = "recommend_id", nullable = false)
-	private long recommendId;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  @Column(name = "recommend_id", nullable = false)
+  private long recommendId;
 
-	@Column(name = "account_id", nullable = false)
-	private long accountId;
+  @Column(name = "account_id", nullable = false)
+  private long accountId;
 
-	@Column(name = "video_id", nullable = false)
-	private long videoId;
+  @Column(name = "video_id", nullable = false)
+  private long videoId;
 
-	@Column(name = "rating", nullable = false)
-	private float rating;
+  @Column(name = "rating", nullable = false)
+  private float rating;
 
-	@ManyToOne
-	@JoinColumn(name = "video_uuid_id")
-	@OnDelete(action = OnDeleteAction.CASCADE)
-	private Videos videoUUIDId;
+  @ManyToOne
+  @JoinColumn(name = "video_uuid_id")
+  @OnDelete(action = OnDeleteAction.CASCADE)
+  private Videos videoUUIDId;
 }
