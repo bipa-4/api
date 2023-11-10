@@ -45,22 +45,10 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
     }
     try {
       responseDtos = jpaQueryFactory.select(
-              Projections.bean(
-                  GetChannelDTO.class,
-                  qChannels.channelId,
-                  qChannels.channelName,
-                  qChannels.profileUrl,
-                  qChannels.content,
-                  qChannels.privateType
-              )
-          )
-          .from(qChannels)
-          .where(
-              qChannels.privateType.eq(false)
-                  .and(qChannels.accounts.deleteAt.isNull())
-                  .and(qChannels.channelId.loe(page))
-          )
-          .orderBy(qChannels.channelId.desc())
+              Projections.bean(GetChannelDTO.class, qChannels.channelId, qChannels.channelName,
+                  qChannels.profileUrl, qChannels.content, qChannels.privateType)).from(qChannels)
+          .where(qChannels.privateType.eq(false).and(qChannels.accounts.deleteAt.isNull())
+              .and(qChannels.channelId.loe(page))).orderBy(qChannels.channelId.desc())
           .limit(pageSize).fetch();
     } catch (NullPointerException e) {
       throw new NoContentException();
@@ -80,27 +68,14 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
 
     try {
       responseDtos = jpaQueryFactory.select(
-              Projections.bean(
-                  GetChannelTop5DTO.class,
-                  qChannels.channelId,
-                  qChannels.channelName,
-                  qChannels.profileUrl,
-                  qChannels.content,
-                  asNumber(qVideos.readCnt.subtract(qViewLog.viewCnt)).as("timeLimitSumCnt")
-              )
-          )
-          .from(qViewLog)
-          .leftJoin(qViewLog.videoId, qVideos)
-          .leftJoin(qVideos.channelId, qChannels)
-          .where(
-              qChannels.privateType.eq(false)
-                  .and(qChannels.accounts.deleteAt.isNull())
-          )
+              Projections.bean(GetChannelTop5DTO.class, qChannels.channelId, qChannels.channelName,
+                  qChannels.profileUrl, qChannels.content,
+                  asNumber(qVideos.readCnt.subtract(qViewLog.viewCnt)).as("timeLimitSumCnt")))
+          .from(qViewLog).leftJoin(qViewLog.videoId, qVideos).leftJoin(qVideos.channelId, qChannels)
+          .where(qChannels.privateType.eq(false).and(qChannels.accounts.deleteAt.isNull()))
           .groupBy(qChannels.channelId, qChannels.channelName, qChannels.profileUrl,
               qChannels.content)
-          .orderBy(
-              asNumber(qVideos.readCnt.subtract(qViewLog.viewCnt)).doubleValue().desc()
-          )
+          .orderBy(asNumber(qVideos.readCnt.subtract(qViewLog.viewCnt)).doubleValue().desc())
           .limit(5).fetch();
 
     } catch (NullPointerException e) {
@@ -119,20 +94,9 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
 
     try {
       responseDto = jpaQueryFactory.select(
-              Projections.bean(
-                  SelectChannelDTO.class,
-                  qChannels.channelId,
-                  qChannels.channelName,
-                  qChannels.profileUrl,
-                  qChannels.content,
-                  qChannels.privateType
-              )
-          )
-          .from(qChannels)
-          .where(
-              qChannels.channelId.eq(channelId)
-                  .and(qChannels.accounts.deleteAt.isNull())
-          )
+              Projections.bean(SelectChannelDTO.class, qChannels.channelId, qChannels.channelName,
+                  qChannels.profileUrl, qChannels.content, qChannels.privateType)).from(qChannels)
+          .where(qChannels.channelId.eq(channelId).and(qChannels.accounts.deleteAt.isNull()))
           .fetchOne();
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.READ_CHANNEL_ERROR);
@@ -154,8 +118,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
     try {
       lastUUID = jpaQueryFactory.select(qChannels.channelId).from(qChannels)
           .where(qChannels.privateType.eq(false).and(qChannels.accounts.deleteAt.isNull()))
-          .orderBy(qChannels.channelId.desc()).limit(1)
-          .fetchOne();
+          .orderBy(qChannels.channelId.desc()).limit(1).fetchOne();
     } catch (NullPointerException e) {
       throw new NoContentException();
     } catch (Exception e) {
@@ -174,8 +137,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
     try {
       nextUUID = jpaQueryFactory.select(qChannels.channelId).from(qChannels)
           .where(qChannels.channelId.lt(uuid).and(qChannels.privateType.eq(false)))
-          .orderBy(qChannels.channelId.desc())
-          .limit(1).fetchOne();
+          .orderBy(qChannels.channelId.desc()).limit(1).fetchOne();
     } catch (NullPointerException e) {
       throw new NoContentException();
     } catch (Exception e) {
@@ -196,14 +158,12 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
       if (flag) {
         nextUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
             .where(qVideos.videoId.lt(videoId).and(qVideos.channelId.channelId.eq(channelId)))
-            .orderBy(qVideos.videoId.desc())
-            .limit(1).fetchOne();
+            .orderBy(qVideos.videoId.desc()).limit(1).fetchOne();
       } else {
-        nextUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
-            .where(qVideos.videoId.lt(videoId).and(qVideos.channelId.channelId.eq(channelId))
-                .and(qVideos.privateType.eq(false)))
-            .orderBy(qVideos.videoId.desc())
-            .limit(1).fetchOne();
+        nextUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos).where(
+                qVideos.videoId.lt(videoId).and(qVideos.channelId.channelId.eq(channelId))
+                    .and(qVideos.privateType.eq(false))).orderBy(qVideos.videoId.desc()).limit(1)
+            .fetchOne();
       }
 
     } catch (Exception e) {
@@ -215,27 +175,17 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
 
   // 채널 검색
   @Override
-  public Integer getSearchNextChannelVideoRank(Integer rank, UUID channelId,
-      String searchQuery, int pageSize) {
+  public Integer getSearchNextChannelVideoRank(Integer rank, UUID channelId, String searchQuery,
+      int pageSize) {
 
     List<Integer> resultList = entityManager.createNativeQuery(
-            "SELECT ranking\n"
-                + "FROM (\n"
-                + "SELECT ROW_NUMBER() OVER () AS ranking\n"
-                + "FROM videos \n"
-                + "join channels \n"
-                + "on videos.channel_id = channels.channel_id\n"
+            "SELECT ranking\n" + "FROM (\n" + "SELECT ROW_NUMBER() OVER () AS ranking\n"
+                + "FROM videos \n" + "join channels \n" + "on videos.channel_id = channels.channel_id\n"
                 + "WHERE videos.channel_id = ? \n"
                 + "and MATCH (videos.title, videos.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
-                + "AND videos.private_type = false\n"
-                + ")as ranked\n"
-                + "where ranking > ?\n"
-                + "order by ranking asc\n"
-                + "limit ?;"
-        ).setParameter(1, channelId)
-        .setParameter(2, searchQuery)
-        .setParameter(3, rank)
-        .setParameter(4, pageSize)
+                + "AND videos.private_type = false\n" + ")as ranked\n" + "where ranking > ?\n"
+                + "order by ranking asc\n" + "limit ?;").setParameter(1, channelId)
+        .setParameter(2, searchQuery).setParameter(3, rank).setParameter(4, pageSize)
         .getResultList();
     Integer result = null;
     if (!resultList.isEmpty()) {
@@ -246,27 +196,17 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
   }
 
   @Override
-  public Integer getSearchNextMyChannelVideoRank(Integer rank, UUID channelId,
-      String searchQuery, int pageSize) {
+  public Integer getSearchNextMyChannelVideoRank(Integer rank, UUID channelId, String searchQuery,
+      int pageSize) {
 
     List<Integer> resultList = entityManager.createNativeQuery(
-            "SELECT ranking\n"
-                + "FROM (\n"
-                + "SELECT ROW_NUMBER() OVER () AS ranking\n"
-                + "FROM videos \n"
-                + "join channels \n"
-                + "on videos.channel_id = channels.channel_id\n"
+            "SELECT ranking\n" + "FROM (\n" + "SELECT ROW_NUMBER() OVER () AS ranking\n"
+                + "FROM videos \n" + "join channels \n" + "on videos.channel_id = channels.channel_id\n"
                 + "WHERE videos.channel_id = ? \n"
                 + "and MATCH (videos.title, videos.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
-                + ")as ranked\n"
-                + "where ranking > ?\n"
-                + "order by ranking asc\n"
-                + "limit ?;"
-        ).setParameter(1, channelId)
-        .setParameter(2, searchQuery)
-        .setParameter(3, rank)
-        .setParameter(4, pageSize)
-        .getResultList();
+                + ")as ranked\n" + "where ranking > ?\n" + "order by ranking asc\n" + "limit ?;")
+        .setParameter(1, channelId).setParameter(2, searchQuery).setParameter(3, rank)
+        .setParameter(4, pageSize).getResultList();
     Integer result = null;
     if (!resultList.isEmpty()) {
       return intValue(resultList.get(0));
@@ -281,17 +221,11 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
 
     try {
       uuid = entityManager.createNativeQuery(
-              "SELECT ranking\n"
-                  + "FROM (\n"
-                  + "    SELECT ROW_NUMBER() OVER () AS ranking\n"
+              "SELECT ranking\n" + "FROM (\n" + "    SELECT ROW_NUMBER() OVER () AS ranking\n"
                   + "    FROM channels\n"
                   + "    WHERE MATCH (channels.name, channels.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
-                  + "    ORDER BY ranking ASC\n"
-                  + "    LIMIT 1\n"
-                  + ") AS ranked_results;\n"
-          )
-          .setParameter(1, searchQuery)
-          .getResultList();
+                  + "    ORDER BY ranking ASC\n" + "    LIMIT 1\n" + ") AS ranked_results;\n")
+          .setParameter(1, searchQuery).getResultList();
 
       if (!uuid.isEmpty()) {
         return intValue(uuid.get(0));
@@ -317,24 +251,16 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
         "select BIN_TO_UUID(channel_id) as channelId, name as channelName, content, private_type as privateType, profile_url as profileUrl, ROW_NUMBER() OVER () AS ranking\n"
             + "from channels \n"
             + "where MATCH (channels.name, channels.content) AGAINST ( ? IN NATURAL LANGUAGE MODE) \n"
-            + "and channels.private_type = false \n"
-            + "and channels.channel_id IN ( \n"
-            + "  SELECT channel_id \n"
-            + "  FROM ( \n"
-            + "    SELECT channel_id, ROW_NUMBER() OVER () AS ranking\n"
-            + "    FROM channels \n"
+            + "and channels.private_type = false \n" + "and channels.channel_id IN ( \n"
+            + "  SELECT channel_id \n" + "  FROM ( \n"
+            + "    SELECT channel_id, ROW_NUMBER() OVER () AS ranking\n" + "    FROM channels \n"
             + "    WHERE MATCH (channels.name, channels.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
-            + "  ) AS ranked\n"
-            + "  WHERE ranking >= ?\n"
-            + ")\n"
-            + "order by ranking asc \n"
+            + "  ) AS ranked\n" + "  WHERE ranking >= ?\n" + ")\n" + "order by ranking asc \n"
             + "LIMIT ?;";
 
     try {
-      resultList = entityManager.createNativeQuery(sql)
-          .setParameter(1, searchQuery)
-          .setParameter(2, searchQuery)
-          .setParameter(3, 1 + ((page - 1) * pageSize))
+      resultList = entityManager.createNativeQuery(sql).setParameter(1, searchQuery)
+          .setParameter(2, searchQuery).setParameter(3, 1 + ((page - 1) * pageSize))
           .setParameter(4, pageSize).getResultList();
     } catch (NullPointerException e) {
       throw new NoContentException();
@@ -359,7 +285,6 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
     return searchList;
   }
 
-
   @Override
   public Integer getNextChannelRank(String searchQuery, Integer ranking, int pageSize,
       Integer page) {
@@ -371,26 +296,15 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
 
     try {
       list = entityManager.createNativeQuery(
-              "select ROW_NUMBER() OVER () AS ranking\n"
-                  + "from channels\n"
+              "select ROW_NUMBER() OVER () AS ranking\n" + "from channels\n"
                   + "where MATCH (channels.name, channels.content) AGAINST ( ? IN NATURAL LANGUAGE MODE)\n"
-                  + "and channels.private_type = false\n"
-                  + "and channels.channel_id IN (\n"
-                  + "  SELECT channel_id\n"
-                  + "  FROM ( \n"
-                  + "  SELECT channel_id, ROW_NUMBER() OVER () AS ranking\n"
-                  + "  FROM channels\n"
+                  + "and channels.private_type = false\n" + "and channels.channel_id IN (\n"
+                  + "  SELECT channel_id\n" + "  FROM ( \n"
+                  + "  SELECT channel_id, ROW_NUMBER() OVER () AS ranking\n" + "  FROM channels\n"
                   + "  WHERE MATCH (channels.name, channels.content) AGAINST ( ? IN NATURAL LANGUAGE MODE)\n"
-                  + "  ) AS ranked\n"
-                  + "  WHERE ranking > ?\n"
-                  + ")\n"
-                  + "order by ranking asc\n"
-                  + "LIMIT 1;\n"
-          )
-          .setParameter(1, searchQuery)
-          .setParameter(2, searchQuery)
-          .setParameter(3, ((page - 1) * pageSize) + ranking)
-          .getResultList();
+                  + "  ) AS ranked\n" + "  WHERE ranking > ?\n" + ")\n" + "order by ranking asc\n"
+                  + "LIMIT 1;\n").setParameter(1, searchQuery).setParameter(2, searchQuery)
+          .setParameter(3, ((page - 1) * pageSize) + ranking).getResultList();
 
       if (!list.isEmpty()) {
         return intValue(list.get(0));
@@ -410,21 +324,12 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
 
     try {
       responseDtos = jpaQueryFactory.select(
-              Projections.bean(
-                  GetSumCommentNumGroupChannelDTO.class,
-                  qChannels.channelId,
-                  qComments.commentId.count().intValue().as("sumCommentNum")
-              )
-          )
-          .from(qChannels)
+              Projections.bean(GetSumCommentNumGroupChannelDTO.class, qChannels.channelId,
+                  qComments.commentId.count().intValue().as("sumCommentNum"))).from(qChannels)
           .leftJoin(qVideos).on(qChannels.channelId.eq(qVideos.channelId.channelId))
           .leftJoin(qComments).on(qVideos.videoId.eq(qComments.videos.videoId))
-          .where(
-              qChannels.privateType.eq(false)
-                  .and(qChannels.accounts.deleteAt.isNull())
-          )
-          .groupBy(qChannels.channelId)
-          .fetch();
+          .where(qChannels.privateType.eq(false).and(qChannels.accounts.deleteAt.isNull()))
+          .groupBy(qChannels.channelId).fetch();
 
     } catch (NullPointerException e) {
       throw new NoContentException();
@@ -447,27 +352,16 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
     try {
 
       responseDtos = jpaQueryFactory.select(
-              Projections.bean(
-                  GetSumVideoViewNumGroupChannelDTO.class,
-                  qChannels.channelId,
+              Projections.bean(GetSumVideoViewNumGroupChannelDTO.class, qChannels.channelId,
                   qVideos.readCnt.subtract(qViewLog.viewCnt).multiply(10)
-                      .add(qComments.commentId.count())
-                      .as("totalScore")
-              )
-          )
-          .from(qViewLog)
-          .leftJoin(qVideos).on(qViewLog.videoId.videoId.eq(qVideos.videoId))
-          .leftJoin(qChannels).on(qChannels.channelId.eq(qVideos.channelId.channelId))
-          .leftJoin(qComments).on(qVideos.videoId.eq(qComments.videos.videoId))
-          .where(
-              qChannels.privateType.eq(false)
-                  .and(qChannels.accounts.deleteAt.isNull())
-          )
-          .groupBy(qChannels.channelId)
-          .orderBy(qVideos.readCnt.subtract(qViewLog.viewCnt).multiply(10)
-              .add(qComments.commentId.count()).desc())
-          .limit(5)
-          .fetch();
+                      .add(qComments.commentId.count()).as("totalScore"))).from(qViewLog)
+          .leftJoin(qVideos).on(qViewLog.videoId.videoId.eq(qVideos.videoId)).leftJoin(qChannels)
+          .on(qChannels.channelId.eq(qVideos.channelId.channelId)).leftJoin(qComments)
+          .on(qVideos.videoId.eq(qComments.videos.videoId))
+          .where(qChannels.privateType.eq(false).and(qChannels.accounts.deleteAt.isNull()))
+          .groupBy(qChannels.channelId).orderBy(
+              qVideos.readCnt.subtract(qViewLog.viewCnt).multiply(10)
+                  .add(qComments.commentId.count()).desc()).limit(5).fetch();
 
     } catch (NullPointerException e) {
       throw new NoContentException();

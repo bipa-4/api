@@ -8,6 +8,7 @@ import com.bipa4.back_bipatv.dto.video.PutUpdateRequestDto;
 import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.security.SecurityService;
 import com.bipa4.back_bipatv.service.PresignedUrlService;
+import com.bipa4.back_bipatv.service.RecommendationService;
 import com.bipa4.back_bipatv.service.VideoService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
@@ -39,6 +40,7 @@ public class VideoController {
   private final VideoService videoService;
   private final PresignedUrlService presignedUrlService;
   private final SecurityService securityService;
+  private final RecommendationService recommendationService;
 
   // 본인 영상인지 확인
   @ApiOperation(value = "본인의 영상이 맞는지 확인", notes = "토큰을 통해 본인의 영상이 맞는지 확인 (삭제 또는 업로드 등애 사용)")
@@ -84,8 +86,7 @@ public class VideoController {
   // CDN presigned-url 발급
   @ApiOperation(value = "CDN presigned-url 발급", notes = "비디오 및 이미지 업로드를 위한 임시 url 발급")
   @PostMapping("/presigned-cdn")
-  public ResponseEntity<GetUrlResponseDto> saveFileCDN(
-      @RequestParam("videoName") String videoName,
+  public ResponseEntity<GetUrlResponseDto> saveFileCDN(@RequestParam("videoName") String videoName,
       @RequestParam("imageName") String imageName) {
     GetUrlResponseDto responseDto = presignedUrlService.getPreSignedUrlCDN(videoName, imageName);
     return new ResponseEntity<>(responseDto, HttpStatus.OK);

@@ -1,6 +1,5 @@
 package com.bipa4.back_bipatv.repository;
 
-
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
 import com.bipa4.back_bipatv.dto.channel.GetSearchChannelDTO;
@@ -24,16 +23,15 @@ public interface ChannelRepositoryCustom {
 
   UUID getNextChannelVideoUUID(UUID videoId, UUID channelId, boolean flag);
 
-  Integer getSearchNextChannelVideoRank(Integer rank, UUID channelId,
-      String searchQuery, int pageSize);
+  Integer getSearchNextChannelVideoRank(Integer rank, UUID channelId, String searchQuery,
+      int pageSize);
 
-  Integer getSearchNextMyChannelVideoRank(Integer rank, UUID channelId,
-      String searchQuery, int pageSize);
+  Integer getSearchNextMyChannelVideoRank(Integer rank, UUID channelId, String searchQuery,
+      int pageSize);
 
   Integer lastUUIDSearchChannel(String searchQuery);
 
   List<GetSearchChannelDTO> getSearchChannel(Integer uuid, int pageSize, String searchQuery);
-
 
   Integer getNextChannelRank(String searchQuery, Integer ranking, int pageSize, Integer page);
 

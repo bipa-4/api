@@ -50,8 +50,7 @@ public class ChannelService {
       throw new CustomApiException(ErrorCode.NO_EXIST_CHANNEL);
     }
 
-    if (!Objects.equals(selectChannel.getAccounts().getAccountId(),
-        accounts.getAccountId())) {
+    if (!Objects.equals(selectChannel.getAccounts().getAccountId(), accounts.getAccountId())) {
       return false;
     }
 
@@ -71,13 +70,11 @@ public class ChannelService {
     return channelRepository.getChannelNextUUID(uuid);
   }
 
-
   public List<GetChannelDTO> getAllChannels(UUID page, int pageSize) {
     if (page == null) {
       page = channelRepository.lastUUID();
     }
     return channelRepository.getNotPrivateChannel(page, pageSize);
-
   }
 
   @Transactional
@@ -89,13 +86,11 @@ public class ChannelService {
       throw new AuthorizationException();
     }
 
-    if (!(putChannel.getContent()
-        .equals(putChannelDTO.getContent()))) {
+    if (!(putChannel.getContent().equals(putChannelDTO.getContent()))) {
       putChannel.setContent(putChannelDTO.getContent());
       flag = true;
     }
-    if (!(putChannel.getProfileUrl()
-        .equals(putChannelDTO.getProfileUrl()))) {
+    if (!(putChannel.getProfileUrl().equals(putChannelDTO.getProfileUrl()))) {
       putChannel.setProfileUrl(putChannelDTO.getProfileUrl());
       flag = true;
     }
@@ -103,8 +98,7 @@ public class ChannelService {
       putChannel.setPrivateType(putChannelDTO.isPrivateType());
       flag = true;
     }
-    if (!(putChannel.getChannelName()
-        .equals(putChannelDTO.getChannelName()))) {
+    if (!(putChannel.getChannelName().equals(putChannelDTO.getChannelName()))) {
       putChannel.setChannelName(putChannelDTO.getChannelName());
       flag = true;
     }
@@ -114,8 +108,8 @@ public class ChannelService {
     return null;
   }
 
-  public List<GetVideoResponseDto> getVideosInChannel(Accounts account, UUID channelId,
-      UUID page, int pageSize) {
+  public List<GetVideoResponseDto> getVideosInChannel(Accounts account, UUID channelId, UUID page,
+      int pageSize) {
     // 비회원
     if (account == null) {
       if (page == null) {
@@ -125,9 +119,8 @@ public class ChannelService {
     }
 
     // 본인 채널
-    if (account.getAccountId()
-        .equals(channelRepository.findByChannelId(channelId).getAccounts()
-            .getAccountId())) {//채널 주인이 로그인한 사람이면 채널 내 비공개 영상도 조회 가능해야 함
+    if (account.getAccountId().equals(channelRepository.findByChannelId(channelId).getAccounts()
+        .getAccountId())) {//채널 주인이 로그인한 사람이면 채널 내 비공개 영상도 조회 가능해야 함
       if (page == null) {
         page = videoRepository.lastUUIDInMyChannel(channelId);
       }
@@ -154,25 +147,23 @@ public class ChannelService {
     }
   }
 
-  public Integer getSearchNextChannelVideoUUID(Integer rank, UUID channelId,
-      String searchQuery, Accounts account, int pageSize) {
+  public Integer getSearchNextChannelVideoUUID(Integer rank, UUID channelId, String searchQuery,
+      Accounts account, int pageSize) {
     if (account == null) {
-      return channelRepository.getSearchNextChannelVideoRank(rank,
-          channelId, searchQuery, pageSize);
+      return channelRepository.getSearchNextChannelVideoRank(rank, channelId, searchQuery,
+          pageSize);
     }
     if (account.getAccountId().equals(channelRepository.findByChannelId(channelId).getAccounts()
         .getAccountId())) {//채널 주인이 로그인한 사람이면 채널 내 비공개 영상도 조회 가능해야 함
-      return channelRepository.getSearchNextMyChannelVideoRank(rank,
-          channelId, searchQuery, pageSize);
+      return channelRepository.getSearchNextMyChannelVideoRank(rank, channelId, searchQuery,
+          pageSize);
     }
-    return channelRepository.getSearchNextChannelVideoRank(rank,
-        channelId, searchQuery, pageSize);
+    return channelRepository.getSearchNextChannelVideoRank(rank, channelId, searchQuery, pageSize);
   }
 
   public Integer getNextChannelRank(String searchQuery, Integer ranking, int pageSize,
       Integer page) {
-    return channelRepository.getNextChannelRank(searchQuery, ranking,
-        pageSize, page);
+    return channelRepository.getNextChannelRank(searchQuery, ranking, pageSize, page);
   }
 
   public List<GetSearchVideoINChannelDTO> searchVideoInChannel(Accounts account, UUID channelId,
@@ -187,8 +178,8 @@ public class ChannelService {
     }
 
     // 본인 글
-    if (account.getAccountId().equals(channelRepository.findByChannelId(channelId).getAccounts()
-        .getAccountId())) {
+    if (account.getAccountId()
+        .equals(channelRepository.findByChannelId(channelId).getAccounts().getAccountId())) {
       if (page == null) {
         page = videoRepository.lastUUIDSearchVideoInMyChannel(channelId, searchQuery);
       }
@@ -231,5 +222,4 @@ public class ChannelService {
   public Boolean getChannelNameCheck(String channelName) {
     return channelRepository.findByChannelName(channelName).isEmpty();
   }
-
 }

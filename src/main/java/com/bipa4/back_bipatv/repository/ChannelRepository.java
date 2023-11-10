@@ -8,13 +8,9 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface ChannelRepository extends JpaRepository<Channels, UUID>, ChannelRepositoryCustom {
 
-  @Query(value = "select a.* "
-      + "from channels a "
-      + "join accounts b "
-      + "on a.account_id = b.account_id "
-      + "where b.account_id = :accountId", nativeQuery = true)
+  @Query(value = "select a.* " + "from channels a " + "join accounts b "
+      + "on a.account_id = b.account_id " + "where b.account_id = :accountId", nativeQuery = true)
   Optional<Channels> findByChannelToAccountId(Long accountId);
-
 
   Channels findByChannelId(UUID channelId);
 

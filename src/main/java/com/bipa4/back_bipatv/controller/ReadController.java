@@ -15,12 +15,14 @@ import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.security.SecurityService;
 import com.bipa4.back_bipatv.service.ChannelService;
 import com.bipa4.back_bipatv.service.CommentService;
+import com.bipa4.back_bipatv.service.RecommendationService;
 import com.bipa4.back_bipatv.service.VideoService;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.apache.mahout.cf.taste.model.JDBCDataModel;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -40,9 +42,9 @@ public class ReadController {
   private final CommentService commentService;
   private final ChannelService channelService;
   private final SecurityService securityService;
+  private final RecommendationService recommendationService;
 
 
-  // 전체 조회 (최신 순으로)
   // 전체 조회 (최신 순으로)
   @ApiOperation(value = "전체 조회", notes = "최신순으로 전체 조회 (무한스크롤) / 처음엔 page 안넘겨주면 됨.")
   @GetMapping("/video/latest")
@@ -74,12 +76,13 @@ public class ReadController {
     List<GetVideoResponseDto> videos = videoService.getCategoryVideos(category, page, pageSize);
 
     if (!videos.isEmpty()) {
-      nextUUID = videoService.getNextCategoryUUID(
-          videos.get(videos.size() - 1).getVideoId(), category); // 마지막 page의 UUID 호출
+      nextUUID = videoService.getNextCategoryUUID(videos.get(videos.size() - 1).getVideoId(),
+          category); // 마지막 page의 UUID 호출
     }
     GetInfiniteScrollRequestDto responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
     return ResponseEntity.ok().body(responseDto);
   }
+
 
   // 카테고리 이름 리스트 조회
   @ApiOperation(value = "카테고리 리스트 조회", notes = "카테고리 메뉴 등을 위한 카테고리 이름 추출")
@@ -110,18 +113,19 @@ public class ReadController {
   // 영상 상세 조회
   @ApiOperation(value = "영상 상세 조회", notes = "영상 클릭시 상세 정보 + 추천 영상 추출")
   @GetMapping("/video/detail/{videoId}")
-  public ResponseEntity<GetDetailResponseDto> getVideoDetail(
-      @PathVariable("videoId") UUID id) {
-    GetDetailResponseDto video = videoService.getVideoDetail(id);
+  public ResponseEntity<GetDetailResponseDto> getVideoDetail(@PathVariable("videoId") UUID id) {
+    JDBCDataModel dataModel = recommendationService.getDataModel();
+    GetDetailResponseDto video = videoService.getVideoDetail(id, dataModel);
     return new ResponseEntity<>(video, HttpStatus.OK);
   }
-
 
   // 조회수 상승
   @ApiOperation(value = "조회수 상승", notes = "조회수 상승")
   @PutMapping("/video/updateViews/{videoId}")
-  public ResponseEntity<Boolean> getPlusViews(@PathVariable("videoId") UUID id) {
-    boolean response = videoService.plusViews(id); //  조회수 상승
+  public ResponseEntity<Boolean> getPlusViews(@PathVariable("videoId") UUID id,
+      @CookieValue(name = "accessToken", required = false) String accessToken) {
+    Accounts account = securityService.getSubjectAccount(accessToken);
+    boolean response = videoService.plusViews(id, account);
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
@@ -129,8 +133,7 @@ public class ReadController {
   // 영상 좋아요 여부
   @ApiOperation(value = "영상 상세 조회 및 추천 영상 조회", notes = "영상 클릭시 상세 정보 + 추천 영상 추출")
   @GetMapping("/video/like/{videoId}")
-  public ResponseEntity<Boolean> getVideoLike(
-      @PathVariable("videoId") UUID id,
+  public ResponseEntity<Boolean> getVideoLike(@PathVariable("videoId") UUID id,
       @CookieValue(name = "accessToken", required = false) String accessToken) {
     Accounts account = securityService.getSubjectAccount(accessToken);
     return new ResponseEntity<>(videoService.getLike(id, account), HttpStatus.OK);
@@ -199,17 +202,16 @@ public class ReadController {
   public ResponseEntity<GetInfiniteScrollRequestDto> getVideosInChannel(
       @CookieValue(value = "accessToken", required = false) String accessToken,
       @RequestParam(value = "page", required = false) UUID page,
-      @RequestParam("pageSize") int pageSize,
-      @PathVariable("channelId") UUID channelId) {
+      @RequestParam("pageSize") int pageSize, @PathVariable("channelId") UUID channelId) {
     UUID nextUUID = null;
 
     Accounts account = securityService.getSubjectAccount(accessToken);
-    List<GetVideoResponseDto> videos = channelService.getVideosInChannel(account, channelId,
-        page, pageSize);
+    List<GetVideoResponseDto> videos = channelService.getVideosInChannel(account, channelId, page,
+        pageSize);
 
     if (!videos.isEmpty()) {
-      nextUUID = channelService.getNextChannelVideoUUID(
-          videos.get(videos.size() - 1).getVideoId(), channelId, account); // 마지막 page의 UUID 호출
+      nextUUID = channelService.getNextChannelVideoUUID(videos.get(videos.size() - 1).getVideoId(),
+          channelId, account); // 마지막 page의 UUID 호출
     }
     GetInfiniteScrollRequestDto responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
     return new ResponseEntity<>(responseDto, HttpStatus.OK);
