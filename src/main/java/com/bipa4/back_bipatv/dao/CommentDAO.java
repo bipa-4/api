@@ -32,6 +32,33 @@ public class CommentDAO {
     return list;
   }
 
+  public List<CommentResponse> findOldParentComments(UUID videoId) {
+    List<CommentResponse> list;
+
+    try {
+      list = commentRepository.findOldParentComments(videoId);
+    } catch (NullPointerException e) {
+      throw new NoContentException();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_RECOMMEND_ERROR);
+    }
+    return list;
+  }
+
+  public List<CommentResponse> findPopularityParentComments(UUID videoId) {
+    List<CommentResponse> list;
+
+    try {
+      list = commentRepository.findPopularityParentComments(videoId);
+    } catch (NullPointerException e) {
+      throw new NoContentException();
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.READ_RECOMMEND_ERROR);
+    }
+    return list;
+  }
+
+
   public List<ChildCommentResponse> findChildComments(UUID videoId, int groupIndex) {
     List<ChildCommentResponse> list;
 
@@ -72,7 +99,7 @@ public class CommentDAO {
   public boolean deleteParentComment(UUID videoId, int groupIndex) {
     int result;
     try {
-      result = commentRepository.deleteParentComment(videoId,groupIndex);
+      result = commentRepository.deleteParentComment(videoId, groupIndex);
       System.out.println("videoId ====" + videoId + "groupIndex ====" + groupIndex);
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.DELETE_ERROR);
@@ -89,9 +116,9 @@ public class CommentDAO {
     return true;
   }
 
-  public Integer findMaxGroupIndex(UUID videoId){
+  public Integer findMaxGroupIndex(UUID videoId) {
 
-    if(commentRepository.findMaxGroupIndex(videoId) == null){
+    if (commentRepository.findMaxGroupIndex(videoId) == null) {
       return 0;
     }
     return commentRepository.findMaxGroupIndex(videoId);
