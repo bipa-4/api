@@ -24,5 +24,7 @@ public interface CommentResponse {
 
   Boolean getIsUpdated();
 
+  Boolean getIsPicked();
+
   String getChannelId();
 }

@@ -13,6 +13,7 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import lombok.Data;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -42,6 +43,9 @@ public class Comments {
   @Column(name = "is_updated", nullable = false)
   @NotNull
   private Boolean isUpdated;
+  @Column(name = "is_picked", nullable = false)
+  @NotNull
+  private Boolean isPicked;
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "video_id")
   @OnDelete(action = OnDeleteAction.CASCADE)

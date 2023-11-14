@@ -123,6 +123,13 @@ public class CommentDAO {
     }
     return commentRepository.findMaxGroupIndex(videoId);
   }
+
+  public Comments findPickedParentComment(UUID videoId) {
+    return commentRepository.findPickedParentComment(videoId);
+  }
+
+
+
 }
 
 

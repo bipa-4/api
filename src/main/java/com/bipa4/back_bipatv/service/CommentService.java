@@ -6,10 +6,12 @@ import com.bipa4.back_bipatv.dto.comment.ChildCommentResponse;
 import com.bipa4.back_bipatv.dto.comment.CommentRequest;
 import com.bipa4.back_bipatv.dto.comment.CommentResponse;
 import com.bipa4.back_bipatv.entity.Accounts;
+import com.bipa4.back_bipatv.entity.Channels;
 import com.bipa4.back_bipatv.entity.Comments;
 import com.bipa4.back_bipatv.entity.Videos;
 import com.bipa4.back_bipatv.exception.AuthorizationException;
 import com.bipa4.back_bipatv.exception.CustomApiException;
+import com.bipa4.back_bipatv.repository.ChannelRepository;
 import com.bipa4.back_bipatv.repository.CommentRepository;
 import com.bipa4.back_bipatv.repository.VideoRepository;
 import java.sql.Timestamp;
@@ -17,6 +19,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +32,7 @@ public class CommentService {
   private final CommentDAO commentDAO;
   private final VideoRepository videoRepository;
   private final CommentRepository commentRepository;
+  private final ChannelRepository channelRepository;
 
 
   public List<CommentResponse> findParentComments(UUID videoId) {
@@ -134,6 +138,7 @@ public class CommentService {
       comment.setParentChild(commentRequest.getParentChild());
       comment.setCreateAt(now);
       comment.setIsUpdated(false);
+      comment.setIsPicked(false);
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.INSERT_DTO_ERROR);
     }
@@ -166,5 +171,38 @@ public class CommentService {
       throw new CustomApiException(ErrorCode.INSERT_DTO_ERROR);
     }
     return comment;
+  }
+
+  @Transactional
+  public boolean pickComment(CommentRequest commentRequest, Accounts account, UUID videoId) {
+    Comments comment = commentDAO.findByCommentId(commentRequest.getCommentId());
+    Channels channels = comment.getVideos().getChannelId();
+    Optional<Channels> loginUserChannel = channelRepository.findByChannelToAccountId(account.getAccountId());
+
+    // 댓글이 존재하지 않는다면
+    if (comment == null) {
+      throw new CustomApiException(ErrorCode.No_EXIST_COMMENT);
+    }
+
+
+    // channel 주인이 아니라면.
+    if (loginUserChannel.isEmpty() || !Objects.equals(channels, loginUserChannel.get())) {
+      throw new AuthorizationException();
+    }
+
+    // 기존
+    try {
+
+      Comments pickedComment = commentDAO.findPickedParentComment(videoId);
+      pickedComment.setIsPicked(false);
+      comment.setIsPicked(true);
+      commentDAO.saveParentComment(comment);
+      commentDAO.saveParentComment(pickedComment);
+
+
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.UPDATE_COMMENT_ERROR);
+    }
+    return true;
   }
 }
