@@ -1,5 +1,6 @@
 package com.bipa4.back_bipatv.controller;
 
+import com.bipa4.back_bipatv.aspect.AccessTokenValid;
 import com.bipa4.back_bipatv.dto.comment.CommentRequest;
 import com.bipa4.back_bipatv.dto.comment.CommentResponse;
 import com.bipa4.back_bipatv.entity.Accounts;
@@ -8,6 +9,7 @@ import com.bipa4.back_bipatv.service.CommentService;
 import io.swagger.annotations.ApiOperation;
 import java.util.List;
 import java.util.UUID;
+import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,8 +33,14 @@ public class CommentController {
 
   // 부모 댓글 INSERT
   @PostMapping("/commentParent")
+  @AccessTokenValid
   public ResponseEntity<Boolean> insertParentComment(@RequestBody CommentRequest commentRequest,
-      @CookieValue(name = "accessToken") String accessToken) {
+      @CookieValue(name = "accessToken") String accessToken, HttpServletRequest request) {
+    String nat = (String) request.getAttribute("newAccessToken");
+    System.out.println(nat);
+    if (nat != null) {
+      accessToken = nat;
+    }
     Accounts account = securityService.getSubjectAccount(accessToken);
     boolean response = commentService.saveParentComment(account, commentRequest);
     return new ResponseEntity<>(response, HttpStatus.OK);
@@ -77,5 +85,16 @@ public class CommentController {
     boolean response = commentService.deleteChildComment(commentId,account);
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
+
+  // 댓글 고정됨
+  @PutMapping("/{videoId}/comment-pick")
+  public ResponseEntity<Boolean> pickComment(@RequestBody CommentRequest commentRequest,
+      @CookieValue(name = "accessToken") String accessToken, @PathVariable UUID videoId) {
+    Accounts account = securityService.getSubjectAccount(accessToken);
+    boolean response = commentService.pickComment(commentRequest,account,videoId);
+    return new ResponseEntity<>(response, HttpStatus.OK);
+  }
+
+
 }
 
