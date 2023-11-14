@@ -184,22 +184,54 @@ public class CommentService {
       throw new CustomApiException(ErrorCode.No_EXIST_COMMENT);
     }
 
+    // channel 주인이 아니라면.
+    if (loginUserChannel.isEmpty() || !Objects.equals(channels, loginUserChannel.get())) {
+      throw new AuthorizationException();
+    }
+
+    // 기존 고정 댓글 조회
+    Comments pickedComment = commentDAO.findPickedParentComment(videoId);
+
+    try {
+      if (pickedComment != null) {
+        // 기존 고정 댓글이 있는 경우 고정을 취소
+        pickedComment.setIsPicked(false);
+        commentDAO.saveParentComment(pickedComment);
+      }
+
+      // 현재 요청으로 받은 댓글을 고정
+      comment.setIsPicked(true);
+      commentDAO.saveParentComment(comment);
+
+    } catch (Exception e) {
+      throw new CustomApiException(ErrorCode.UPDATE_COMMENT_ERROR);
+    }
+    return true;
+  }
+
+  @Transactional
+  public boolean cancelPickComment(UUID commentId, Accounts account, UUID videoId) {
+    Comments comment = commentDAO.findByCommentId(commentId);
+    Channels channels = comment.getVideos().getChannelId();
+    Optional<Channels> loginUserChannel = channelRepository.findByChannelToAccountId(account.getAccountId());
+
+    // 댓글이 존재하지 않는다면
+    if (comment == null) {
+      throw new CustomApiException(ErrorCode.No_EXIST_COMMENT);
+    }
 
     // channel 주인이 아니라면.
     if (loginUserChannel.isEmpty() || !Objects.equals(channels, loginUserChannel.get())) {
       throw new AuthorizationException();
     }
 
-    // 기존
+    // 댓글 고정 취소 로직 추가
     try {
-
-      Comments pickedComment = commentDAO.findPickedParentComment(videoId);
-      pickedComment.setIsPicked(false);
-      comment.setIsPicked(true);
-      commentDAO.saveParentComment(comment);
-      commentDAO.saveParentComment(pickedComment);
-
-
+      if (comment.getIsPicked()) {
+        // 현재 요청으로 받은 댓글의 고정을 취소
+        comment.setIsPicked(false);
+        commentDAO.saveParentComment(comment);
+      }
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.UPDATE_COMMENT_ERROR);
     }

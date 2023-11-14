@@ -95,6 +95,15 @@ public class CommentController {
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 
+  @DeleteMapping("/{videoId}/comment-pick/{commentId}")
+  public ResponseEntity<Boolean> cancelPickComment(
+      @CookieValue(name = "accessToken") String accessToken,
+      @PathVariable UUID videoId, @PathVariable UUID commentId) {
+    Accounts account = securityService.getSubjectAccount(accessToken);
+    boolean response = commentService.cancelPickComment(commentId, account, videoId);
+    return new ResponseEntity<>(response, HttpStatus.OK);
+  }
+
 
 }
 
