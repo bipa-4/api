@@ -1,5 +1,6 @@
 package com.bipa4.back_bipatv.controller;
 
+import com.bipa4.back_bipatv.aspect.AccessTokenValid;
 import com.bipa4.back_bipatv.dto.video.GetFileUrlResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetSearchResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetUrlResponseDto;
@@ -15,6 +16,7 @@ import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import java.util.List;
 import java.util.UUID;
+import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -45,9 +47,14 @@ public class VideoController {
   // 본인 영상인지 확인
   @ApiOperation(value = "본인의 영상이 맞는지 확인", notes = "토큰을 통해 본인의 영상이 맞는지 확인 (삭제 또는 업로드 등애 사용)")
   @GetMapping("/check")
+  @AccessTokenValid
   public ResponseEntity<Boolean> checkVideos(
       @CookieValue(name = "accessToken", required = false) String accessToken,
-      @RequestParam("videoId") UUID videoId) {
+      @RequestParam("videoId") UUID videoId, HttpServletRequest request) {
+    String nat = (String) request.getAttribute("newAccessToken");
+    if (nat != null) {
+      accessToken = nat;
+    }
     Accounts account = securityService.getSubjectAccount(accessToken);
     boolean response = videoService.check(account, videoId);
     return new ResponseEntity<>(response, HttpStatus.OK);
@@ -56,9 +63,14 @@ public class VideoController {
 
   // 영상  삭제
   @ApiOperation(value = "영상 삭제", notes = "영상 삭제 진행")
+  @AccessTokenValid
   @DeleteMapping("/{id}")
   public ResponseEntity<Boolean> deleteVideo(@PathVariable("id") UUID id,
-      @CookieValue("accessToken") String accessToken) {
+      @CookieValue("accessToken") String accessToken, HttpServletRequest request) {
+    String nat = (String) request.getAttribute("newAccessToken");
+    if (nat != null) {
+      accessToken = nat;
+    }
     Accounts account = securityService.getSubjectAccount(accessToken);
     boolean response = videoService.removeVideo(id, account);
     return new ResponseEntity<>(response, HttpStatus.OK);
@@ -95,9 +107,14 @@ public class VideoController {
   // 영상 업로드
   @ApiOperation(value = "영상 업로드", notes = "영상 업로드 진행")
   @PostMapping("/upload")
+  @AccessTokenValid
   public ResponseEntity<Boolean> upload(
       @RequestBody @ApiParam(value = "수정할 회원 정보", required = true) PostUploadRequestDto responseDto,
-      @CookieValue(name = "accessToken") String accessToken) {
+      @CookieValue(name = "accessToken") String accessToken, HttpServletRequest request) {
+    String nat = (String) request.getAttribute("newAccessToken");
+    if (nat != null) {
+      accessToken = nat;
+    }
     Accounts account = securityService.getSubjectAccount(accessToken);
     boolean response = videoService.uploadVideo(responseDto, account);
     return new ResponseEntity<>(response, HttpStatus.OK);
@@ -107,8 +124,14 @@ public class VideoController {
   // 영상 수정
   @ApiOperation(value = "영상 수정", notes = "영상 수정 진행")
   @PutMapping("/{id}")
+  @AccessTokenValid
   public ResponseEntity<Boolean> update(@PathVariable UUID id,
-      @RequestBody PutUpdateRequestDto requestDto, @CookieValue("accessToken") String accessToken) {
+      @RequestBody PutUpdateRequestDto requestDto, @CookieValue("accessToken") String accessToken,
+      HttpServletRequest request) {
+    String nat = (String) request.getAttribute("newAccessToken");
+    if (nat != null) {
+      accessToken = nat;
+    }
     Accounts account = securityService.getSubjectAccount(accessToken);
     boolean response = videoService.updateVideo(id, requestDto, account);
     return new ResponseEntity<>(response, HttpStatus.OK);
@@ -130,9 +153,14 @@ public class VideoController {
 
   // 좋아요
   @ApiOperation(value = "좋아요", notes = "줗아요 버튼을 눌렀을 시")
+  @AccessTokenValid
   @GetMapping("/detail/{videoId}/like")
   public ResponseEntity<Boolean> like(@PathVariable("videoId") UUID videoId,
-      @CookieValue(name = "accessToken") String accessToken) {
+      @CookieValue(name = "accessToken") String accessToken, HttpServletRequest request) {
+    String nat = (String) request.getAttribute("newAccessToken");
+    if (nat != null) {
+      accessToken = nat;
+    }
     Accounts account = securityService.getSubjectAccount(accessToken);
     boolean response = videoService.like(videoId, account);
     return new ResponseEntity<>(response, HttpStatus.OK);
@@ -142,9 +170,15 @@ public class VideoController {
   // 좋아요 취소
   @ApiOperation(value = "좋아요 취소", notes = "줗아요 버튼을 다시 눌렀을 시")
   @DeleteMapping("/detail/{videoId}/like")
+  @AccessTokenValid
   public ResponseEntity<Boolean> cancelLike(
       @ApiParam(value = "좋아요를 취소할 영상 아이디") @PathVariable("videoId") UUID videoId,
-      @ApiParam(value = "좋아요를 취소할 유저의 토큰값") @CookieValue(name = "accessToken") String accessToken) {
+      @ApiParam(value = "좋아요를 취소할 유저의 토큰값") @CookieValue(name = "accessToken") String accessToken,
+      HttpServletRequest request) {
+    String nat = (String) request.getAttribute("newAccessToken");
+    if (nat != null) {
+      accessToken = nat;
+    }
     Accounts account = securityService.getSubjectAccount(accessToken);
     boolean response = videoService.cancelLike(videoId, account);
     return new ResponseEntity<>(response, HttpStatus.OK);
@@ -161,8 +195,14 @@ public class VideoController {
   // 영상 추천 데이터 조회수 상승
   @ApiOperation(value = "영상 추천 데이터 조회수 상승", notes = "영상 추천 조회수 상승")
   @PutMapping("/updateRecommend/{videoId}")
+  @AccessTokenValid
   public ResponseEntity<Boolean> getPlusRecommend(@PathVariable("videoId") UUID id,
-      @CookieValue(name = "accessToken", required = false) String accessToken) {
+      @CookieValue(name = "accessToken", required = false) String accessToken,
+      HttpServletRequest request) {
+    String nat = (String) request.getAttribute("newAccessToken");
+    if (nat != null) {
+      accessToken = nat;
+    }
     Accounts account = securityService.getSubjectAccount(accessToken);
     boolean response = videoService.plusRecommend(id, account);
     return new ResponseEntity<>(response, HttpStatus.OK);
