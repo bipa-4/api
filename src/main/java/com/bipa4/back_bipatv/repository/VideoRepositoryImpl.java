@@ -284,7 +284,6 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     List<GetVideoResponseDto> recommendedVideos = new ArrayList<>();
 
     QVideos qVideos = QVideos.videos;
-    QAccounts qAccounts = QAccounts.accounts;
     QChannels qChannels = QChannels.channels;
     QRecommend qRecommend = QRecommend.recommend;
     QFavorite qFavorite = QFavorite.favorite;
@@ -295,7 +294,8 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
               Projections.bean(GetDetailResponseDto.class, qChannels.channelName.as("channelName"),
                   qChannels.profileUrl.as("channelProfileUrl"), qChannels.channelId, qVideos.videoUrl,
                   qVideos.title.as("videoTitle"), qVideos.content, qVideos.createAt,
-                  qVideos.readCnt.as("readCount"), qVideos.videoId, qVideos.thumbnail)).from(qVideos)
+                  qVideos.readCnt.as("readCount"), qVideos.videoId, qVideos.thumbnail,
+                  qVideos.updateAt)).from(qVideos)
           .leftJoin(qVideos.channelId, qChannels).where(
               qVideos.videoId.eq(id)).fetchOne();
     } catch (AuthorizationException e) {
