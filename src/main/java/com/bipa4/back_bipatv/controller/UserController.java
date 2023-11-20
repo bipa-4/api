@@ -75,9 +75,14 @@ public class UserController {
   }
 
   @ApiOperation(value = "userUpdate", notes = "유저 정보 수정")
+  @AccessTokenValid
   @PutMapping("/account")
   public ResponseEntity<Accounts> updateAccount(@CookieValue(value = "accessToken") String code,
-      @RequestBody @Validated Accounts accounts) {
+      @RequestBody @Validated Accounts accounts, HttpServletRequest request) {
+    String nat = (String) request.getAttribute("newAccessToken");
+    if (nat != null) {
+      code = nat;
+    }
 
     Accounts loginAccount = securityService.getSubjectAccount(code);
     Accounts updatedAccount = userService.updateAccount(loginAccount, accounts);
@@ -107,11 +112,16 @@ public class UserController {
   }
 
   @ApiOperation(value = "Logout", notes = "로그아웃기능")
+  @AccessTokenValid
   @PostMapping("/account/logout")
   public ResponseEntity<Boolean> doLogout(HttpServletResponse httpresponse,
       @CookieValue(value = "refreshToken") String refreshToken,
-      @CookieValue(value = "accessToken") String accessToken) {
-
+      @CookieValue(value = "accessToken") String accessToken,
+      HttpServletRequest request) {
+    String nat = (String) request.getAttribute("newAccessToken");
+    if (nat != null) {
+      accessToken = nat;
+    }
     boolean result = userService.logout(refreshToken, accessToken);
     //쿠키를 삭제하기 위해선 쿠키의 이름을 같게하고 유효기간을 0을 주어 삭제한다.
     ResponseCookie refreshCookie = ResponseCookie.from("refreshToken",
@@ -140,9 +150,14 @@ public class UserController {
   }
 
   @ApiOperation(value = "Delete Account", notes = "회원 탈퇴")
+  @AccessTokenValid
   @DeleteMapping("/account")
   public void deleteAccount(
-      @CookieValue("accessToken") String accessToken) {
+      @CookieValue("accessToken") String accessToken, HttpServletRequest request) {
+    String nat = (String) request.getAttribute("newAccessToken");
+    if (nat != null) {
+      accessToken = nat;
+    }
     userService.deleteAccount(accessToken);
   }
 
