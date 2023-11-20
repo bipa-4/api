@@ -33,7 +33,7 @@ public class CommentController {
   public ResponseEntity<Boolean> insertParentComment(@RequestBody CommentRequest commentRequest,
       @CookieValue(name = "accessToken") String accessToken, HttpServletRequest request) {
     String nat = (String) request.getAttribute("newAccessToken");
-    System.out.println(nat);
+
     if (nat != null) {
       accessToken = nat;
     }

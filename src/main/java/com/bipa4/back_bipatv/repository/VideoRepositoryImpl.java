@@ -315,7 +315,6 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
       try {
         List<Videos> itemIDs = new ArrayList<>();
         long videoNumberId = uuidToLong(id);
-        System.out.println(videoNumberId);
 
         ItemSimilarity itemSimilarity = new LogLikelihoodSimilarity(dataModel);
         GenericItemBasedRecommender recommender = new GenericItemBasedRecommender(dataModel,

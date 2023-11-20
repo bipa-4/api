@@ -42,6 +42,5 @@ public class LogService {
         }
       }
     }
-    System.out.println("saveLog Method accessToken이 없음");
   }
 }

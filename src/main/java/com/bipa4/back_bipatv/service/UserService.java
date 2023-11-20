@@ -142,7 +142,6 @@ public class UserService {
 
         accounts.setProfileUrl(userResourceNode.get("picture").asText());
         accounts.setLoginType(ELogin_Type.GOOGLE);
-        System.out.println(accounts);
         break;
       }
       case "kakao": {
@@ -167,14 +166,12 @@ public class UserService {
         } else {
           accounts.setProfileUrl("");
         }
-        System.out.println(accounts);
         break;
       }
       default: {
         throw new RuntimeException("UNSUPPORTED SOCIAL TYPE");
       }
     }
-    System.out.println("loaginAccount" + accounts);
     //유저 아이디에 대한 리프레쉬 토큰 검샘
     if (!findAccount(accounts)) {//
       insertUser(accounts);
@@ -194,8 +191,6 @@ public class UserService {
     String loginAccountToken = securityService.createToken(accounts, EXP_TIME);
     Cookie refreshCookie = createCookie("RefreshToken", refreshToken);
     Cookie accessCookie = createCookie("AccessToken", loginAccountToken);
-    System.out.println("accessToken: " + loginAccountToken);
-    System.out.println("refreshToken: " + refreshToken);
     Map<String, Cookie> map = new HashMap<>();
     map.put("refreshToken", refreshCookie);
     map.put("accessToken", accessCookie);
