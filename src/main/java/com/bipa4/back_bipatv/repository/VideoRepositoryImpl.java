@@ -297,8 +297,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                   qVideos.title.as("videoTitle"), qVideos.content, qVideos.createAt,
                   qVideos.readCnt.as("readCount"), qVideos.videoId, qVideos.thumbnail)).from(qVideos)
           .leftJoin(qVideos.channelId, qChannels).where(
-              qVideos.videoId.eq(id).and(qVideos.privateType.eq(false))
-                  .and(qChannels.privateType.eq(false))).fetchOne();
+              qVideos.videoId.eq(id)).fetchOne();
     } catch (AuthorizationException e) {
       throw new AuthorizationException();
     } catch (Exception e) {
