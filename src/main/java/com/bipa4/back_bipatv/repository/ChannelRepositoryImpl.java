@@ -191,7 +191,6 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
     if (!resultList.isEmpty()) {
       return intValue(resultList.get(0));
     }
-    System.out.println(result);
     return null;
   }
 
@@ -211,7 +210,6 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
     if (!resultList.isEmpty()) {
       return intValue(resultList.get(0));
     }
-    System.out.println(result);
     return null;
   }
 
@@ -336,7 +334,6 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.READ_CHANNEL_TOP5_ERROR);
     }
-    responseDtos.forEach(System.out::println);
     return responseDtos;
   }
 
@@ -368,7 +365,6 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.READ_CHANNEL_TOP5_ERROR);
     }
-    responseDtos.forEach(System.out::println);
     return responseDtos;
   }
 

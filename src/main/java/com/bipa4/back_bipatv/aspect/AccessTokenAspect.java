@@ -46,13 +46,8 @@ public class AccessTokenAspect {
         if (accessToken != null) {
           tokenValid = securityService.isTokenValid(accessToken);
         }
-        System.out.println("token 유효성 : " + tokenValid);
         if (tokenValid) {//토큰을 사용할 수 있는 경우
-          System.out.println("토큰 유효 기간이 안 지난 경우 들어오는지 확인");
-          //어떤 값이 들어와야할까?
         } else {//토큰 유효시간이 지난 경우
-          System.out.println("토큰 유효시간이 지난 경우 accessToken 다시 만들기");
-
           String newAccessToken = userService.createAccessTokenToRefreshToken(refreshToken);
           if (newAccessToken != null) {
             ResponseCookie newAccessTokenCookie = ResponseCookie.from("accessToken",
@@ -65,9 +60,6 @@ public class AccessTokenAspect {
                 .build();
             request.setAttribute("newAccessToken", newAccessToken);
             httpServletResponse.addHeader("Set-Cookie", newAccessTokenCookie.toString());
-            System.out.println("재발급된 accessToken:" + newAccessToken);
-          } else {//refreshToken을 발견하지 못한 경우, 유효하지 않은 경우
-            System.out.println("refreshToken유효하지 않음");
           }
         }
       }

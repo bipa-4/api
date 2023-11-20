@@ -284,7 +284,6 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     List<GetVideoResponseDto> recommendedVideos = new ArrayList<>();
 
     QVideos qVideos = QVideos.videos;
-    QAccounts qAccounts = QAccounts.accounts;
     QChannels qChannels = QChannels.channels;
     QRecommend qRecommend = QRecommend.recommend;
     QFavorite qFavorite = QFavorite.favorite;
@@ -295,7 +294,8 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
               Projections.bean(GetDetailResponseDto.class, qChannels.channelName.as("channelName"),
                   qChannels.profileUrl.as("channelProfileUrl"), qChannels.channelId, qVideos.videoUrl,
                   qVideos.title.as("videoTitle"), qVideos.content, qVideos.createAt,
-                  qVideos.readCnt.as("readCount"), qVideos.videoId, qVideos.thumbnail)).from(qVideos)
+                  qVideos.readCnt.as("readCount"), qVideos.videoId, qVideos.thumbnail,
+                  qVideos.updateAt)).from(qVideos)
           .leftJoin(qVideos.channelId, qChannels).where(
               qVideos.videoId.eq(id)).fetchOne();
     } catch (AuthorizationException e) {
@@ -315,7 +315,6 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
       try {
         List<Videos> itemIDs = new ArrayList<>();
         long videoNumberId = uuidToLong(id);
-        System.out.println(videoNumberId);
 
         ItemSimilarity itemSimilarity = new LogLikelihoodSimilarity(dataModel);
         GenericItemBasedRecommender recommender = new GenericItemBasedRecommender(dataModel,
@@ -457,7 +456,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     // 영상 업데이트
     try {
       video.setContent(videoResponseDto.getContent());
-      video.setCreateAt(Timestamp.valueOf(now));
+      video.setUpdateAt(Timestamp.valueOf(now));
       video.setPrivateType(videoResponseDto.isPrivateType());
       video.setThumbnail(videoResponseDto.getThumbnailUrl());
       video.setTitle(videoResponseDto.getTitle());

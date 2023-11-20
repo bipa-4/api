@@ -54,6 +54,8 @@ public class Videos {
   @Column(name = "create_at", nullable = true)
   @NotNull
   private Timestamp createAt;
+  @Column(name = "update_at", nullable = true)
+  private Timestamp updateAt;
   @Column(name = "private_type")
   @NotNull
   private Boolean privateType;
