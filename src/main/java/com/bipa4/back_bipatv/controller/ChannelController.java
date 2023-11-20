@@ -1,6 +1,7 @@
 package com.bipa4.back_bipatv.controller;
 
 
+import com.bipa4.back_bipatv.aspect.AccessTokenValid;
 import com.bipa4.back_bipatv.dto.channel.GetInfiniteScrollSearchChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetSearchChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.PutChannelDTO;
@@ -14,6 +15,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import java.util.List;
 import java.util.UUID;
+import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,10 +39,15 @@ public class ChannelController {
 
 
   @ApiOperation(value = "updateMyChannel", notes = "채널 정보 수정")
+  @AccessTokenValid
   @PutMapping("/{channelId}")
   public ResponseEntity<Channels> updateMyChannelInfo(@PathVariable UUID channelId,
       @CookieValue(value = "accessToken", required = false) String code,
-      @RequestBody PutChannelDTO putChannelDTO) {
+      @RequestBody PutChannelDTO putChannelDTO, HttpServletRequest request) {
+    String nat = (String) request.getAttribute("newAccessToken");
+    if (nat != null) {
+      code = nat;
+    }
     Accounts loginAccount = securityService.getSubjectAccount(code);
     Channels putChannel = channelService.findbyChannelId(channelId);
     Channels updatedChannel = channelService.updateChannel(loginAccount, putChannel, putChannelDTO);
@@ -50,12 +57,17 @@ public class ChannelController {
 
 
   @ApiOperation(value = "채널 내 영상 검색", notes = "채널 안의 영상 검색")
+  @AccessTokenValid
   @GetMapping("/{channelId}/video")
   public ResponseEntity<GetInfiniteScrollSearchVideoInChannelDTO> searchVideoInChannel(
       @CookieValue(value = "accessToken", required = false) String accessToken,
       @RequestParam(value = "page", required = false, defaultValue = "1") Integer page,
       @RequestParam("page_size") int pageSize, @RequestParam("search_query") String searchQuery,
-      @PathVariable("channelId") UUID channelId) {
+      @PathVariable("channelId") UUID channelId, HttpServletRequest request) {
+    String nat = (String) request.getAttribute("newAccessToken");
+    if (nat != null) {
+      accessToken = nat;
+    }
     Integer nextRank = null;
 
     Accounts loginAccount = securityService.getSubjectAccount(accessToken);
@@ -95,10 +107,15 @@ public class ChannelController {
   }
 
   @ApiOperation(value = "getUpdateFlag", notes = "업데이트 플레그 얻기")
+  @AccessTokenValid
   @GetMapping("/flag/{channelId}")
   public ResponseEntity<Boolean> getUpdateFlag(
       @CookieValue(value = "accessToken", required = false) String accessToken,
-      @PathVariable("channelId") UUID channelId) {
+      @PathVariable("channelId") UUID channelId, HttpServletRequest request) {
+    String nat = (String) request.getAttribute("newAccessToken");
+    if (nat != null) {
+      accessToken = nat;
+    }
     Accounts loginAccount = securityService.getSubjectAccount(accessToken);
     return new ResponseEntity<>(channelService.getUpdateFlag(loginAccount, channelId),
         HttpStatus.OK);
