@@ -456,7 +456,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     // 영상 업데이트
     try {
       video.setContent(videoResponseDto.getContent());
-      video.setCreateAt(Timestamp.valueOf(now));
+      video.setUpdateAt(Timestamp.valueOf(now));
       video.setPrivateType(videoResponseDto.isPrivateType());
       video.setThumbnail(videoResponseDto.getThumbnailUrl());
       video.setTitle(videoResponseDto.getTitle());
