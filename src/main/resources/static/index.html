@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Title</title>
+  <script>
+    const Http = new XMLHttpRequest();
+
+    const url = 'https://du30t7lolw1uk.cloudfront.net/08cb903f-e3c2-4bdb-bcf7-5782a5437978179207+(1080p).mp4';
+
+    Http.open('GET', url);
+    Http.send();
+    Http.onreadystatechange = (e) => {
+      console.log(Http.responseText);
+    };
+
+  </script>
+</head>
+<body>
+
+</body>
+</html>
