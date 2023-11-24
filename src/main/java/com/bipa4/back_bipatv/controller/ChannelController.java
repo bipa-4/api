@@ -73,7 +73,7 @@ public class ChannelController {
     Accounts loginAccount = securityService.getSubjectAccount(accessToken);
     List<GetSearchVideoINChannelDTO> videos = channelService.searchVideoInChannel(loginAccount,
         channelId, page, pageSize, searchQuery);
-    videos.forEach(System.out::println);
+
     if (!videos.isEmpty()) {
       nextRank =
           channelService.getSearchNextChannelVideoUUID(videos.get(videos.size() - 1).getRanking(),

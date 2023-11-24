@@ -26,6 +26,9 @@ public class GetDetailResponseDto {
   @DateTimeFormat(pattern = "yyyy-MM-dd")
   @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+9")
   private Timestamp createAt;
+  @DateTimeFormat(pattern = "yyyy-MM-dd")
+  @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+9")
+  private Timestamp updateAt;
   private Integer readCount;
   private UUID videoId;
   private String thumbnail;

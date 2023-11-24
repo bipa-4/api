@@ -100,7 +100,6 @@ public class CommentDAO {
     int result;
     try {
       result = commentRepository.deleteParentComment(videoId, groupIndex);
-      System.out.println("videoId ====" + videoId + "groupIndex ====" + groupIndex);
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.DELETE_ERROR);
     }
