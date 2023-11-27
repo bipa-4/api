@@ -860,12 +860,11 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     for (Object[] row : resultList) {
       GetSearchVideoINChannelDTO dto = new GetSearchVideoINChannelDTO();//
       dto.setRanking(((BigInteger) row[0]).intValue());
-      byte[] byteData = (byte[]) row[1];
-      UUID videoId = UUID.nameUUIDFromBytes(byteData);
-      dto.setVideoId(videoId);
+      String ulid = (String) row[1];
+      dto.setVideoId(ulid);
 
       dto.setVideoTitle((String) row[2]);
-      byteData = (byte[]) row[3];
+      byte[] byteData = (byte[]) row[3];
       UUID channeled = UUID.nameUUIDFromBytes(byteData);
       dto.setChannelId(channeled);
 
@@ -904,12 +903,11 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     for (Object[] row : resultList) {
       GetSearchVideoINChannelDTO dto = new GetSearchVideoINChannelDTO();//
       dto.setRanking(((BigInteger) row[0]).intValue());
-      byte[] byteData = (byte[]) row[1];
-      UUID videoId = UUID.nameUUIDFromBytes(byteData);
-      dto.setVideoId(videoId);
+      String ulid = (String) row[1];
+      dto.setVideoId(ulid);
 
       dto.setVideoTitle((String) row[2]);
-      byteData = (byte[]) row[3];
+      byte[] byteData = (byte[]) row[3];
       UUID channeled = UUID.nameUUIDFromBytes(byteData);
       dto.setChannelId(channeled);
 
