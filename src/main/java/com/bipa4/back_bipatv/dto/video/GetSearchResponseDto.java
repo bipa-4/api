@@ -8,7 +8,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 public interface GetSearchResponseDto {
 
-  UUID getVideoId();
+  String getVideoId();
 
   UUID getChannelId();
 

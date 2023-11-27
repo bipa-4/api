@@ -16,6 +16,7 @@ import com.bipa4.back_bipatv.exception.CustomApiException;
 import com.bipa4.back_bipatv.repository.ChannelRepository;
 import com.bipa4.back_bipatv.repository.VideoRepository;
 import com.bipa4.back_bipatv.security.SecurityService;
+import com.github.f4b6a3.ulid.Ulid;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -108,7 +109,7 @@ public class ChannelService {
     return null;
   }
 
-  public List<GetVideoResponseDto> getVideosInChannel(Accounts account, UUID channelId, UUID page,
+  public List<GetVideoResponseDto> getVideosInChannel(Accounts account, UUID channelId, String page,
       int pageSize) {
     // 비회원
     if (account == null) {
@@ -135,7 +136,7 @@ public class ChannelService {
     return videoRepository.getVideosInChannel(channelId, page, pageSize);
   }
 
-  public UUID getNextChannelVideoUUID(UUID videoId, UUID channelId, Accounts account) {
+  public String getNextChannelVideoUUID(String videoId, UUID channelId, Accounts account) {
     if (account == null) { // 비회원
       return channelRepository.getNextChannelVideoUUID(videoId, channelId, false);
     }

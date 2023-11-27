@@ -15,7 +15,6 @@ import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.entity.Channels;
 import com.bipa4.back_bipatv.entity.Favorite;
 import com.bipa4.back_bipatv.entity.FavoritePK;
-import com.bipa4.back_bipatv.entity.QAccounts;
 import com.bipa4.back_bipatv.entity.QCategoryName;
 import com.bipa4.back_bipatv.entity.QCategorys;
 import com.bipa4.back_bipatv.entity.QChannels;
@@ -27,6 +26,7 @@ import com.bipa4.back_bipatv.entity.Videos;
 import com.bipa4.back_bipatv.exception.AuthorizationException;
 import com.bipa4.back_bipatv.exception.CustomApiException;
 import com.bipa4.back_bipatv.exception.NoContentException;
+import com.github.f4b6a3.ulid.Ulid;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.io.File;
@@ -61,7 +61,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 전체보기 (무한 스크롤)
   @Override
-  public List<GetVideoResponseDto> getAllVideos(UUID page, int pageSize) {
+  public List<GetVideoResponseDto> getAllVideos(String page, int pageSize) {
     List<GetVideoResponseDto> responseDtos;
 
     QVideos qVideos = QVideos.videos;
@@ -91,34 +91,35 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // Default UUID (무한 스크롤 시작점 찾기)
   @Override
-  public UUID lastUUID() {
-    UUID defaultUUID;
+  public String lastUUID() {
+    String defaultUlid;
 
     QVideos qVideos = QVideos.videos;
 
     try {
-      defaultUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
+      defaultUlid = jpaQueryFactory.select(qVideos.videoId)
+          .from(qVideos)
           .where(qVideos.privateType.eq(false).and(qVideos.channelId.privateType.eq(false)))
-          .orderBy(qVideos.videoId.desc()).limit(1).fetchOne();
+          .orderBy(qVideos.videoId.desc()).limit(1).fetchFirst();
     } catch (NullPointerException e) {
       throw new NoContentException();
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.READ_LAST_UUID_ERRROR);
     }
 
-    return defaultUUID;
+    return defaultUlid;
   }
 
 
   // 다음 페이지의 UUID 찾기
   @Override
-  public UUID getNextUUID(UUID uuid) {
+  public String getNextUUID(String ulid) {
     QVideos qVideos = QVideos.videos;
-    UUID nextUUID = null;
+    String nextUlid = null;
 
     try {
-      nextUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos).where(
-              qVideos.videoId.lt(uuid).and(qVideos.privateType.eq(false))
+      nextUlid = jpaQueryFactory.select(qVideos.videoId).from(qVideos).where(
+              qVideos.videoId.lt(ulid).and(qVideos.privateType.eq(false))
                   .and(qVideos.channelId.privateType.eq(false))).orderBy(qVideos.videoId.desc())
           .limit(1).fetchOne();
     } catch (NullPointerException e) {
@@ -127,13 +128,13 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
       throw new CustomApiException(ErrorCode.READ_NEXT_UUID_ERRROR);
     }
 
-    return nextUUID;
+    return nextUlid;
   }
 
 
   // 카테고리별 전체보기
   @Override
-  public List<GetVideoResponseDto> findByCategory(UUID category, UUID page, int pageSize) {
+  public List<GetVideoResponseDto> findByCategory(UUID category, String page, int pageSize) {
     List<GetVideoResponseDto> responseDto;
 
     QVideos qVideos = QVideos.videos;
@@ -165,15 +166,15 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 카테고리 Default UUID (무한 스크롤 시작점 찾기)
   @Override
-  public UUID lastCategoryUUID(UUID category) {
-    UUID defaultUUID = null;
+  public String lastCategoryUUID(UUID category) {
+    String defaultUlid = null;
 
     QVideos qVideos = QVideos.videos;
     QCategorys qCategorys = QCategorys.categorys;
     QCategoryName qCategoryName = QCategoryName.categoryName;
 
     try {
-      defaultUUID = jpaQueryFactory.select(qVideos.videoId).from(qCategorys)
+      defaultUlid = jpaQueryFactory.select(qVideos.videoId).from(qCategorys)
           .leftJoin(qCategorys.videoId, qVideos).leftJoin(qCategorys.categoryNameId, qCategoryName)
           .where(qCategoryName.categoryNameId.eq(category).and(qVideos.privateType.eq(false))
               .and(qVideos.channelId.privateType.eq(false))).orderBy(qVideos.videoId.desc())
@@ -184,22 +185,22 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
       throw new CustomApiException(ErrorCode.READ_NEXT_UUID_ERRROR);
     }
 
-    return defaultUUID;
+    return defaultUlid;
   }
 
   // 카테고리 다음 페이지의 UUID 찾기
   @Override
-  public UUID getNextCategoryUUID(UUID uuid, UUID category) {
-    UUID nextUUID = null;
+  public String getNextCategoryUUID(String ulid, UUID category) {
+    String nextUlid = null;
 
     QVideos qVideos = QVideos.videos;
     QCategorys qCategorys = QCategorys.categorys;
     QCategoryName qCategoryName = QCategoryName.categoryName;
 
     try {
-      nextUUID = jpaQueryFactory.select(qVideos.videoId).from(qCategorys)
+      nextUlid = jpaQueryFactory.select(qVideos.videoId).from(qCategorys)
           .leftJoin(qCategorys.videoId, qVideos).leftJoin(qCategorys.categoryNameId, qCategoryName)
-          .where(qCategoryName.categoryNameId.eq(category).and(qVideos.videoId.lt(uuid))
+          .where(qCategoryName.categoryNameId.eq(category).and(qVideos.videoId.lt(ulid))
               .and(qVideos.privateType.eq(false)).and(qVideos.channelId.privateType.eq(false)))
           .orderBy(qVideos.videoId.desc()).limit(1).fetchOne();
     } catch (NullPointerException e) {
@@ -208,7 +209,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
       throw new CustomApiException(ErrorCode.READ_NEXT_UUID_ERRROR);
     }
 
-    return nextUUID;
+    return nextUlid;
   }
 
   // 카테고리 이름 리스트
@@ -279,7 +280,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 상세보기
   @Override
-  public GetDetailResponseDto getDetail(UUID id, JDBCDataModel dataModel) {
+  public GetDetailResponseDto getDetail(String id, JDBCDataModel dataModel) {
     GetDetailResponseDto responseDto = null;
     List<GetVideoResponseDto> recommendedVideos = new ArrayList<>();
 
@@ -291,9 +292,11 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
     try {
       responseDto = jpaQueryFactory.select(
-              Projections.bean(GetDetailResponseDto.class, qChannels.channelName.as("channelName"),
-                  qChannels.profileUrl.as("channelProfileUrl"), qChannels.channelId, qVideos.videoUrl,
+              Projections.bean(GetDetailResponseDto.class, qChannels.channelName,
+                  qChannels.profileUrl.as("channelProfileUrl"), qChannels.channelId,
+                  qVideos.videoUrl,
                   qVideos.title.as("videoTitle"), qVideos.content, qVideos.createAt,
+                  qVideos.privateType,
                   qVideos.readCnt.as("readCount"), qVideos.videoId, qVideos.thumbnail,
                   qVideos.updateAt)).from(qVideos)
           .leftJoin(qVideos.channelId, qChannels).where(
@@ -314,7 +317,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     if (modelData >= 5) { // 데이터가 충분하다면
       try {
         List<Videos> itemIDs = new ArrayList<>();
-        long videoNumberId = uuidToLong(id);
+        long videoNumberId = ulidToLong(id);
 
         ItemSimilarity itemSimilarity = new LogLikelihoodSimilarity(dataModel);
         GenericItemBasedRecommender recommender = new GenericItemBasedRecommender(dataModel,
@@ -391,7 +394,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 영상 삭제
   @Override
-  public boolean remove(UUID id, Accounts account) {
+  public boolean remove(String id, Accounts account) {
     QChannels qChannels = QChannels.channels;
 
     Videos video = entityManager.find(Videos.class, id);
@@ -426,7 +429,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 영상 수정
   @Override
-  public boolean update(UUID id, PutUpdateRequestDto videoResponseDto, Accounts account) {
+  public boolean update(String id, PutUpdateRequestDto videoResponseDto, Accounts account) {
     QChannels qChannels = QChannels.channels;
 
     Videos video = entityManager.find(Videos.class, id);
@@ -470,7 +473,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 영상 본인 글인지 확인하기
   @Override
-  public boolean checkOwner(Accounts account, UUID videoId) {
+  public boolean checkOwner(Accounts account, String videoId) {
     QVideos qVideos = QVideos.videos;
     QChannels qChannels = QChannels.channels;
 
@@ -497,7 +500,8 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 영상 업로드
   @Override
-  public boolean insert(PostUploadRequestDto videoResponseDto, Accounts account, UUID uuid) {
+  public boolean insert(PostUploadRequestDto videoResponseDto, Accounts account, UUID uuid,
+      String ulid) {
     QChannels qChannels = QChannels.channels;
 
     Channels channel = accountToChannel(account);
@@ -507,10 +511,13 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
             "INSERT INTO videos (video_url, thumbnail, title, content, private_type, create_at, channel_id, read_cnt, video_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)")
         .setParameter(1, videoResponseDto.getVideoUrl())
         .setParameter(2, videoResponseDto.getThumbnailUrl())
-        .setParameter(3, videoResponseDto.getTitle()).setParameter(4, videoResponseDto.getContent())
+        .setParameter(3, videoResponseDto.getTitle())
+        .setParameter(4, videoResponseDto.getContent())
         .setParameter(5, videoResponseDto.getPrivateType())
-        .setParameter(6, new Timestamp(System.currentTimeMillis())).setParameter(7, channel)
-        .setParameter(8, 0).setParameter(9, uuid).executeUpdate();
+        .setParameter(6, new Timestamp(System.currentTimeMillis()))
+        .setParameter(7, channel)
+        .setParameter(8, 0)
+        .setParameter(9, ulid).executeUpdate();
 
     if (videoFlag == 0) {
       throw new CustomApiException(ErrorCode.UPLOAD_ERROR);
@@ -518,7 +525,8 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
     // view log 테이블 create.
     int viewLogFlag = entityManager.createNativeQuery(
-            "INSERT INTO view_log (video_id, view_cnt) VALUES (?, ?);").setParameter(1, uuid)
+            "INSERT INTO view_log (video_id, view_cnt) VALUES (?, ?);")
+        .setParameter(1, ulid)
         .setParameter(2, 0).executeUpdate();
 
     if (viewLogFlag == 0) {
@@ -529,8 +537,10 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     int categoryFlag;
     for (int i = 0; i < videoResponseDto.getCategory().size(); i++) {
       categoryFlag = entityManager.createNativeQuery(
-              "INSERT INTO categorys (video_id, category_name_id) VALUES (?, ?)").setParameter(1, uuid)
-          .setParameter(2, UUID.fromString(videoResponseDto.getCategory().get(i))).executeUpdate();
+              "INSERT INTO categorys (video_id, category_name_id) VALUES (?, ?)")
+          .setParameter(1, ulid)
+          .setParameter(2, UUID.fromString(videoResponseDto.getCategory().get(i)))
+          .executeUpdate();
 
       if (categoryFlag == 0) {
         throw new CustomApiException(ErrorCode.CATEGORY_CREATE_ERROR);
@@ -538,10 +548,11 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     }
 
     // recommend 테이블 create.
+    long test = ulidToLong(ulid);
     int viewRecommendFlag = entityManager.createNativeQuery(
-            "INSERT INTO recommend (account_id, video_id, video_uuid_id, rating) VALUES (?, ?, ?, ?);")
-        .setParameter(1, uuidToLong(account.getAccountId())).setParameter(2, uuidToLong(uuid))
-        .setParameter(3, uuid).setParameter(4, 1).executeUpdate();
+            "INSERT INTO recommend (account_id, video_id, rating, video_ulid_id) VALUES (?, ?, ?, ?);")
+        .setParameter(1, uuidToLong(account.getAccountId())).setParameter(2, ulidToLong(ulid))
+        .setParameter(3, 1).setParameter(4, ulid).executeUpdate();
 
     if (viewRecommendFlag == 0) {
       throw new CustomApiException(ErrorCode.VIEW_RECOMMEND_CREATE_ERROR);
@@ -552,7 +563,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 조회수 상승
   @Override
-  public boolean plusViews(UUID videoId) {
+  public boolean plusViews(String videoId) {
     Videos video = entityManager.find(Videos.class, videoId);
 
     if (video == null) {
@@ -570,7 +581,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 추천 영상을 위한 조회수 상승
   @Override
-  public boolean plusViewsCount(UUID videoId, Accounts account) {
+  public boolean plusViewsCount(String videoId, Accounts account) {
     try {
       int viewLogFlag = entityManager.createNativeQuery(
               "UPDATE recommend SET rating = rating+1\n" + "WHERE video_uuid_id=?\n"
@@ -579,9 +590,9 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
       if (viewLogFlag == 0) {
         int viewRecommendFlag = entityManager.createNativeQuery(
-                "INSERT INTO recommend (account_id, video_id, video_uuid_id, rating) VALUES (?, ?, ?, ?);")
+                "INSERT INTO recommend (account_id, video_id, video_ulid_id, rating) VALUES (?, ?, ?, ?);")
             .setParameter(1, uuidToLong(account.getAccountId()))
-            .setParameter(2, uuidToLong(videoId)).setParameter(3, videoId).setParameter(4, 1)
+            .setParameter(2, ulidToLong(videoId)).setParameter(3, videoId).setParameter(4, 1)
             .executeUpdate();
 
         if (viewRecommendFlag == 0) {
@@ -599,7 +610,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 좋아요 버튼 눌렀는지 여부
   @Override
-  public boolean getFavorite(UUID videoId, Accounts account) {
+  public boolean getFavorite(String videoId, Accounts account) {
     long result;
 
     QFavorite qFavorite = QFavorite.favorite;
@@ -621,7 +632,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 좋아요
   @Override
-  public boolean plusLike(UUID videoId, Accounts account) {
+  public boolean plusLike(String videoId, Accounts account) {
     try {
       entityManager.createNativeQuery("INSERT INTO favorite VALUES (?, ?)")
           .setParameter(1, account.getAccountId()).setParameter(2, videoId).executeUpdate();
@@ -634,7 +645,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
   // 좋아요 취소
   @Override
-  public boolean minusLike(UUID videoId, Accounts account) {
+  public boolean minusLike(String videoId, Accounts account) {
     Videos video = entityManager.find(Videos.class, videoId);
 
     // 요청한 영상이 존재하지 않는 경우.
@@ -684,11 +695,19 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     return uuid.getMostSignificantBits() + uuid.getLeastSignificantBits();
   }
 
+  //Ulid to long
+  public static long ulidToLong(String ulidStr) {
+    Ulid ulid = Ulid.from(ulidStr);
+    long upperBits = ulid.getMostSignificantBits();
+    long lowerBits = ulid.getLeastSignificantBits() & 0xFFFFFFFFL;
+    return (upperBits << 32) | lowerBits;
+  }
+
   //----------------------------------------------CHANNEL----------------------------------------
 
 
   @Override
-  public List<GetVideoResponseDto> getVideosInChannel(UUID channelId, UUID page, int pageSize) {
+  public List<GetVideoResponseDto> getVideosInChannel(UUID channelId, String page, int pageSize) {
     List<GetVideoResponseDto> responseDtos = null;
 
     QVideos qVideos = QVideos.videos;
@@ -718,35 +737,35 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
   }
 
   @Override
-  public UUID lastUUIDInChannel(UUID channelId) {
-    UUID lastUUID = null;
+  public String lastUUIDInChannel(UUID channelId) {
+    String lastUlid = null;
 
     QVideos qVideos = QVideos.videos;
 
     try {
-      lastUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
+      lastUlid = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
           .where(qVideos.channelId.channelId.eq(channelId).and(qVideos.privateType.eq(false)))
           .orderBy(qVideos.videoId.desc()).limit(1).fetchOne();
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.READ_LAST_UUID_ERRROR);
     }
-    return lastUUID;
+    return lastUlid;
   }
 
   @Override
-  public UUID lastUUIDInMyChannel(UUID channelId) {
-    UUID lastUUID = null;
+  public String lastUUIDInMyChannel(UUID channelId) {
+    String lastUlid = null;
     QVideos qVideos = QVideos.videos;
 
     try {
-      lastUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
+      lastUlid = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
           .where(qVideos.channelId.channelId.eq(channelId)).orderBy(qVideos.videoId.desc()).limit(1)
           .fetchOne();
     } catch (Exception e) {
       throw new CustomApiException(ErrorCode.READ_LAST_UUID_ERRROR);
     }
 
-    return lastUUID;
+    return lastUlid;
   }
 
   @Override
@@ -792,7 +811,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
   }
 
   @Override
-  public List<GetVideoResponseDto> getVideosInMyChannel(UUID channelId, UUID uuid, int pageSize) {
+  public List<GetVideoResponseDto> getVideosInMyChannel(UUID channelId, String uuid, int pageSize) {
     List<GetVideoResponseDto> responseDtos;
 
     QVideos qVideos = QVideos.videos;

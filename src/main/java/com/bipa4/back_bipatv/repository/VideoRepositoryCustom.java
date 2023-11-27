@@ -13,47 +13,47 @@ import org.apache.mahout.cf.taste.model.JDBCDataModel;
 
 public interface VideoRepositoryCustom {
 
-  List<GetVideoResponseDto> getAllVideos(UUID page, int pageSize);
+  List<GetVideoResponseDto> getAllVideos(String page, int pageSize);
 
-  UUID lastUUID();
+  String lastUUID();
 
-  UUID getNextUUID(UUID uuid);
+  String getNextUUID(String uuid);
 
-  UUID getNextCategoryUUID(UUID uuid, UUID category);
+  String getNextCategoryUUID(String uuid, UUID category);
 
-  UUID lastCategoryUUID(UUID category);
+  String lastCategoryUUID(UUID category);
 
-  List<GetVideoResponseDto> findByCategory(UUID category, UUID page, int pageSize);
+  List<GetVideoResponseDto> findByCategory(UUID category, String page, int pageSize);
 
   List<GetVideoResponseDto> findByViews();
 
   boolean updateViews();
 
-  GetDetailResponseDto getDetail(UUID id, JDBCDataModel dataModel);
+  GetDetailResponseDto getDetail(String id, JDBCDataModel dataModel);
 
-  boolean plusViewsCount(UUID videoId, Accounts account);
+  boolean plusViewsCount(String videoId, Accounts account);
 
-  boolean remove(UUID id, Accounts account);
+  boolean remove(String id, Accounts account);
 
-  boolean insert(PostUploadRequestDto videoResponseDto, Accounts account, UUID uuid);
+  boolean insert(PostUploadRequestDto videoResponseDto, Accounts account, UUID uuid, String ulid);
 
-  boolean update(UUID id, PutUpdateRequestDto videoResponseDto, Accounts account);
+  boolean update(String id, PutUpdateRequestDto videoResponseDto, Accounts account);
 
   List<GetCategoryNameRequestDto> getCategoryNames();
 
-  boolean checkOwner(Accounts account, UUID videoId);
+  boolean checkOwner(Accounts account, String videoId);
 
-  boolean plusViews(UUID videoId);
+  boolean plusViews(String videoId);
 
-  boolean getFavorite(UUID videoId, Accounts account);
+  boolean getFavorite(String videoId, Accounts account);
 
-  boolean plusLike(UUID videoId, Accounts account);
+  boolean plusLike(String videoId, Accounts account);
 
-  boolean minusLike(UUID videoId, Accounts account);
+  boolean minusLike(String videoId, Accounts account);
 
-  List<GetVideoResponseDto> getVideosInChannel(UUID channelId, UUID uuid, int pageSize);
+  List<GetVideoResponseDto> getVideosInChannel(UUID channelId, String uuid, int pageSize);
 
-  List<GetVideoResponseDto> getVideosInMyChannel(UUID channelId, UUID uuid, int pageSize);
+  List<GetVideoResponseDto> getVideosInMyChannel(UUID channelId, String uuid, int pageSize);
 
   List<GetSearchVideoINChannelDTO> getSearchVideoInMyChannel(UUID channelId, Integer currentPage,
       int pageSize,
@@ -65,9 +65,9 @@ public interface VideoRepositoryCustom {
       int pageSize,
       String searchQuery);
 
-  UUID lastUUIDInChannel(UUID channelId);
+  String lastUUIDInChannel(UUID channelId);
 
-  UUID lastUUIDInMyChannel(UUID channelId);
+  String lastUUIDInMyChannel(UUID channelId);
 
   Integer lastUUIDSearchVideoInMyChannel(UUID channelId, String searchQuery);
 }
