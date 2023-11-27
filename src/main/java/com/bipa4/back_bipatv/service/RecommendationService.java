@@ -32,7 +32,6 @@ public class RecommendationService {
       JDBCDataModel dataModel = new MySQLJDBCDataModel(dataSource, "recommend", "account_id", "video_id", "rating", "");
       return dataModel;
     } catch (Exception e) {
-      e.printStackTrace();
       return null;
     }
   }

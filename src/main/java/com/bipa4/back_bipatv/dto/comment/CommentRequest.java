@@ -1,5 +1,6 @@
 package com.bipa4.back_bipatv.dto.comment;
 
+import com.github.f4b6a3.ulid.Ulid;
 import java.sql.Timestamp;
 import java.util.UUID;
 import javax.validation.constraints.NotBlank;
@@ -26,5 +27,5 @@ public class CommentRequest {
   private Timestamp createAt;
   private Boolean isUpdated;
   private Boolean isPicked;
-  private UUID videoId;
+  private String videoId;
 }

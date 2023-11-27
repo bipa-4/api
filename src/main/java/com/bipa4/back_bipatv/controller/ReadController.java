@@ -50,17 +50,17 @@ public class ReadController {
   @ApiOperation(value = "전체 조회", notes = "최신순으로 전체 조회 (무한스크롤) / 처음엔 page 안넘겨주면 됨.")
   @GetMapping("/video/latest")
   public ResponseEntity<GetInfiniteScrollRequestDto> getAllVideos(
-      @RequestParam(value = "page", required = false) UUID page,
+      @RequestParam(value = "page", required = false) String page,
       @RequestParam("pageSize") int pageSize) {
-    UUID nextUUID = null;
+    String nextUlid = null;
 
     List<GetVideoResponseDto> videos = videoService.getAllVideos(page, pageSize);
 
     if (!videos.isEmpty()) {
-      nextUUID = videoService.getNextUUID(
+      nextUlid = videoService.getNextUUID(
           videos.get(videos.size() - 1).getVideoId()); // 마지막 page의 UUID 호출
     }
-    GetInfiniteScrollRequestDto responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
+    GetInfiniteScrollRequestDto responseDto = new GetInfiniteScrollRequestDto(videos, nextUlid);
     return ResponseEntity.ok().body(responseDto);
   }
 
@@ -70,17 +70,17 @@ public class ReadController {
   @GetMapping("/video/category/{category}")
   public ResponseEntity<GetInfiniteScrollRequestDto> getCategoryVideos(
       @PathVariable("category") UUID category,
-      @RequestParam(value = "page", required = false) UUID page,
+      @RequestParam(value = "page", required = false) String page,
       @RequestParam("pageSize") int pageSize) {
-    UUID nextUUID = null;
+    String nextUlid = null;
 
     List<GetVideoResponseDto> videos = videoService.getCategoryVideos(category, page, pageSize);
 
     if (!videos.isEmpty()) {
-      nextUUID = videoService.getNextCategoryUUID(videos.get(videos.size() - 1).getVideoId(),
+      nextUlid = videoService.getNextCategoryUUID(videos.get(videos.size() - 1).getVideoId(),
           category); // 마지막 page의 UUID 호출
     }
-    GetInfiniteScrollRequestDto responseDto = new GetInfiniteScrollRequestDto(videos, nextUUID);
+    GetInfiniteScrollRequestDto responseDto = new GetInfiniteScrollRequestDto(videos, nextUlid);
     return ResponseEntity.ok().body(responseDto);
   }
 
@@ -114,7 +114,7 @@ public class ReadController {
   // 영상 상세 조회
   @ApiOperation(value = "영상 상세 조회", notes = "영상 클릭시 상세 정보 + 추천 영상 추출")
   @GetMapping("/video/detail/{videoId}")
-  public ResponseEntity<GetDetailResponseDto> getVideoDetail(@PathVariable("videoId") UUID id) {
+  public ResponseEntity<GetDetailResponseDto> getVideoDetail(@PathVariable("videoId") String id) {
     JDBCDataModel dataModel = recommendationService.getDataModel();
     GetDetailResponseDto video = videoService.getVideoDetail(id, dataModel);
     return new ResponseEntity<>(video, HttpStatus.OK);
@@ -125,7 +125,7 @@ public class ReadController {
   @ApiOperation(value = "영상 상세 조회 및 추천 영상 조회", notes = "영상 클릭시 상세 정보 + 추천 영상 추출")
   @AccessTokenValid
   @GetMapping("/video/like/{videoId}")
-  public ResponseEntity<Boolean> getVideoLike(@PathVariable("videoId") UUID id,
+  public ResponseEntity<Boolean> getVideoLike(@PathVariable("videoId") String id,
       @CookieValue(name = "accessToken", required = false) String accessToken,
       HttpServletRequest request) {
     String nat = (String) request.getAttribute("newAccessToken");
@@ -139,7 +139,7 @@ public class ReadController {
   //부모 댓글 조회 최신순
   @ApiOperation(value = "부모 댓글 조회 최신순", notes = "부모 댓글 조회 최신순")
   @GetMapping("/comment/{videoId}/comment-parent/new")
-  public ResponseEntity<List<CommentResponse>> findParentComments(@PathVariable UUID videoId,
+  public ResponseEntity<List<CommentResponse>> findParentComments(@PathVariable String videoId,
       CommentResponse commentResponse) {
     List<CommentResponse> responseDtos = commentService.findParentComments(videoId);
     return new ResponseEntity<>(responseDtos, HttpStatus.OK);
@@ -148,7 +148,7 @@ public class ReadController {
   //부모 댓글 조회 오래된순
   @ApiOperation(value = "부모 댓글 조회 오래된순", notes = "부모 댓글 조회 오래된순")
   @GetMapping("/comment/{videoId}/comment-parent/old")
-  public ResponseEntity<List<CommentResponse>> findOldParentComments(@PathVariable UUID videoId,
+  public ResponseEntity<List<CommentResponse>> findOldParentComments(@PathVariable String videoId,
       CommentResponse commentResponse) {
     List<CommentResponse> responseDtos = commentService.findOldParentComments(videoId);
     return new ResponseEntity<>(responseDtos, HttpStatus.OK);
@@ -158,7 +158,7 @@ public class ReadController {
   @ApiOperation(value = "부모 댓글 조회 인기순", notes = "부모 댓글 조회 인기순")
   @GetMapping("/comment/{videoId}/comment-parent/popularity")
   public ResponseEntity<List<CommentResponse>> findPopularityParentComments(
-      @PathVariable UUID videoId,
+      @PathVariable String videoId,
       CommentResponse commentResponse) {
     List<CommentResponse> responseDtos = commentService.findPopularityParentComments(videoId);
     return new ResponseEntity<>(responseDtos, HttpStatus.OK);
@@ -167,7 +167,7 @@ public class ReadController {
   //자식 댓글 조회
   @ApiOperation(value = "자식 댓글 조회", notes = "자식 댓글 조회")
   @GetMapping("/comment/{videoId}/{groupIndex}/comment-child")
-  public ResponseEntity<List<ChildCommentResponse>> findChildComments(@PathVariable UUID videoId,
+  public ResponseEntity<List<ChildCommentResponse>> findChildComments(@PathVariable String videoId,
       @PathVariable int groupIndex) {
     List<ChildCommentResponse> responseDtos = commentService.findChildComments(videoId, groupIndex);
     return new ResponseEntity<>(responseDtos, HttpStatus.OK);
@@ -217,7 +217,7 @@ public class ReadController {
   @GetMapping("/channel/video/{channelId}")
   public ResponseEntity<GetInfiniteScrollRequestDto> getVideosInChannel(
       @CookieValue(value = "accessToken", required = false) String accessToken,
-      @RequestParam(value = "page", required = false) UUID page,
+      @RequestParam(value = "page", required = false) String page,
       @RequestParam("pageSize") int pageSize, @PathVariable("channelId") UUID channelId,
       HttpServletRequest request) {
     String nat = (String) request.getAttribute("newAccessToken");
@@ -225,7 +225,7 @@ public class ReadController {
       accessToken = nat;
     }
 
-    UUID nextUUID = null;
+    String nextUUID = null;
 
     Accounts account = securityService.getSubjectAccount(accessToken);
     List<GetVideoResponseDto> videos = channelService.getVideosInChannel(account, channelId, page,

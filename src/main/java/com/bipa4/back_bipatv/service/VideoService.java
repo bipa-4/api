@@ -1,5 +1,6 @@
 package com.bipa4.back_bipatv.service;
 
+import com.amazonaws.HttpMethod;
 import com.bipa4.back_bipatv.dto.video.GetCategoryNameRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetSearchResponseDto;
@@ -10,13 +11,24 @@ import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.repository.VideoChannelRepository;
 import com.bipa4.back_bipatv.repository.VideoRepository;
 import com.bipa4.back_bipatv.security.SecurityService;
+import com.github.f4b6a3.ulid.Ulid;
+import com.github.f4b6a3.ulid.UlidCreator;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import javax.sql.DataSource;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.mahout.cf.taste.model.JDBCDataModel;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 @RequiredArgsConstructor
 @Service
@@ -33,43 +45,44 @@ public class VideoService {
     return videoChannelRepository.findBySearchQuery(searchQuery);
   }
 
-  public Boolean check(Accounts account, UUID videoId) {
+  public Boolean check(Accounts account, String videoId) {
     return videoRepository.checkOwner(account, videoId);
   }
 
   @Transactional
-  public boolean removeVideo(UUID videoId, Accounts account) {
+  public boolean removeVideo(String videoId, Accounts account) {
     return videoRepository.remove(videoId, account);
   }
 
   @Transactional
   public boolean uploadVideo(PostUploadRequestDto requestdto, Accounts account) {
     UUID uuid = generateUUIDv1(requestdto.getContent());
-    return videoRepository.insert(requestdto, account, uuid);
+    Ulid ulid = UlidCreator.getMonotonicUlid();
+    return videoRepository.insert(requestdto, account, uuid, ulid.toString());
   }
 
   @Transactional
-  public boolean updateVideo(UUID id, PutUpdateRequestDto requestDto, Accounts account) {
+  public boolean updateVideo(String id, PutUpdateRequestDto requestDto, Accounts account) {
     return videoRepository.update(id, requestDto, account);
   }
 
-  public List<GetVideoResponseDto> getAllVideos(UUID page, int pageSize) {
+  public List<GetVideoResponseDto> getAllVideos(String page, int pageSize) {
     if (page == null) {
       page = videoRepository.lastUUID();
     }
     return videoRepository.getAllVideos(page, pageSize);
   }
 
-  public UUID getNextUUID(UUID uuid) {
-    return videoRepository.getNextUUID(uuid);
+  public String getNextUUID(String ulid) {
+    return videoRepository.getNextUUID(ulid);
   }
 
-  public UUID getNextCategoryUUID(UUID uuid, UUID category) {
-    return videoRepository.getNextCategoryUUID(uuid, category);
+  public String getNextCategoryUUID(String ulid, UUID category) {
+    return videoRepository.getNextCategoryUUID(ulid, category);
   }
 
 
-  public List<GetVideoResponseDto> getCategoryVideos(UUID category, UUID page, int pageSize) {
+  public List<GetVideoResponseDto> getCategoryVideos(UUID category, String page, int pageSize) {
     if (page == null) {
       page = videoRepository.lastCategoryUUID(category);
     }
@@ -91,18 +104,30 @@ public class VideoService {
   }
 
   @Transactional
-  public GetDetailResponseDto getVideoDetail(UUID id, JDBCDataModel dataModel) {
+  public GetDetailResponseDto getVideoDetail(String id, JDBCDataModel dataModel) {
+    /*HashMap<String, Object> result = new HashMap<String, Object>();
+
+    RestTemplate restTemplate = new RestTemplate();
+    HttpHeaders header = new HttpHeaders();
+    HttpEntity<?> entity = new HttpEntity<>(header);
+
+    ResponseEntity<?> resultMap = restTemplate.exchange("http://localhost:8011/services",
+        HttpMethod.GET, entity, Object.class);
+    result.put("statusCode", resultMap.getStatusCodeValue()); //http status code를 확인
+    result.put("header", resultMap.getHeaders()); //헤더 정보 확인
+    result.put("body", resultMap.getBody()); //실제 데이터 정보 확인*/
+
     return videoRepository.getDetail(id, dataModel);
   }
 
 
   @Transactional
-  public boolean plusViews(UUID videoId) {
+  public boolean plusViews(String videoId) {
     return videoRepository.plusViews(videoId);
   }
 
   @Transactional
-  public boolean plusRecommend(UUID videoId, Accounts account) {
+  public boolean plusRecommend(String videoId, Accounts account) {
     if (account != null) {
       return videoRepository.plusViewsCount(videoId, account);
     }
@@ -110,27 +135,29 @@ public class VideoService {
   }
 
   @Transactional
-  public boolean plusViewsCount(UUID videoId, Accounts account) {
+  public boolean plusViewsCount(String videoId, Accounts account) {
     return videoRepository.plusViews(videoId);
   }
 
-  public boolean getLike(UUID videoId, Accounts account) {
+  public boolean getLike(String videoId, Accounts account) {
     return videoRepository.getFavorite(videoId, account);
   }
 
   @Transactional
-  public boolean like(UUID videoId, Accounts account) {
+  public boolean like(String videoId, Accounts account) {
     return videoRepository.plusLike(videoId, account);
   }
 
   @Transactional
-  public boolean cancelLike(UUID videoId, Accounts account) {
+  public boolean cancelLike(String videoId, Accounts account) {
     return videoRepository.minusLike(videoId, account);
   }
 
   public UUID generateUUIDv1(String content) {
     // Generate a UUID version 1 using current time and MAC address
+
     long timestamp = System.currentTimeMillis();
+
     long timeLow = timestamp & 0xFFFFFFFFL;
     long timeMid = (timestamp >> 32) & 0xFFFFL;
     long timeHigh = (timestamp >> 48) & 0x0FFF0L;

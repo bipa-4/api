@@ -149,18 +149,18 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
 
 
   @Override
-  public UUID getNextChannelVideoUUID(UUID videoId, UUID channelId, boolean flag) {
-    UUID nextUUID;
+  public String getNextChannelVideoUUID(String videoId, UUID channelId, boolean flag) {
+    String nextUlid;
 
     QVideos qVideos = QVideos.videos;
 
     try {
       if (flag) {
-        nextUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
+        nextUlid = jpaQueryFactory.select(qVideos.videoId).from(qVideos)
             .where(qVideos.videoId.lt(videoId).and(qVideos.channelId.channelId.eq(channelId)))
             .orderBy(qVideos.videoId.desc()).limit(1).fetchOne();
       } else {
-        nextUUID = jpaQueryFactory.select(qVideos.videoId).from(qVideos).where(
+        nextUlid = jpaQueryFactory.select(qVideos.videoId).from(qVideos).where(
                 qVideos.videoId.lt(videoId).and(qVideos.channelId.channelId.eq(channelId))
                     .and(qVideos.privateType.eq(false))).orderBy(qVideos.videoId.desc()).limit(1)
             .fetchOne();
@@ -170,7 +170,7 @@ public class ChannelRepositoryImpl implements ChannelRepositoryCustom {
       throw new CustomApiException(ErrorCode.READ_NEXT_UUID_ERRROR);
     }
 
-    return nextUUID;
+    return nextUlid;
   }
 
   // 채널 검색

@@ -111,7 +111,7 @@ public class CommentController {
   @PutMapping("/{videoId}/comment-pick")
   @AccessTokenValid
   public ResponseEntity<Boolean> pickComment(@RequestBody CommentRequest commentRequest,
-      @CookieValue(name = "accessToken") String accessToken, @PathVariable UUID videoId,
+      @CookieValue(name = "accessToken") String accessToken, @PathVariable String videoId,
       HttpServletRequest request) {
     String nat = (String) request.getAttribute("newAccessToken");
 
@@ -127,7 +127,7 @@ public class CommentController {
   @AccessTokenValid
   public ResponseEntity<Boolean> cancelPickComment(
       @CookieValue(name = "accessToken") String accessToken,
-      @PathVariable UUID videoId, @PathVariable UUID commentId,
+      @PathVariable String videoId, @PathVariable UUID commentId,
       HttpServletRequest request) {
     String nat = (String) request.getAttribute("newAccessToken");
 
@@ -135,7 +135,7 @@ public class CommentController {
       accessToken = nat;
     }
     Accounts account = securityService.getSubjectAccount(accessToken);
-    boolean response = commentService.cancelPickComment(commentId, account, videoId);
+    boolean response = commentService.cancelPickComment(commentId, account);
     return new ResponseEntity<>(response, HttpStatus.OK);
   }
 

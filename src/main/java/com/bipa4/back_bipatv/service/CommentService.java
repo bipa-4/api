@@ -14,6 +14,7 @@ import com.bipa4.back_bipatv.exception.CustomApiException;
 import com.bipa4.back_bipatv.repository.ChannelRepository;
 import com.bipa4.back_bipatv.repository.CommentRepository;
 import com.bipa4.back_bipatv.repository.VideoRepository;
+import com.github.f4b6a3.ulid.Ulid;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -35,23 +36,23 @@ public class CommentService {
   private final ChannelRepository channelRepository;
 
 
-  public List<CommentResponse> findParentComments(UUID videoId) {
+  public List<CommentResponse> findParentComments(String videoId) {
     List<CommentResponse> list = commentDAO.findParentComments(videoId);
     return list;
   }
 
-  public List<CommentResponse> findOldParentComments(UUID videoId) {
+  public List<CommentResponse> findOldParentComments(String videoId) {
     List<CommentResponse> list = commentDAO.findOldParentComments(videoId);
     return list;
   }
 
-  public List<CommentResponse> findPopularityParentComments(UUID videoId) {
+  public List<CommentResponse> findPopularityParentComments(String videoId) {
     List<CommentResponse> list = commentDAO.findPopularityParentComments(videoId);
     return list;
   }
 
 
-  public List<ChildCommentResponse> findChildComments(UUID videoId, int groupIndex) {
+  public List<ChildCommentResponse> findChildComments(String videoId, int groupIndex) {
     List<ChildCommentResponse> list = commentDAO.findChildComments(videoId, groupIndex);
     return list;
   }
@@ -174,10 +175,11 @@ public class CommentService {
   }
 
   @Transactional
-  public boolean pickComment(CommentRequest commentRequest, Accounts account, UUID videoId) {
+  public boolean pickComment(CommentRequest commentRequest, Accounts account, String videoId) {
     Comments comment = commentDAO.findByCommentId(commentRequest.getCommentId());
     Channels channels = comment.getVideos().getChannelId();
-    Optional<Channels> loginUserChannel = channelRepository.findByChannelToAccountId(account.getAccountId());
+    Optional<Channels> loginUserChannel = channelRepository.findByChannelToAccountId(
+        account.getAccountId());
 
     // 댓글이 존재하지 않는다면
     if (comment == null) {
@@ -210,10 +212,11 @@ public class CommentService {
   }
 
   @Transactional
-  public boolean cancelPickComment(UUID commentId, Accounts account, UUID videoId) {
+  public boolean cancelPickComment(UUID commentId, Accounts account) {
     Comments comment = commentDAO.findByCommentId(commentId);
     Channels channels = comment.getVideos().getChannelId();
-    Optional<Channels> loginUserChannel = channelRepository.findByChannelToAccountId(account.getAccountId());
+    Optional<Channels> loginUserChannel = channelRepository.findByChannelToAccountId(
+        account.getAccountId());
 
     // 댓글이 존재하지 않는다면
     if (comment == null) {

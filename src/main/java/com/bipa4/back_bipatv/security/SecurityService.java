@@ -126,7 +126,6 @@ public class SecurityService {
       return false;
     } catch (Exception e) {
       // 다른 예외 처리
-      e.printStackTrace();
       throw e;
     }
 

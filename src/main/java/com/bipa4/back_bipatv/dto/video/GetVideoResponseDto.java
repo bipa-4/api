@@ -1,6 +1,7 @@
 package com.bipa4.back_bipatv.dto.video;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.github.f4b6a3.ulid.Ulid;
 import java.util.Date;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -24,7 +25,7 @@ public class GetVideoResponseDto {
   @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", timezone = "GMT+9")
   private Date createAt;
   private Integer readCount;
-  private UUID videoId;
+  private String videoId;
   private UUID channelId;
   private boolean privateType;
 }

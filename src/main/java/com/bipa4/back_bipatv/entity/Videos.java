@@ -1,5 +1,6 @@
 package com.bipa4.back_bipatv.entity;
 
+import com.github.f4b6a3.ulid.Ulid;
 import com.querydsl.core.annotations.QueryEntity;
 import java.sql.Timestamp;
 import java.util.UUID;
@@ -31,11 +32,8 @@ import org.hibernate.annotations.Type;
 public class Videos {
 
   @Id
-  @GeneratedValue(generator = "UUID")
-  @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-  @Column(columnDefinition = "BINARY(16)")
-  @Type(type = "uuid-binary")
-  private UUID videoId;
+  @Column(name = "video_id", length = 26)
+  private String videoId;
   @Column(name = "video_url", nullable = true, length = 200)
   @NotBlank
   private String videoUrl;

@@ -43,6 +43,8 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
+    // ulid
+    implementation group: 'com.github.f4b6a3', name: 'ulid-creator', version: '5.2.2'
 
     //querydsl 추가
     implementation "com.querydsl:querydsl-jpa:${queryDslVersion}"

@@ -7,6 +7,7 @@ import com.bipa4.back_bipatv.entity.Comments;
 import com.bipa4.back_bipatv.exception.CustomApiException;
 import com.bipa4.back_bipatv.exception.NoContentException;
 import com.bipa4.back_bipatv.repository.CommentRepository;
+import com.github.f4b6a3.ulid.Ulid;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +20,7 @@ public class CommentDAO {
   private final CommentRepository commentRepository;
 
 
-  public List<CommentResponse> findParentComments(UUID videoId) {
+  public List<CommentResponse> findParentComments(String videoId) {
     List<CommentResponse> list;
 
     try {
@@ -32,7 +33,7 @@ public class CommentDAO {
     return list;
   }
 
-  public List<CommentResponse> findOldParentComments(UUID videoId) {
+  public List<CommentResponse> findOldParentComments(String videoId) {
     List<CommentResponse> list;
 
     try {
@@ -45,7 +46,7 @@ public class CommentDAO {
     return list;
   }
 
-  public List<CommentResponse> findPopularityParentComments(UUID videoId) {
+  public List<CommentResponse> findPopularityParentComments(String videoId) {
     List<CommentResponse> list;
 
     try {
@@ -59,7 +60,7 @@ public class CommentDAO {
   }
 
 
-  public List<ChildCommentResponse> findChildComments(UUID videoId, int groupIndex) {
+  public List<ChildCommentResponse> findChildComments(String videoId, int groupIndex) {
     List<ChildCommentResponse> list;
 
     try {
@@ -96,7 +97,7 @@ public class CommentDAO {
   }
 
 
-  public boolean deleteParentComment(UUID videoId, int groupIndex) {
+  public boolean deleteParentComment(String videoId, int groupIndex) {
     int result;
     try {
       result = commentRepository.deleteParentComment(videoId, groupIndex);
@@ -115,7 +116,7 @@ public class CommentDAO {
     return true;
   }
 
-  public Integer findMaxGroupIndex(UUID videoId) {
+  public Integer findMaxGroupIndex(String videoId) {
 
     if (commentRepository.findMaxGroupIndex(videoId) == null) {
       return 0;
@@ -123,7 +124,7 @@ public class CommentDAO {
     return commentRepository.findMaxGroupIndex(videoId);
   }
 
-  public Comments findPickedParentComment(UUID videoId) {
+  public Comments findPickedParentComment(String videoId) {
     return commentRepository.findPickedParentComment(videoId);
   }
 
