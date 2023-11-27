@@ -5,6 +5,7 @@ spring:
   redis:
     host: ${Redis_Host}
     port: 6379
+    password: ${Redis_PW}
   servlet:
     multipart:
       maxFileSize: 50MB
