@@ -32,7 +32,7 @@ public class Recommend {
   private float rating;
 
   @ManyToOne
-  @JoinColumn(name = "video_uuid_id")
+  @JoinColumn(name = "video_ulid_id")
   @OnDelete(action = OnDeleteAction.CASCADE)
   private Videos videoUUIDId;
 }
