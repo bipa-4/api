@@ -133,7 +133,7 @@ public class VideoController {
     }
     Accounts account = securityService.getSubjectAccount(accessToken);
     boolean response = videoService.updateVideo(id, requestDto, account);
-    return new ResponseEntity<>(response, HttpStatus.OK);
+    return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
   }
 
 
