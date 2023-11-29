@@ -584,7 +584,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
   public boolean plusViewsCount(String videoId, Accounts account) {
     try {
       int viewLogFlag = entityManager.createNativeQuery(
-              "UPDATE recommend SET rating = rating+1\n" + "WHERE video_uuid_id=?\n"
+              "UPDATE recommend SET rating = rating+1\n" + "WHERE video_ulid_id=?\n"
                   + "AND account_id=?;").setParameter(1, videoId)
           .setParameter(2, uuidToLong(account.getAccountId())).executeUpdate();
 
