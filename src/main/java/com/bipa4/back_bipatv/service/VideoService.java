@@ -1,6 +1,5 @@
 package com.bipa4.back_bipatv.service;
 
-import com.amazonaws.HttpMethod;
 import com.bipa4.back_bipatv.dto.video.GetCategoryNameRequestDto;
 import com.bipa4.back_bipatv.dto.video.GetDetailResponseDto;
 import com.bipa4.back_bipatv.dto.video.GetSearchResponseDto;
@@ -13,22 +12,13 @@ import com.bipa4.back_bipatv.repository.VideoRepository;
 import com.bipa4.back_bipatv.security.SecurityService;
 import com.github.f4b6a3.ulid.Ulid;
 import com.github.f4b6a3.ulid.UlidCreator;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import javax.sql.DataSource;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.collections.map.MultiValueMap;
 import org.apache.mahout.cf.taste.model.JDBCDataModel;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.web.client.RestTemplate;
 
 @RequiredArgsConstructor
 @Service
@@ -105,18 +95,6 @@ public class VideoService {
 
   @Transactional
   public GetDetailResponseDto getVideoDetail(String id, JDBCDataModel dataModel) {
-    /*HashMap<String, Object> result = new HashMap<String, Object>();
-
-    RestTemplate restTemplate = new RestTemplate();
-    HttpHeaders header = new HttpHeaders();
-    HttpEntity<?> entity = new HttpEntity<>(header);
-
-    ResponseEntity<?> resultMap = restTemplate.exchange("http://localhost:8011/services",
-        HttpMethod.GET, entity, Object.class);
-    result.put("statusCode", resultMap.getStatusCodeValue()); //http status code를 확인
-    result.put("header", resultMap.getHeaders()); //헤더 정보 확인
-    result.put("body", resultMap.getBody()); //실제 데이터 정보 확인*/
-
     return videoRepository.getDetail(id, dataModel);
   }
 

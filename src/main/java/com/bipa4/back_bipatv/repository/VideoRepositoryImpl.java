@@ -31,6 +31,7 @@ import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import java.io.File;
 import java.math.BigInteger;
+import java.net.URI;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -44,7 +45,10 @@ import org.apache.mahout.cf.taste.model.JDBCDataModel;
 import org.apache.mahout.cf.taste.recommender.RecommendedItem;
 import org.apache.mahout.cf.taste.similarity.ItemSimilarity;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @RequiredArgsConstructor
 @Repository
@@ -309,6 +313,20 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
     if (responseDto == null) {
       throw new CustomApiException(ErrorCode.NO_EXIST_VIDEO);
+    }
+
+    // 영상 처리
+    RestTemplate restTemplate = new RestTemplate();
+    try {
+      URI uri = UriComponentsBuilder
+          .fromUriString(responseDto.getVideoUrl())
+          .encode()
+          .build()
+          .toUri();
+
+      ResponseEntity<String> response = restTemplate.getForEntity(uri, String.class);
+    } catch (Exception e) {
+      responseDto.setVideoUrl("https://port-0-api1-iciy2almriucc9.sel5.cloudtype.app/example.mp4");
     }
 
     // 추천 영상 리스트 추출
