@@ -866,7 +866,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     List<Object[]> resultList = entityManager.createNativeQuery(
             "SELECT ranking, videoId, videoTitle, channelId, channelName, channelProfileUrl, thumbnail, createAt, readCount\n"
                 + "FROM (\n"
-                + "SELECT ROW_NUMBER() OVER () AS ranking, videos.video_id as videoId, videos.title as videoTitle, channels.channel_id as channelId, videos.read_cnt as readCount, videos.create_at as createAt, videos.thumbnail as thumbnail, channels.profile_url as channelProfileUrl, channels.name as channelName\n"
+                + "SELECT ROW_NUMBER() OVER () AS ranking, videos.video_id as videoId, videos.title as videoTitle, BIN_TO_UUID(channels.channel_id) as channelId, videos.read_cnt as readCount, videos.create_at as createAt, videos.thumbnail as thumbnail, channels.profile_url as channelProfileUrl, channels.name as channelName\n"
                 + "FROM videos \n" + "join channels \n" + "on videos.channel_id = channels.channel_id\n"
                 + "WHERE videos.channel_id = ?\n"
                 + "and MATCH (videos.title, videos.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
@@ -882,9 +882,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
       dto.setVideoId(ulid);
 
       dto.setVideoTitle((String) row[2]);
-      byte[] byteData = (byte[]) row[3];
-      UUID channeled = UUID.nameUUIDFromBytes(byteData);
-      dto.setChannelId(channeled);
+      dto.setChannelId(UUID.fromString((String) row[3]));
 
       dto.setChannelName((String) row[4]);
       dto.setChannelProfileUrl((String) row[5]);
@@ -901,23 +899,31 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
   @Override
   public List<GetSearchVideoINChannelDTO> getSearchVideoInChannel(UUID channelId, Integer nextRank,
       int pageSize, String searchQuery) {
-
+    List<GetSearchVideoINChannelDTO> searchList = new ArrayList<>();
+    List<Object[]> resultList = new ArrayList<>();
     if (nextRank == null) {
       nextRank = 1;
     }
-    List<Object[]> resultList = entityManager.createNativeQuery(
-            "SELECT ranking, videoId, videoTitle, channelId, channelName, channelProfileUrl, thumbnail, createAt, readCount\n"
-                + "FROM (\n"
-                + "SELECT ROW_NUMBER() OVER () AS ranking, videos.video_id as videoId, videos.title as videoTitle, channels.channel_id as channelId, videos.read_cnt as readCount, videos.create_at as createAt, videos.thumbnail as thumbnail, channels.profile_url as channelProfileUrl, channels.name as channelName\n"
-                + "FROM videos \n" + "join channels \n" + "on videos.channel_id = channels.channel_id\n"
-                + "WHERE videos.channel_id = ?\n"
-                + "and MATCH (videos.title, videos.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
-                + "AND videos.private_type = false\n" + ")as ranked\n" + "where ranking >= ?\n"
-                + "order by ranking asc\n" + "limit ?;").setParameter(1, channelId)
-        .setParameter(2, searchQuery).setParameter(3, nextRank).setParameter(4, pageSize)
-        .getResultList();
+    String sql =
+        "SELECT ranking, videoId, videoTitle, BIN_TO_UUID(channelId) as channelId, channelName, channelProfileUrl, thumbnail, createAt, readCount\n"
+        + "FROM (\n"
+        + "SELECT ROW_NUMBER() OVER () AS ranking, videos.video_id as videoId, videos.title as videoTitle, channels.channel_id as channelId, videos.read_cnt as readCount, videos.create_at as createAt, videos.thumbnail as thumbnail, channels.profile_url as channelProfileUrl, channels.name as channelName\n"
+        + "FROM videos \n" + "join channels \n" + "on videos.channel_id = channels.channel_id\n"
+        + "WHERE videos.channel_id = ?\n"
+        + "and MATCH (videos.title, videos.content) AGAINST (? IN NATURAL LANGUAGE MODE)\n"
+        + "AND videos.private_type = false\n" + ")as ranked\n" + "where ranking >= ?\n"
+        + "order by ranking asc\n" + "limit ?;";
 
-    List<GetSearchVideoINChannelDTO> searchList = new ArrayList<>();
+        try {
+          resultList = entityManager.createNativeQuery(sql).setParameter(1, channelId)
+              .setParameter(2, searchQuery).setParameter(3, nextRank).setParameter(4, pageSize)
+              .getResultList();
+        }catch (NullPointerException e) {
+          throw new NoContentException();
+        } catch (Exception e) {
+          throw new CustomApiException(ErrorCode.READ_ERROR);
+        }
+
     for (Object[] row : resultList) {
       GetSearchVideoINChannelDTO dto = new GetSearchVideoINChannelDTO();//
       dto.setRanking(((BigInteger) row[0]).intValue());
@@ -925,9 +931,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
       dto.setVideoId(ulid);
 
       dto.setVideoTitle((String) row[2]);
-      byte[] byteData = (byte[]) row[3];
-      UUID channeled = UUID.nameUUIDFromBytes(byteData);
-      dto.setChannelId(channeled);
+      dto.setChannelId(UUID.fromString((String) row[3]));
 
       dto.setChannelName((String) row[4]);
       dto.setChannelProfileUrl((String) row[5]);
