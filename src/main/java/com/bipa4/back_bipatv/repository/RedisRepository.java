@@ -12,7 +12,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public class RedisRepository {
 
-  private static final long REFRESH_TOKEN_EXPIRATION_SECONDS = ETokenTime.REFRESHTOKEN_EXP_TIME.getTime(); // 토큰 만료 시간 (6시간)
+  private static final long REFRESH_TOKEN_EXPIRATION_SECONDS = ETokenTime.REFRESHTOKEN_EXP_TIME_TEST.getTime(); // 토큰 만료 시간 (6시간)
 
 
   private final RedisTemplate<String, String> redisTemplate;
@@ -72,6 +72,6 @@ public class RedisRepository {
   }
 
   public boolean hasKeyBlackList(String accessTokenValue) {
-    return redisBlackListTemplate.hasKey(accessTokenValue);
+    return Boolean.TRUE.equals(redisBlackListTemplate.hasKey(accessTokenValue));
   }
 }

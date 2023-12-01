@@ -37,8 +37,8 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class UserService {
 
-  private final int EXP_TIME = 2 * 1000 * 60 * 60;//2시간
-//  private final int EXP_TIME_TEST = 1000 * 60;//분
+//  private final int EXP_TIME = 2 * 1000 * 60 * 60;//2시간
+  private final int EXP_TIME_TEST = 1000 * 60;//분
 
   private final Environment env;
   private final RestTemplate restTemplate = new RestTemplate();
@@ -188,7 +188,7 @@ public class UserService {
     }
 
 //    String loginAccountToken = securityService.createToken(accounts, EXP_TIME);
-    String loginAccountToken = securityService.createToken(accounts, EXP_TIME);
+    String loginAccountToken = securityService.createToken(accounts, EXP_TIME_TEST);
     Cookie refreshCookie = createCookie("RefreshToken", refreshToken);
     Cookie accessCookie = createCookie("AccessToken", loginAccountToken);
     Map<String, Cookie> map = new HashMap<>();
@@ -201,13 +201,13 @@ public class UserService {
   public String createAccessTokenToRefreshToken(
       String refreshToken) {//리플레시 토큰으로 엑세스 토큰을 다시 만들어달라는 것을 요청할 때 사용할 메소드
     if (refreshToken == null) {
-      return "httpHeader에 refreshToken값이 없음";
+      return null;
     }
     Optional<RefreshToken> optRefreshToken = redisRepository.findById(refreshToken);
     if (optRefreshToken.isPresent()) {
       Accounts dummyAccount = new Accounts();
       dummyAccount.setLoginId(optRefreshToken.get().getMemberId());
-      return securityService.createToken(accountDAO.selectAccount(dummyAccount), EXP_TIME);
+      return securityService.createToken(accountDAO.selectAccount(dummyAccount), EXP_TIME_TEST);
 //      return securityService.createToken(accountDAO.selectAccount(dummyAccount), EXP_TIME_TEST);
     } else {//재 로그인 요청
       return null;

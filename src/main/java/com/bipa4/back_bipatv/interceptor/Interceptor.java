@@ -1,5 +1,6 @@
 package com.bipa4.back_bipatv.interceptor;
 
+import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.security.SecurityService;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -22,13 +23,21 @@ public class Interceptor implements HandlerInterceptor {
       throws Exception {
     String userName = "비회원";
     String accessToken = null;
+    boolean flag = false;
     Cookie[] cookies = request.getCookies();
     if (cookies != null) {
       for (Cookie cookie : cookies) {
         if ("accessToken".equals(cookie.getName())) {
           accessToken = cookie.getValue();
-          userName = securityService.getSubjectAccount(accessToken).getName();
+          flag = securityService.isTokenValid(accessToken);
         }
+        if(!flag){
+          Accounts accounts = securityService.newAccessTokenAccount();
+          if(accounts != null){
+            userName = accounts.getName();
+          }
+        }
+
       }
     }
 
