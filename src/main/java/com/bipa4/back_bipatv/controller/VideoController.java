@@ -15,7 +15,9 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import java.util.List;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -50,6 +52,7 @@ public class VideoController {
   public ResponseEntity<Boolean> checkVideos(
       @CookieValue(name = "accessToken", required = false) String accessToken,
       @RequestParam("videoId") String videoId, HttpServletRequest request) {
+    System.out.println(accessToken);
     String nat = (String) request.getAttribute("newAccessToken");
     if (nat != null) {
       accessToken = nat;
@@ -186,15 +189,43 @@ public class VideoController {
   // 조회수 상승
   @ApiOperation(value = "조회수 상승", notes = "조회수 상승")
   @PutMapping("/updateViews/{videoId}")
-  public ResponseEntity<Boolean> getPlusViews(@PathVariable("videoId") String id) {
-    boolean response = videoService.plusViews(id);
-    return new ResponseEntity<>(response, HttpStatus.OK);
+  public ResponseEntity<Boolean> getPlusViews(@PathVariable("videoId") String id,
+      HttpServletRequest request, HttpServletResponse response) {
+    Cookie oldCookie = null;
+    boolean result = false;
+
+    // cookie 값 추출
+    Cookie[] cookies = request.getCookies();
+
+    if (cookies != null) {
+      for (Cookie cookie : cookies) {
+        if (cookie.getName().equals("postView")) {
+          oldCookie = cookie;
+        }
+      }
+    }
+
+    if (oldCookie != null) {
+      if (!oldCookie.getValue().contains("[" + id.toString() + "]")) {
+        result = videoService.plusViews(id);
+        oldCookie.setValue(oldCookie.getValue() + "_[" + id + "]");
+        oldCookie.setPath("/");
+        oldCookie.setMaxAge(60 * 60 * 24);
+        response.addCookie(oldCookie);
+      }
+    } else {
+      result = videoService.plusViews(id);
+      Cookie newCookie = new Cookie("postView", "[" + id + "]");
+      newCookie.setPath("/");
+      newCookie.setMaxAge(60 * 60 * 24);
+      response.addCookie(newCookie);
+    }
+    return new ResponseEntity<>(result, HttpStatus.OK);
   }
 
   // 영상 추천 데이터 조회수 상승
   @ApiOperation(value = "영상 추천 데이터 조회수 상승", notes = "영상 추천 조회수 상승")
   @PutMapping("/updateRecommend/{videoId}")
-  @AccessTokenValid
   public ResponseEntity<Boolean> getPlusRecommend(@PathVariable("videoId") String id,
       @CookieValue(name = "accessToken", required = false) String accessToken,
       HttpServletRequest request) {
