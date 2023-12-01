@@ -1,5 +1,6 @@
 package com.bipa4.back_bipatv.security;
 
+import com.bipa4.back_bipatv.aspect.AccessTokenValid;
 import com.bipa4.back_bipatv.dao.AccountDAO;
 import com.bipa4.back_bipatv.entity.Accounts;
 import com.bipa4.back_bipatv.exception.JwtNotFoundException;
@@ -11,10 +12,13 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import java.security.Key;
 import java.util.Date;
 import javax.crypto.spec.SecretKeySpec;
+import javax.servlet.http.HttpServletRequest;
 import javax.xml.bind.DatatypeConverter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Service
 public class SecurityService {
@@ -57,8 +61,8 @@ public class SecurityService {
     return Jwts.builder()//지금은 subject값고 만료시간만 넣어줌 but 다양한 값 넣을 수 있음 확인해보기
         .setSubject("RefreshToken" + accounts.getLoginId())
         .signWith(singingKey, signatureAlgorithm)
-        .setExpiration(new Date(System.currentTimeMillis() + 6 * 1000 * 60 * 60))//만료시간
-//        .setExpiration(new Date(System.currentTimeMillis() + 5 * 1000 * 60))//만료시간 5분 테스트
+//        .setExpiration(new Date(System.currentTimeMillis() + 6 * 1000 * 60 * 60))//만료시간
+        .setExpiration(new Date(System.currentTimeMillis() + 5 * 1000 * 60))//만료시간 5분 테스트
         .compact();
   }
 
@@ -88,11 +92,19 @@ public class SecurityService {
     if (token == null) {
       return null;
     }
-    Claims claims = Jwts.parserBuilder()
-        .setSigningKey(DatatypeConverter.parseBase64Binary(SECRET_KEY))
-        .build()
-        .parseClaimsJws(token)
-        .getBody();
+    Claims claims;
+    try{
+      claims = Jwts.parserBuilder()
+          .setSigningKey(DatatypeConverter.parseBase64Binary(SECRET_KEY))
+          .build()
+          .parseClaimsJws(token)
+          .getBody();
+    }catch (ExpiredJwtException e){
+      return newAccessTokenAccount();
+    }catch (Exception e) {
+      // 다른 예외 처리
+      throw e;
+    }
 
     // JWT의 만료 시간 (exp) 확인
     Date expirationDate = claims.getExpiration();
@@ -108,7 +120,16 @@ public class SecurityService {
       throw new JwtNotFoundException();
     }
   }
-
+  @AccessTokenValid
+  public Accounts newAccessTokenAccount(){
+    HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+    String nat = (String)request.getAttribute("newAccessToken");
+    Accounts accounts = null;
+    if (nat != null) {
+      accounts = getSubjectAccount(nat);
+    }
+    return accounts;
+  }
   public boolean isTokenValid(String token) {
     return validateToken(token);
   }

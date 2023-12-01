@@ -53,7 +53,7 @@ public class UserController {
       ResponseCookie refreshCookie = ResponseCookie.from("refreshToken",
               cookieMap.get("refreshToken").getValue())
           .path("/")
-          .maxAge(ETokenTime.REFRESHTOKEN_EXP_TIME.getTime())// refreshToken도 6시간
+          .maxAge(ETokenTime.REFRESHTOKEN_EXP_TIME_TEST.getTime())// refreshToken도 6시간
           .httpOnly(true)
           .secure(true)
           .sameSite("None")
@@ -63,7 +63,7 @@ public class UserController {
       ResponseCookie accessCookie = ResponseCookie.from("accessToken",
               cookieMap.get("accessToken").getValue())
           .path("/")
-          .maxAge(ETokenTime.ACCESSTOKEN_EXP_TIME.getTime())//기간 2시간
+          .maxAge(ETokenTime.ACCESSTOKEN_EXP_TIME_TEST.getTime())//기간 2시간
           .httpOnly(true)
           .secure(true)
           .sameSite("None")
@@ -75,7 +75,6 @@ public class UserController {
   }
 
   @ApiOperation(value = "userUpdate", notes = "유저 정보 수정")
-  @AccessTokenValid
   @PutMapping("/account")
   public ResponseEntity<Accounts> updateAccount(@CookieValue(value = "accessToken") String code,
       @RequestBody @Validated Accounts accounts, HttpServletRequest request) {
@@ -91,19 +90,18 @@ public class UserController {
   }
 
   @ApiOperation(value = "CheckAccount", notes = "accessToken에 맞는 Account반환")
-  @AccessTokenValid
   @GetMapping("/account/check")
   public ResponseEntity<GetAccountCheckDTO> getAccountCheck(
       @CookieValue(name = "accessToken", required = false) String accessToken,
-      HttpServletRequest request) {
-    GetAccountCheckDTO getAccountCheckDTO = null;
+    HttpServletRequest request) {
+      GetAccountCheckDTO getAccountCheckDTO = null;
 
-    String nat = (String) request.getAttribute("newAccessToken");
-    if (nat != null) {
-      accessToken = nat;
-    }
+      String nat = (String) request.getAttribute("newAccessToken");
+      if (nat != null) {
+        accessToken = nat;
+      }
 
-    if (accessToken != null) {
+      if (accessToken != null) {
       getAccountCheckDTO = userService.getAccountCheck(accessToken);
     }
 
