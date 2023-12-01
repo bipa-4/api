@@ -326,7 +326,8 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
 
       ResponseEntity<String> response = restTemplate.getForEntity(uri, String.class);
     } catch (Exception e) {
-      responseDto.setVideoUrl("https://port-0-api1-iciy2almriucc9.sel5.cloudtype.app/example.mp4");
+      responseDto.setVideoUrl(
+          "https://du30t7lolw1uk.cloudfront.net/static/donuts_-_32649+(360p).mp4");
     }
 
     // 추천 영상 리스트 추출
