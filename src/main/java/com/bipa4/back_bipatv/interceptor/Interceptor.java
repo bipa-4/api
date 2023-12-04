@@ -33,7 +33,6 @@ public class Interceptor implements HandlerInterceptor {
         }
         if(!flag){
           Accounts accounts = securityService.newAccessTokenAccount();
-          System.out.println(accounts);
           if(accounts != null){
             userName = accounts.getName();
           }

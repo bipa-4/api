@@ -1,7 +1,6 @@
 package com.bipa4.back_bipatv.controller;
 
 
-import com.bipa4.back_bipatv.aspect.AccessTokenValid;
 import com.bipa4.back_bipatv.dto.channel.GetChannelDTO;
 import com.bipa4.back_bipatv.dto.channel.GetChannelTop5DTO;
 import com.bipa4.back_bipatv.dto.channel.GetInfiniteScrollRequestChannelDto;
@@ -25,7 +24,6 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.mahout.cf.taste.model.JDBCDataModel;
-import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -114,7 +112,6 @@ public class ReadController {
 
   // 영상 상세 조회
   @ApiOperation(value = "영상 상세 조회", notes = "영상 클릭시 상세 정보 + 추천 영상 추출")
-  //@Cacheable(key = "#id", cacheNames = "detail", cacheManager = "contentCacheManager")
   @GetMapping("/video/detail/{videoId}")
   public ResponseEntity<GetDetailResponseDto> getVideoDetail(@PathVariable("videoId") String id) {
     JDBCDataModel dataModel = recommendationService.getDataModel();
@@ -125,7 +122,6 @@ public class ReadController {
 
   // 영상 좋아요 여부
   @ApiOperation(value = "영상 상세 조회 및 추천 영상 조회", notes = "영상 클릭시 상세 정보 + 추천 영상 추출")
-  @AccessTokenValid
   @GetMapping("/video/like/{videoId}")
   public ResponseEntity<Boolean> getVideoLike(@PathVariable("videoId") String id,
       @CookieValue(name = "accessToken", required = false) String accessToken,
@@ -215,7 +211,6 @@ public class ReadController {
 
 
   @ApiOperation(value = "채널 내 영상 조회", notes = "최신순으로 전체 조회 (무한스크롤) / 처음엔 page 안넘겨주면 됨.")
-  @AccessTokenValid
   @GetMapping("/channel/video/{channelId}")
   public ResponseEntity<GetInfiniteScrollRequestDto> getVideosInChannel(
       @CookieValue(value = "accessToken", required = false) String accessToken,
