@@ -23,21 +23,26 @@ public class Interceptor implements HandlerInterceptor {
       throws Exception {
     String userName = "비회원";
     String accessToken = null;
-    boolean flag = false;
+    boolean flag = false;//회원인가 아닌가
+    boolean flag2 = false;// 회원이면 토큰이 유효한가
     Cookie[] cookies = request.getCookies();
     if (cookies != null) {
       for (Cookie cookie : cookies) {
         if ("accessToken".equals(cookie.getName())) {
           accessToken = cookie.getValue();
-          flag = securityService.isTokenValid(accessToken);
+          flag2 = securityService.isTokenValid(accessToken);
+          flag = true;
         }
-        if(!flag){
+        if(!flag2){
           Accounts accounts = securityService.newAccessTokenAccount();
-          System.out.println(accounts);
           if(accounts != null){
             userName = accounts.getName();
           }
         }
+        if(flag){
+          userName = securityService.getSubjectAccount(accessToken).getName();
+        }
+
 
       }
     }

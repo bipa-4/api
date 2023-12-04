@@ -39,7 +39,6 @@ public class ChannelController {
 
 
   @ApiOperation(value = "updateMyChannel", notes = "채널 정보 수정")
-  @AccessTokenValid
   @PutMapping("/{channelId}")
   public ResponseEntity<Channels> updateMyChannelInfo(@PathVariable UUID channelId,
       @CookieValue(value = "accessToken", required = false) String code,
@@ -57,7 +56,6 @@ public class ChannelController {
 
 
   @ApiOperation(value = "채널 내 영상 검색", notes = "채널 안의 영상 검색")
-  @AccessTokenValid
   @GetMapping("/{channelId}/video")
   public ResponseEntity<GetInfiniteScrollSearchVideoInChannelDTO> searchVideoInChannel(
       @CookieValue(value = "accessToken", required = false) String accessToken,
@@ -107,7 +105,6 @@ public class ChannelController {
   }
 
   @ApiOperation(value = "getUpdateFlag", notes = "업데이트 플레그 얻기")
-  @AccessTokenValid
   @GetMapping("/flag/{channelId}")
   public ResponseEntity<Boolean> getUpdateFlag(
       @CookieValue(value = "accessToken", required = false) String accessToken,

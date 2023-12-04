@@ -37,7 +37,7 @@ import org.springframework.web.client.RestTemplate;
 @RequiredArgsConstructor
 public class UserService {
 
-//  private final int EXP_TIME = 2 * 1000 * 60 * 60;//2시간
+  private final int EXP_TIME = 2 * 1000 * 60 * 60;//2시간
   private final int EXP_TIME_TEST = 1000 * 60;//분
 
   private final Environment env;
@@ -188,7 +188,7 @@ public class UserService {
     }
 
 //    String loginAccountToken = securityService.createToken(accounts, EXP_TIME);
-    String loginAccountToken = securityService.createToken(accounts, EXP_TIME_TEST);
+    String loginAccountToken = securityService.createToken(accounts, EXP_TIME);
     Cookie refreshCookie = createCookie("RefreshToken", refreshToken);
     Cookie accessCookie = createCookie("AccessToken", loginAccountToken);
     Map<String, Cookie> map = new HashMap<>();
@@ -207,7 +207,7 @@ public class UserService {
     if (optRefreshToken.isPresent()) {
       Accounts dummyAccount = new Accounts();
       dummyAccount.setLoginId(optRefreshToken.get().getMemberId());
-      return securityService.createToken(accountDAO.selectAccount(dummyAccount), EXP_TIME_TEST);
+      return securityService.createToken(accountDAO.selectAccount(dummyAccount), EXP_TIME);
 //      return securityService.createToken(accountDAO.selectAccount(dummyAccount), EXP_TIME_TEST);
     } else {//재 로그인 요청
       return null;
