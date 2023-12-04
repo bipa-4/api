@@ -25,6 +25,7 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.apache.mahout.cf.taste.model.JDBCDataModel;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -113,6 +114,7 @@ public class ReadController {
 
   // 영상 상세 조회
   @ApiOperation(value = "영상 상세 조회", notes = "영상 클릭시 상세 정보 + 추천 영상 추출")
+  //@Cacheable(key = "#id", cacheNames = "detail", cacheManager = "contentCacheManager")
   @GetMapping("/video/detail/{videoId}")
   public ResponseEntity<GetDetailResponseDto> getVideoDetail(@PathVariable("videoId") String id) {
     JDBCDataModel dataModel = recommendationService.getDataModel();
