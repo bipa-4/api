@@ -40,7 +40,6 @@ public class UserController {
 
   private final UserService userService;
   private final SecurityService securityService;
-  private final PresignedUrlService presignedUrlService;
 
   @ApiOperation(value = "Social_Login", notes = "소셜 로그인")
   @GetMapping("/auth/{registrationId}/callback")
@@ -53,7 +52,7 @@ public class UserController {
       ResponseCookie refreshCookie = ResponseCookie.from("refreshToken",
               cookieMap.get("refreshToken").getValue())
           .path("/")
-          .maxAge(ETokenTime.REFRESHTOKEN_EXP_TIME_TEST.getTime())// refreshToken도 6시간
+          .maxAge(ETokenTime.REFRESHTOKEN_EXP_TIME.getTime())// refreshToken도 6시간
           .httpOnly(true)
           .secure(true)
           .sameSite("None")
@@ -63,7 +62,7 @@ public class UserController {
       ResponseCookie accessCookie = ResponseCookie.from("accessToken",
               cookieMap.get("accessToken").getValue())
           .path("/")
-          .maxAge(ETokenTime.ACCESSTOKEN_EXP_TIME_TEST.getTime())//기간 2시간
+          .maxAge(ETokenTime.ACCESSTOKEN_EXP_TIME.getTime())//기간 2시간
           .httpOnly(true)
           .secure(true)
           .sameSite("None")
@@ -110,7 +109,6 @@ public class UserController {
   }
 
   @ApiOperation(value = "Logout", notes = "로그아웃기능")
-  @AccessTokenValid
   @PostMapping("/account/logout")
   public ResponseEntity<Boolean> doLogout(HttpServletResponse httpresponse,
       @CookieValue(value = "refreshToken") String refreshToken,
@@ -148,7 +146,6 @@ public class UserController {
   }
 
   @ApiOperation(value = "Delete Account", notes = "회원 탈퇴")
-  @AccessTokenValid
   @DeleteMapping("/account")
   public void deleteAccount(
       @CookieValue("accessToken") String accessToken, HttpServletRequest request) {

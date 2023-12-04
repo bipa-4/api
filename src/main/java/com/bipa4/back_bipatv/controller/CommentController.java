@@ -29,7 +29,6 @@ public class CommentController {
 
   // 부모 댓글 INSERT
   @PostMapping("/commentParent")
-  @AccessTokenValid
   public ResponseEntity<Boolean> insertParentComment(@RequestBody CommentRequest commentRequest,
       @CookieValue(name = "accessToken") String accessToken, HttpServletRequest request) {
     String nat = (String) request.getAttribute("newAccessToken");
@@ -44,7 +43,6 @@ public class CommentController {
 
   // 자식 댓글 INSERT
   @PostMapping("/commentChild")
-  @AccessTokenValid
   public ResponseEntity<Boolean> insertChildComment(@RequestBody CommentRequest commentRequest,
       @RequestParam("groupIndex") Integer groupIndex,
       @CookieValue(name = "accessToken") String accessToken, HttpServletRequest request) {
@@ -61,7 +59,6 @@ public class CommentController {
 
   // 댓글 UPDATE
   @PutMapping("/comment")
-  @AccessTokenValid
   public ResponseEntity<Boolean> updateComment(@RequestBody CommentRequest commentRequest,
       @CookieValue(name = "accessToken") String accessToken, HttpServletRequest request) {
     String nat = (String) request.getAttribute("newAccessToken");
@@ -76,7 +73,6 @@ public class CommentController {
 
   // 부모 댓글 DELETE
   @DeleteMapping("/commentParent/{commentId}")
-  @AccessTokenValid
   public ResponseEntity<Boolean> deleteParentComment(
       @PathVariable UUID commentId,
       @CookieValue(name = "accessToken") String accessToken, HttpServletRequest request) {
@@ -92,7 +88,6 @@ public class CommentController {
 
   // 자식 댓글 DELETE
   @DeleteMapping("/commentChild/{commentId}")
-  @AccessTokenValid
   public ResponseEntity<Boolean> deleteChildComment(
       @PathVariable UUID commentId,
       @CookieValue(name = "accessToken") String accessToken,
@@ -109,7 +104,6 @@ public class CommentController {
 
   // 댓글 고정됨
   @PutMapping("/{videoId}/comment-pick")
-  @AccessTokenValid
   public ResponseEntity<Boolean> pickComment(@RequestBody CommentRequest commentRequest,
       @CookieValue(name = "accessToken") String accessToken, @PathVariable String videoId,
       HttpServletRequest request) {
@@ -124,7 +118,6 @@ public class CommentController {
   }
 
   @DeleteMapping("/{videoId}/comment-pick/{commentId}")
-  @AccessTokenValid
   public ResponseEntity<Boolean> cancelPickComment(
       @CookieValue(name = "accessToken") String accessToken,
       @PathVariable String videoId, @PathVariable UUID commentId,
