@@ -381,6 +381,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
                     qVideos.readCnt.as("readCount"), qVideos.videoId)).from(qVideos)
             .leftJoin(qVideos.channelId, qChannels).where(
                 qVideos.channelId.channelId.eq(responseDto.getChannelId())
+                    .and(qVideos.privateType.eq(false))
                     .and(qVideos.videoId.ne(responseDto.getVideoId())))
             .orderBy(qVideos.readCnt.desc()).limit(10).fetch();
       } catch (NullPointerException e) {
