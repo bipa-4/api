@@ -52,6 +52,7 @@ public class VideoService {
   }
 
   @Transactional
+  //@CachePut(key = "#id", cacheNames = "detail", cacheManager = "contentCacheManager")
   public boolean updateVideo(String id, PutUpdateRequestDto requestDto, Accounts account) {
     return videoRepository.update(id, requestDto, account);
   }

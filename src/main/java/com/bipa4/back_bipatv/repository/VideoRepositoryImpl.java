@@ -316,7 +316,8 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
     }
 
     // 영상 처리
-    RestTemplate restTemplate = new RestTemplate();
+    /*
+    * RestTemplate restTemplate = new RestTemplate();
     try {
       URI uri = UriComponentsBuilder
           .fromUriString(responseDto.getVideoUrl())
@@ -329,6 +330,7 @@ public class VideoRepositoryImpl implements VideoRepositoryCustom {
       responseDto.setVideoUrl(
           "https://du30t7lolw1uk.cloudfront.net/static/donuts_-_32649+(360p).mp4");
     }
+    * */
 
     // 추천 영상 리스트 추출
     long modelData = jpaQueryFactory.select(qRecommend.recommendId.count()).from(qRecommend)

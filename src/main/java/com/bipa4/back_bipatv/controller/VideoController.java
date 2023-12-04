@@ -15,11 +15,10 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import java.util.List;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -52,7 +51,6 @@ public class VideoController {
   public ResponseEntity<Boolean> checkVideos(
       @CookieValue(name = "accessToken", required = false) String accessToken,
       @RequestParam("videoId") String videoId, HttpServletRequest request) {
-    System.out.println(accessToken);
     String nat = (String) request.getAttribute("newAccessToken");
     if (nat != null) {
       accessToken = nat;
@@ -126,6 +124,7 @@ public class VideoController {
   // 영상 수정
   @ApiOperation(value = "영상 수정", notes = "영상 수정 진행")
   @PutMapping("/{id}")
+  //@CacheEvict(key = "#id", cacheNames = "detail", cacheManager = "contentCacheManager")
   @AccessTokenValid
   public ResponseEntity<Boolean> update(@PathVariable String id,
       @RequestBody PutUpdateRequestDto requestDto, @CookieValue("accessToken") String accessToken,
@@ -189,9 +188,10 @@ public class VideoController {
   // 조회수 상승
   @ApiOperation(value = "조회수 상승", notes = "조회수 상승")
   @PutMapping("/updateViews/{videoId}")
-  public ResponseEntity<Boolean> getPlusViews(@PathVariable("videoId") String id,
-      HttpServletRequest request, HttpServletResponse response) {
-    Cookie oldCookie = null;
+  public ResponseEntity<Boolean> getPlusViews(@PathVariable("videoId") String id) {
+    boolean response = videoService.plusViews(id);
+    return new ResponseEntity<>(response, HttpStatus.OK);
+    /*Cookie oldCookie = null;
     boolean result = false;
 
     // cookie 값 추출
@@ -219,8 +219,7 @@ public class VideoController {
       newCookie.setPath("/");
       newCookie.setMaxAge(60 * 60 * 24);
       response.addCookie(newCookie);
-    }
-    return new ResponseEntity<>(result, HttpStatus.OK);
+    }*/
   }
 
   // 영상 추천 데이터 조회수 상승
